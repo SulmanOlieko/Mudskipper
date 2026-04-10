@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mudskipper Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+  
+ <style>
+    /* 1. Global Reset - Ensure the viewer container fills the screen */
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden !important; /* Let the viewerContainer handle scroll */
+      background-color: #000 !important; /* Allow iframe background to show through */
+    }
+
+    #viewerContainer {
+      height: 100%;
+      width: 100%;
+      overflow: auto;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #000 !important;
+      background-color: #000 !important;
+      max-width: 100% !important;
+      border: none;
+      display: block;
+    }
+
+    #viewerContainer .page {
+      margin: 5px auto !important; /* Force vertical spacing between pages */
+      border: 5px solid transparent !important; /* Invisible border to enforce spacing */
+      background-clip: content-box !important; /* Ensure background doesn't bleed into border */
+  
+      border-image: none !important;
+      background-color: #000 !important;
+    }
+
+    [data-bs-theme='dark'] #viewerContainer .page {
+        border-color: transparent !important;
+        margin: 10px auto !important;
+        background-color: #000 !important;
+    }
+    
+:root {
+  --sb-track: #000; 
+  --sb-thumb: #5a606b;  
+  --sb-thumb-hover: #5a606b;   
+}
+
+#viewerContainer {
+  scrollbar-width: thin; 
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+}
+
+/* WebKit */
+#viewerContainer::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+
+#viewerContainer::-webkit-scrollbar-track {
+  background: var(--sb-track);
+}
+
+#viewerContainer::-webkit-scrollbar-thumb {
+  background-color: var(--sb-thumb);
+  border-radius: 999px;                  /* Perfect pill */
+  border: 4px solid var(--sb-track);     /* Floating effect */
+  transition: background-color 0.2s ease;
+}
+
+#viewerContainer::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sb-thumb-hover);
+}
+
+#viewerContainer::-webkit-scrollbar-corner {
+  background: var(--sb-track);
+}
+
+    
+    .textLayer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      opacity: 0.2;
+      line-height: 1.0;
+      transform-origin: 0% 0%;
+    }
+    
+    ::selection { background-color: rgba(0, 123, 255, 0.3); color: inherit; pointer-events: auto;}
+    ::-moz-selection { background-color: rgba(0, 123, 255, 0.3); color: inherit; pointer-events: auto;}
+    
+.synctex-highlight {
+      position: absolute;
+      /* Darker yellow + Multiply blend mode = Realistic Highlighter effect */
+      background-color: rgba(255, 240, 0, 1.0); 
+      mix-blend-mode: multiply; 
+      border-radius: 3px; /* Rounded corners */
+      z-index: 999;
+      pointer-events: none;
+      transition: opacity 0.5s ease-in-out;
+    }
+    
+    
+    /* Add this for the links to align correctly with zoom */
+    .annotationLayer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      transform-origin: 0% 0%;
+    }
+
+    /* Make sure links are visible and clickable */
+    .annotationLayer section {
+      position: absolute;
+      text-align: initial;
+      display: block;
+      pointer-events: auto;
+    }
+    
+    .annotationLayer .linkAnnotation > a,
+    .annotationLayer .buttonWidgetAnnotation.pushButtons > a {
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+    
+  </style>
+</head>
+<body>
+
+<div id="viewerContainer">
+  <div id="viewer" class="pdfViewer"></div>
+</div>
+
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+  const container = document.getElementById("viewerContainer");
+  const viewer = document.getElementById("viewer");
+  
+  // State
+  let pdfDoc = null;
+  let currentZoom = 1.0;
+  let isRendering = false;
+  let renderQueue = [];
+  let pageCache = new Map(); // Cache rendered pages
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const fileUrl = urlParams.get('file');
+
+  // --- 1. COMMUNICATIONS ---
+  function notifyParent(type, data) {
+    if (window.parent && window.parent.Shiny) {
+        if (type === 'syncTexClick') {
+             window.parent.Shiny.setInputValue('syncTexClick', { ...data, nonce: Math.random() }, {priority: 'event'});
+        } 
+        window.parent.postMessage({ type: type, ...data }, '*');
+    }
+  }
+
+  // --- 2. LOAD PDF ---
+  async function loadPDF() {
+    if (!fileUrl) return;
+    try {
+      const cleanUrl = fileUrl.split('?')[0] + "?t=" + Date.now();
+      pdfDoc = await pdfjsLib.getDocument(cleanUrl).promise;
+      
+      notifyParent('pdfLoaded', { pages: pdfDoc.numPages });
+      
+      // Default to Fit Width on load
+      fitWidth(); 
+    } catch (err) {
+      console.error("Load Error:", err);
+    }
+  }
+
+  // Helper: Find the currently visible page
+  function getCurrentVisiblePage() {
+    const viewMid = container.scrollTop + (container.clientHeight / 2);
+    const pages = document.querySelectorAll(".page");
+    
+    for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        if (page.offsetTop <= viewMid && (page.offsetTop + page.clientHeight) >= viewMid) {
+            return parseInt(page.getAttribute("data-page-number"));
+        }
+    }
+    return 1;
+  }
+
+  // Get absolute pixel position of current view center
+  function getAbsoluteViewCenter() {
+    const pages = document.querySelectorAll(".page");
+    const viewMid = container.scrollTop + (container.clientHeight / 2);
+    
+    for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        const pageTop = page.offsetTop;
+        const pageBottom = pageTop + page.clientHeight;
+        
+        if (pageTop <= viewMid && pageBottom >= viewMid) {
+            return {
+                pageNum: parseInt(page.getAttribute("data-page-number")),
+                offsetInPage: viewMid - pageTop,
+                pageHeight: page.clientHeight
+            };
+        }
+    }
+    return null;
+  }
+
+  // Restore view to same visual position after zoom
+  function restoreAbsoluteViewCenter(anchorData) {
+    if (!anchorData) return;
+    
+    const anchorPage = document.getElementById("pageContainer" + anchorData.pageNum);
+    if (!anchorPage) return;
+    
+    // Calculate the scaling ratio
+    const oldHeight = anchorData.pageHeight;
+    const newHeight = anchorPage.clientHeight;
+    const scaleFactor = newHeight / oldHeight;
+    
+    // Scale the offset proportionally
+    const newOffsetInPage = anchorData.offsetInPage * scaleFactor;
+    
+    // Calculate target scroll position
+    const targetScroll = anchorPage.offsetTop + newOffsetInPage - (container.clientHeight / 2);
+    
+    // Apply immediately without animation
+    container.scrollTop = targetScroll;
+  }
+
+// --- 3. RENDER SINGLE PAGE ---
+  async function renderPage(pageNum) {
+    const page = await pdfDoc.getPage(pageNum);
+    const pixelRatio = window.devicePixelRatio || 1;
+    
+    const baseViewport = page.getViewport({ scale: 1.0 });
+    const scaledViewport = page.getViewport({ scale: currentZoom });
+
+    // Create/Update Page Container
+    let pageDiv = document.getElementById("pageContainer" + pageNum);
+    if (!pageDiv) {
+      pageDiv = document.createElement("div");
+      pageDiv.className = "page";
+      pageDiv.setAttribute("data-page-number", pageNum);
+      pageDiv.id = "pageContainer" + pageNum;
+      viewer.appendChild(pageDiv);
+    }
+    
+    // Clear existing content
+    pageDiv.innerHTML = "";
+    pageDiv.style.width = Math.floor(scaledViewport.width) + "px";
+    pageDiv.style.height = Math.floor(scaledViewport.height) + "px";
+
+    // 1. Render Canvas
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext('2d');
+    
+    canvas.width = Math.floor(scaledViewport.width * pixelRatio);
+    canvas.height = Math.floor(scaledViewport.height * pixelRatio);
+    canvas.style.width = Math.floor(scaledViewport.width) + "px";
+    canvas.style.height = Math.floor(scaledViewport.height) + "px";
+    
+    pageDiv.appendChild(canvas);
+
+    const renderContext = {
+      canvasContext: context,
+      viewport: scaledViewport,
+      transform: [pixelRatio, 0, 0, pixelRatio, 0, 0] 
+    };
+    
+    await page.render(renderContext).promise;
+
+    // 2. Render Text Layer
+    const textContent = await page.getTextContent();
+    const textLayerDiv = document.createElement("div");
+    textLayerDiv.className = "textLayer";
+    
+    textLayerDiv.style.width = Math.floor(baseViewport.width) + "px";
+    textLayerDiv.style.height = Math.floor(baseViewport.height) + "px";
+    textLayerDiv.style.transform = `scale(${currentZoom})`;
+    
+    pageDiv.appendChild(textLayerDiv);
+
+    await pdfjsLib.renderTextLayer({
+      textContentSource: textContent,
+      container: textLayerDiv,
+      viewport: baseViewport,
+      textDivs: []
+    }).promise;
+
+    textLayerDiv.addEventListener("dblclick", function(e) {
+       const rect = pageDiv.getBoundingClientRect();
+       const clickX = e.clientX - rect.left;
+       const clickY = e.clientY - rect.top;
+       notifyParent('syncTexClick', { page: pageNum, x: clickX / currentZoom, y: clickY / currentZoom });
+    });
+
+    // 3. Render Annotation Layer (Links & Jumps)
+    const annotations = await page.getAnnotations();
+    
+    if (annotations.length > 0) {
+        const annotationLayerDiv = document.createElement("div");
+        annotationLayerDiv.className = "annotationLayer";
+        
+        annotationLayerDiv.style.width = Math.floor(baseViewport.width) + "px";
+        annotationLayerDiv.style.height = Math.floor(baseViewport.height) + "px";
+        annotationLayerDiv.style.transform = `scale(${currentZoom})`;
+        
+        pageDiv.appendChild(annotationLayerDiv);
+
+        const mockLinkService = {
+            externalLinkTarget: 2, 
+            externalLinkRel: "noopener noreferrer",
+            // --- CHANGE HERE: Force all external links to _blank ---
+            addLinkAttributes: function(link, url, newWindow) {
+                link.href = url;
+                link.target = "_blank"; // ALWAYS open in new tab
+                link.rel = this.externalLinkRel;
+            },
+            getDestinationHash: () => "#",
+            getAnchorUrl: () => "#",
+            setHash: () => {},
+            executeNamedAction: () => {},
+            goToDestination: async function(dest) {
+                let explicitDest = dest;
+                if (typeof dest === 'string') {
+                    explicitDest = await pdfDoc.getDestination(dest);
+                }
+                
+                if (!explicitDest || !Array.isArray(explicitDest)) return;
+
+                const destRef = explicitDest[0];
+                
+                try {
+                    let pageIndex;
+                    if (Number.isInteger(destRef)) {
+                        pageIndex = destRef; 
+                    } else {
+                        pageIndex = await pdfDoc.getPageIndex(destRef); 
+                    }
+                    
+                    if (pageIndex !== null && pageIndex >= 0) {
+                        window.goToPage(pageIndex + 1);
+                    }
+                } catch (err) {
+                    console.error("Jump failed:", err);
+                }
+            }
+        };
+
+        const annotationLayer = new pdfjsLib.AnnotationLayer({
+            div: annotationLayerDiv,
+            accessibilityManager: null,
+            page: page,
+            viewport: baseViewport
+        });
+
+        await annotationLayer.render({
+            annotations: annotations,
+            imageResourcesPath: "",
+            renderForms: false,
+            linkService: mockLinkService
+        });
+    }
+  }
+
+  // --- 4. RENDER ALL PAGES (EFFICIENT REUSE) ---
+  async function renderAllPages(maintainView = false) {
+    if (isRendering) {
+      renderQueue.push(maintainView);
+      return;
+    }
+    
+    isRendering = true;
+    
+    // Capture view position BEFORE any DOM changes
+    const viewAnchor = maintainView ? getAbsoluteViewCenter() : null;
+
+    // Render all pages
+    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+      await renderPage(pageNum);
+    }
+
+    // Restore view position AFTER all rendering complete
+    if (viewAnchor) {
+      // Use setTimeout to ensure DOM is fully settled
+      setTimeout(() => {
+        restoreAbsoluteViewCenter(viewAnchor);
+      }, 0);
+    }
+
+    isRendering = false;
+    
+    // Process queue
+    if (renderQueue.length > 0) {
+      const nextMaintain = renderQueue.pop();
+      renderQueue = [];
+      renderAllPages(nextMaintain);
+    }
+  }
+
+  // --- 5. SCROLL REPORTING ---
+  let scrollTimeout;
+  container.addEventListener("scroll", function() {
+     if(isRendering) return;
+     
+     clearTimeout(scrollTimeout);
+     scrollTimeout = setTimeout(() => {
+       const currentPage = getCurrentVisiblePage();
+       notifyParent("pageChange", { page: currentPage });
+     }, 100);
+  });
+
+// --- 6. SYNCTEX HIGHLIGHT (Smart Text Matching) ---
+  window.highlightLocation = function(pageNum, x, y) {
+      const pageDiv = document.getElementById("pageContainer" + pageNum);
+      if (!pageDiv) return;
+      
+      // 1. Scroll page into view
+      pageDiv.scrollIntoView({ behavior: "auto", block: "center" });
+
+      // 2. Clear old highlights
+      document.querySelectorAll(".synctex-highlight").forEach(el => el.remove());
+
+      // 3. Find the closest text element
+      const textLayer = pageDiv.querySelector(".textLayer");
+      let bestRect = null;
+
+      if (textLayer) {
+          const spans = textLayer.querySelectorAll("span");
+          let minScore = Infinity;
+          
+          spans.forEach(span => {
+              // Span coordinates are relative to the unscaled page (PDF points)
+              const spanLeft = span.offsetLeft;
+              const spanTop = span.offsetTop;
+              const spanWidth = span.offsetWidth;
+              const spanHeight = span.offsetHeight;
+              
+              // Calculate vertical distance (Row matching is most important)
+              const verticalDist = Math.abs((spanTop + spanHeight/2) - y);
+              
+              // Only consider items roughly on the same line (within 20pt)
+              if (verticalDist < 20) { 
+                  // Calculate horizontal distance
+                  let horizDist = 0;
+                  if (x < spanLeft) horizDist = spanLeft - x;
+                  else if (x > spanLeft + spanWidth) horizDist = x - (spanLeft + spanWidth);
+                  
+                  // Weighted Score: Vertical distance matters much more than horizontal
+                  // This ensures we pick the word on the correct line, even if another line's word is technically closer by Euclidean distance
+                  const score = horizDist + (verticalDist * 100); 
+                  
+                  if (score < minScore) {
+                      minScore = score;
+                      bestRect = {
+                          left: spanLeft,
+                          top: spanTop,
+                          width: spanWidth,
+                          height: spanHeight
+                      };
+                  }
+              }
+          });
+      }
+
+      // 4. Create Highlight
+      const highlight = document.createElement("div");
+      highlight.className = "synctex-highlight";
+      
+      if (bestRect) {
+          // --- MATCH FOUND: Highlight the text ---
+          highlight.style.left = (bestRect.left * currentZoom) + "px";
+          highlight.style.top = (bestRect.top * currentZoom) + "px";
+          highlight.style.width = (bestRect.width * currentZoom) + "px";
+          highlight.style.height = (bestRect.height * currentZoom) + "px";
+      } else {
+          // --- FALLBACK: Generic Marker Stroke ---
+          // If no text found (e.g. image), draw a focused bar around the point
+          const width = 150 * currentZoom; 
+          const height = 15 * currentZoom;
+          
+          highlight.style.left = ((x * currentZoom) - (width/2)) + "px";
+          highlight.style.top = ((y * currentZoom) - (height/2)) + "px";
+          highlight.style.width = width + "px";
+          highlight.style.height = height + "px";
+      }
+
+      pageDiv.appendChild(highlight);
+
+      // 5. Cleanup
+      setTimeout(() => { highlight.style.opacity = "0"; }, 1500);
+      setTimeout(() => { highlight.remove(); }, 2000);
+  };
+
+  // --- 7. API CONTROLS ---
+  
+  window.zoomIn = function() {
+      currentZoom = Math.min(currentZoom * 1.2, 5.0);
+      renderAllPages(true);
+      notifyParent("zoomChange", { zoom: Math.round(currentZoom * 100) });
+  };
+
+  window.zoomOut = function() {
+      currentZoom = Math.max(currentZoom * 0.8, 0.5);
+      renderAllPages(true);
+      notifyParent("zoomChange", { zoom: Math.round(currentZoom * 100) });
+  };
+
+  window.setZoom = function(val) {
+      if(val && val > 0) {
+          currentZoom = val;
+          renderAllPages(true);
+          notifyParent("zoomChange", { zoom: Math.round(currentZoom * 100) });
+      }
+  };
+
+  window.fitWidth = function() {
+      if (pdfDoc) {
+          pdfDoc.getPage(1).then(page => {
+             const viewport = page.getViewport({ scale: 1 });
+             const availWidth = container.clientWidth - 20; 
+             currentZoom = availWidth / viewport.width;
+             renderAllPages(true);
+             notifyParent("zoomChange", { zoom: Math.round(currentZoom * 100) });
+          });
+      }
+  };
+  
+  window.fitHeight = function() {
+      if (pdfDoc) {
+          pdfDoc.getPage(1).then(page => {
+             const viewport = page.getViewport({ scale: 1 });
+             const availHeight = container.clientHeight - 20; 
+             currentZoom = availHeight / viewport.height;
+             renderAllPages(true);
+             notifyParent("zoomChange", { zoom: Math.round(currentZoom * 100) });
+          });
+      }
+  };
+
+  window.goToPage = function(num) {
+      const el = document.getElementById("pageContainer" + num);
+      if (el) {
+          el.scrollIntoView({ behavior: "auto", block: "start" });
+          setTimeout(() => notifyParent("pageChange", { page: parseInt(num) }), 100);
+      }
+  };
+
+  // Listen for messages from R
+  window.addEventListener("message", function(event) {
+      const data = event.data;
+      if (!data) return;
+      if (data.type === "syncView") window.highlightLocation(data.page, data.x, data.y);
+  });
+  
+  // --- 8. AUTO-RESIZE LISTENER ---
+  let resizeTimer;
+  
+  window.addEventListener("resize", function() {
+      // Debounce the resize event to prevent rendering lags while dragging
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+          // Only trigger if a document is loaded
+          if (pdfDoc) {
+              fitWidth();
+          }
+      }, 100); // 100ms delay ensures smoothness
+  });
+
+  loadPDF();
+</script>
+</body>
+</html>

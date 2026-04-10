@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Mudskipper</title>
+    <meta name="msapplication-TileColor" content="#066fd1"/>
+    <meta name="theme-color" content="#066fd1"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="HandheldFriendly" content="True"/>
+    <meta name="MobileOptimized" content="320"/>
+    <link rel="icon" href="/favicon/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="/favicon/favicon.ico" type="image/x-icon"/>
+    <meta name="description" content=""/>
+    <meta name="canonical" content="https://mudskipper.io/"/>
+    <meta name="twitter:image:src" content="https://raw.githubusercontent.com/SulmanOlieko/sulmanolieko.github.io/main/img/ekonly-logo.svg"/>
+    <meta name="twitter:site" content="@Mudskipper"/>
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content=""/>
+    <meta name="twitter:description" content=""/>
+    <meta property="og:image" content="https://raw.githubusercontent.com/SulmanOlieko/sulmanolieko.github.io/main/img/ekonly-logo.svg"/>
+    <meta property="og:image:width" content="1280"/>
+    <meta property="og:image:height" content="640"/>
+    <meta property="og:site_name" content="Mudskipper"/>
+    <meta property="og:type" content="object"/>
+    <meta property="og:title" content=""/>
+    <meta property="og:url" content="https://raw.githubusercontent.com/SulmanOlieko/sulmanolieko.github.io/main/img/ekonly-logo.svg"/>
+    <meta property="og:description" content=""/>
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <!-- END GLOBAL MANDATORY STYLES -->
+    <!-- BEGIN CUSTOM FONT -->
+    <link href="theme.css" rel="stylesheet"/>
+    
+</head>
+<style>
+  html, body {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#app-preloader {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--tblr-body-bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 999999; opacity: 1;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#app-preloader.fade-out { opacity: 0; pointer-events: none; }
+
+/* Text */
+.preloader-content { margin-top: 40px; text-align: center; }
+.preloader-text {
+  color: var(--tblr-primary); font-size: 16px; font-weight: 500;
+  font-family: 'Inter', sans-serif; letter-spacing: -0.02em; margin-bottom: 8px;
+}
+
+/* Dots */
+.preloader-dots { display: inline-flex; gap: 4px; margin-left: 4px; }
+.preloader-dot {
+  width: 4px; height: 4px; background: var(--tblr-primary); border-radius: 50%;
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+.preloader-dot:nth-child(2) { animation-delay: 0.2s; }
+.preloader-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.2); } }
+</style>
+<body style="overflow: hidden !important;">
+<div id="app-preloader" class="justify-content-center">
+<div class="card card-md">
+  <div class="card-header">
+    <div class="text-center justify-content-center">
+    <!-- BEGIN NAVBAR LOGO -->
+    <a href="javascript:void(0);" aria-label="Mudskipper" class="navbar-brand navbar-brand-autodark">
+        <img
+          src="mudskipper_logo.svg"
+          alt="Mudskipper Logo"
+          width="40" height="40"
+          decoding="async"
+          fetchpriority="high" />
+          Mudskipper
+        </a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="mb-4 d-flex justify-content-center">
+      <div class="text-center justify-content-center">
+        <div class="progress progress-sm">
+          <div class="progress-bar progress-bar-indeterminate"></div>
+      </div>
+      <div class="preloader-content">
+        <div class="preloader-text">
+          Loading Workspace
+          <span class="preloader-dots"><span class="preloader-dot"></span><span class="preloader-dot"></span><span class="preloader-dot"></span></span>
+        </div>
+      </div>
+    </div>
+  </div> 
+  </div>
+</div>
+</div>
+</body>
+</html>                

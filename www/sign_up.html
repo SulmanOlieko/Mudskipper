@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Mudskipper</title>
+    <meta name="msapplication-TileColor" content="#066fd1"/>
+    <meta name="theme-color" content="#066fd1"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="HandheldFriendly" content="True"/>
+    <meta name="MobileOptimized" content="320"/>
+    <link rel="icon" href="/favicon/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="/favicon/favicon.ico" type="image/x-icon"/>
+    <meta name="description" content=""/>
+    <meta name="canonical" content="https://mudskipper.io/"/>
+    <meta name="twitter:image:src" content="https://raw.githubusercontent.com/SulmanOlieko/sulmanolieko.github.io/main/img/ekonly-logo.svg"/>
+    <meta name="twitter:site" content="@Mudskipper"/>
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:title" content=""/>
+    <meta name="twitter:description" content=""/>
+    <meta property="og:image" content="https://raw.githubusercontent.com/SulmanOlieko/sulmanolieko.github.io/main/img/ekonly-logo.svg"/>
+    <meta property="og:image:width" content="1280"/>
+    <meta property="og:image:height" content="640"/>
+    <meta property="og:site_name" content="Mudskipper"/>
+    <meta property="og:type" content="object"/>
+    <meta property="og:title" content=""/>
+    <meta property="og:url" content="https://raw.githubusercontent.com/SulmanOlieko/sulmanolieko.github.io/main/img/ekonly-logo.svg"/>
+    <meta property="og:description" content=""/>
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <!-- END GLOBAL MANDATORY STYLES -->
+    <link href="theme.css" rel="stylesheet"/>
+    <script src="auth_bridge.js"></script>
+
+</head>
+<style>
+  html, body {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+</style>
+<body style="overflow: hidden !important;">
+  
+    <!-- BEGIN GLOBAL THEME SCRIPT -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
+     <!-- END GLOBAL THEME SCRIPT -->
+     
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <div class="text-center mb-4">
+                <!-- BEGIN NAVBAR LOGO -->
+                <a href="javascript:void(0);" aria-label="Mudskipper" class="navbar-brand navbar-brand-autodark">
+                    <img
+                      src="mudskipper_logo.svg"
+                      alt="Mudskipper Logo"
+                      width="40" height="40"
+                      decoding="async"
+                      fetchpriority="high" />
+                      Mudskipper
+                    </a>
+                    
+                    <!-- END NAVBAR LOGO -->
+            </div>
+            <form class="card card-md" action="./" method="get" autocomplete="off" novalidate>
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Create new account</h2>
+                    
+                      
+                    <!----
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" placeholder="Enter name"/>
+                    </div>
+                    ---->
+                    <div class="mb-3">
+                        <label class="form-label">Email address</label>
+                        <input id="signup_email" type="email" class="form-control" placeholder="your@email.com" autocomplete="off"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group input-group-flat">
+                            <input id="signup_password" type="password" class="form-control" placeholder="Password" autocomplete="off"/>
+                            <span class="input-group-text">
+                                <a href="#" class="link-secondary" title="Show password" data-bs-toggle="tooltip">
+                                    <!-- Download SVG icon from http://tabler.io/icons/icon/eye -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                        <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"/>
+                                        <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"/>
+                                        </svg
+                                                          >
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-footer">
+                        <button id="submit_signup" type="submit" class="btn btn-primary w-100">Create new account</button>
+                    </div>
+                    
+                    <div class="hr-text">or</div>
+                          <div class="row">
+                            <div class="col">
+                              <button id="btn_github" class="btn btn-4 w-100 btn-github">
+                                <!-- Download SVG icon from http://tabler.io/icons/icon/brand-github -->
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  class="icon text-github icon-2">
+                                  <path
+                                    d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"
+                                  />
+                                </svg>
+                                Sign up with Github
+                              </button>
+                            </div>
+                            <div class="col">
+                              <button id="btn_google" class="btn btn-4 w-100 btn-google">
+                                <!-- Download SVG icon from http://tabler.io/icons/icon/brand-google -->
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  class="icon text-google icon-2">
+                                  <path d="M20.945 11a9 9 0 1 1 -3.284 -5.997l-2.655 2.392a5.5 5.5 0 1 0 2.119 6.605h-4.125v-3h7.945z" />
+                                </svg>
+                                Sign up with Google
+                              </button>
+                            </div>
+                          </div>
+                    <!----
+                    <div class="mb-3">
+                        <label class="form-check">
+                            <input type="checkbox" class="form-check-input"/>
+                            <span class="form-check-label">
+                                Agree the 
+                                <a href="./terms_of_service.html" tabindex="-1">terms and policy</a>
+                                .
+                            </span>
+                        </label>
+                    </div>
+                    ----->
+                </div>
+            </form>
+            <div class="text-center text-secondary mt-3">
+                Already have account? 
+                <a id="goto_login" href="./sign_in.html" tabindex="-1">Sign in</a>
+            </div>
+        </div>
+    </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    
+    // Social Signup: Send "_signup" intent
+    document.querySelectorAll('.btn-google').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if(window.parent.Shiny) window.parent.Shiny.setInputValue('auth_provider_redirect', 'google_signup');
+      });
+    });
+    
+    document.querySelectorAll('.btn-github').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if(window.parent.Shiny) window.parent.Shiny.setInputValue('auth_provider_redirect', 'github_signup');
+      });
+    });
+    
+    // --- 1. CONFIGURATION ---
+    const MIN_PASSWORD_LENGTH = 8;
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // --- 2. HELPER FUNCTIONS ---
+
+    function setupPasswordToggle(inputId) {
+      const passwordInput = document.getElementById(inputId);
+      if (!passwordInput) return;
+      const toggleBtn = passwordInput.closest('.input-group').querySelector('a');
+      
+      toggleBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+        passwordInput.setAttribute("type", type);
+        toggleBtn.style.opacity = type === "text" ? "1" : "0.5";
+        
+        const svg = toggleBtn.querySelector('svg');
+        if (type === "text") {
+           svg.innerHTML = '<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /><path d="M3 3l18 18" />';
+        } else {
+           svg.innerHTML = '<path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />';
+        }
+      });
+    }
+
+    function showError(input, message) {
+      input.classList.add('is-invalid');
+      let feedback = input.parentElement.querySelector('.invalid-feedback');
+      if (!feedback) {
+        feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        input.parentElement.appendChild(feedback);
+      }
+      feedback.textContent = message;
+    }
+
+    function clearError(input) {
+      input.classList.remove('is-invalid');
+    }
+
+    // --- 3. VALIDATION LOGIC ---
+
+    // A. LOGIN VALIDATION
+    function validateLogin(e) {
+      let isValid = true;
+      const email = document.getElementById('email');
+      const password = document.getElementById('password');
+
+      clearError(email);
+      clearError(password);
+
+      if (!email.value.trim()) {
+        showError(email, "Email is required");
+        isValid = false;
+      } else if (!EMAIL_REGEX.test(email.value.trim())) {
+        showError(email, "Please enter a valid email address");
+        isValid = false;
+      }
+
+      if (!password.value) {
+        showError(password, "Password is required");
+        isValid = false;
+      }
+
+      if (!isValid) e.preventDefault();
+    }
+
+    // B. SIGNUP VALIDATION
+    function validateSignup(e) {
+      let isValid = true;
+      const email = document.getElementById('signup_email');
+      const password = document.getElementById('signup_password');
+
+      clearError(email);
+      clearError(password);
+
+      if (!email.value.trim()) {
+        showError(email, "Email is required");
+        isValid = false;
+      } else if (!EMAIL_REGEX.test(email.value.trim())) {
+        showError(email, "Please enter a valid email address");
+        isValid = false;
+      }
+
+      if (!password.value) {
+        showError(password, "Password is required");
+        isValid = false;
+      } else if (password.value.length < MIN_PASSWORD_LENGTH) {
+        showError(password, `Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+        isValid = false;
+      }
+
+      if (!isValid) e.preventDefault();
+    }
+
+    // C. FORGOT PASSWORD VALIDATION
+    function validateForgot(e) {
+      let isValid = true;
+      const email = document.getElementById('forgot_email');
+
+      clearError(email);
+
+      if (!email.value.trim()) {
+        showError(email, "Email is required");
+        isValid = false;
+      } else if (!EMAIL_REGEX.test(email.value.trim())) {
+        showError(email, "Please enter a valid email address");
+        isValid = false;
+      }
+
+      if (!isValid) e.preventDefault();
+    }
+
+    // --- 4. INITIALIZATION ---
+
+    // Setup Toggles (Safe to call even if element missing)
+    setupPasswordToggle("password");
+    setupPasswordToggle("signup_password");
+
+    // Attach Listeners (Only if elements exist)
+    const loginBtn = document.getElementById('submit_login');
+    if (loginBtn) loginBtn.addEventListener('click', validateLogin);
+
+    const signupBtn = document.getElementById('submit_signup');
+    if (signupBtn) signupBtn.addEventListener('click', validateSignup);
+    
+    const forgotBtn = document.getElementById('submit_forgot');
+    if (forgotBtn) forgotBtn.addEventListener('click', validateForgot);
+  });
+</script>
+<!-- BEGIN GLOBAL THEME SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js"></script>
+<script src="theme.js" defer></script>
+<!-- END GLOBAL THEME SCRIPT -->
+
+</body>
+</html>
