@@ -150,7 +150,7 @@
           initUserDirectories(uid)
           
           # Sync Profile JSON File
-          profilePath <- file.path(getUserBaseDir(uid), "profile.json")
+          profilePath <- file.path(getUserBaseDir(uid), ".profile.json")
           if (file.exists(profilePath)) {
             current_prof <- jsonlite::read_json(
               profilePath,

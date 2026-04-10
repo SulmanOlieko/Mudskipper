@@ -3,12 +3,12 @@
 #
 # This file is intentionally minimal. All logic lives in R/ modules:
 #
-#   R/00_globals.R          — Libraries & constants
-#   R/01_assets.R           — PWA asset bootstrapping (Split.js, dicts, SW, manifest)
-#   R/02_illustrations.R    — SVG helper functions
-#   R/03_html_pages.R       — Inline HTML page writers (presentation.html, etc.)
-#   R/04_auth_db.R          — Database helpers, OAuth config, SMTP, user directories
-#   R/05_compile_worker.R   — compile_bg_task(), parse_tex_log(), get_ip()
+#   R/globals.R             — Libraries & constants
+#   R/assets.R              — PWA asset bootstrapping (Split.js, dicts, SW, manifest)
+#   R/illustrations.R       — SVG helper functions
+#   R/html_pages.R          — Inline HTML page writers (presentation.html, etc.)
+#   R/auth_db.R             — Database helpers, OAuth config, SMTP, user directories
+#   R/compile_worker.R      — compile_bg_task(), parse_tex_log(), get_ip()
 #   R/ui/ui_main.R          — Full editor UI (app_ui)
 #   R/ui/ui_wrapper.R       — Outer auth/lock wrapper (ui)
 #   R/server/server_auth.R  — Login, logout, signup, OAuth, lock/unlock
@@ -24,22 +24,22 @@
 # =============================================================================
 
 # ---- 1. Global libraries, options, and constants ----
-source("R/00_globals.R")
+source("R/globals.R")
 
 # ---- 2. Bootstrap static assets (must run at startup, before shinyApp) ----
-source("R/01_assets.R")
+source("R/assets.R")
 
 # ---- 3. SVG illustration helpers ----
-source("R/02_illustrations.R")
+source("R/illustrations.R")
 
 # ---- 4. HTML page writers (generates www/*.html files) ----
-source("R/03_html_pages.R")
+source("R/html_pages.R")
 
 # ---- 5. Authentication, database, and user-directory helpers ----
-source("R/04_auth_db.R")
+source("R/auth_db.R")
 
 # ---- 6. Background compile worker and log parser ----
-source("R/05_compile_worker.R")
+source("R/compile_worker.R")
 
 # ---- 7. Main app UI (app_ui) ----
 source("R/ui/ui_main.R")

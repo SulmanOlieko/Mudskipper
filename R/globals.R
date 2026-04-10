@@ -1,5 +1,5 @@
 # =============================================================================
-# 00_globals.R
+# globals.R
 # Libraries, global options, and shared constants.
 # Sourced first by app.R so every other module can rely on these symbols.
 # =============================================================================

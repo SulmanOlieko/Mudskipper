@@ -21,7 +21,7 @@
       return(list())
     }
 
-    f <- file.path(cDir, paste0(safeProj, "_", safePath, ".json"))
+    f <- file.path(cDir, paste0(".", safeProj, "_", safePath, ".json"))
 
     if (file.exists(f)) {
       tryCatch(
@@ -115,7 +115,7 @@
       return()
     }
 
-    f <- file.path(cDir, paste0(safeProj, "_", safePath, ".json"))
+    f <- file.path(cDir, paste0(".", safeProj, "_", safePath, ".json"))
 
     # Ensure atomic write to prevent corruption
     jsonlite::write_json(comments, f, auto_unbox = TRUE, pretty = TRUE)

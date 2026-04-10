@@ -18,7 +18,7 @@
       return(list())
     }
 
-    userStatsFile <- file.path(sDir, "usage_stats.json")
+    userStatsFile <- file.path(sDir, ".usage_stats.json")
 
     tryCatch(
       {
@@ -72,7 +72,7 @@
       return(FALSE)
     }
 
-    userStatsFile <- file.path(sDir, "usage_stats.json")
+    userStatsFile <- file.path(sDir, ".usage_stats.json")
 
     tryCatch(
       {

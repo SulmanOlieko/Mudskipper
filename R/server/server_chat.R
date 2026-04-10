@@ -14,7 +14,7 @@
       return(list(meta = list(), participants = list(), messages = list()))
     }
 
-    chatFile <- file.path(pDir, projId, "chat_files", "chat.json")
+    chatFile <- file.path(pDir, projId, ".chat_files", ".chat.json")
 
     if (!file.exists(chatFile)) {
       return(list(
@@ -46,7 +46,7 @@
       return(FALSE)
     }
 
-    chatFile <- file.path(pDir, projId, "chat_files", "chat.json")
+    chatFile <- file.path(pDir, projId, ".chat_files", ".chat.json")
 
     # Ensure directory exists
     if (!dir.exists(dirname(chatFile))) {
@@ -86,7 +86,7 @@
     pDir <- getUserProjectDir(uid)
 
     # Create directory: projects/{projId}/chat_files
-    uploadDir <- file.path(pDir, projId, "chat_files")
+    uploadDir <- file.path(pDir, projId, ".chat_files")
     if (!dir.exists(uploadDir)) {
       dir.create(uploadDir, recursive = TRUE)
     }
@@ -104,7 +104,7 @@
       # Store relative path for portability
       savedPaths[[i]] <- list(
         name = files$name[i],
-        path = file.path("chat_files", newFileName), # Relative to project root
+        path = file.path(".chat_files", newFileName), # Relative to project root
         type = files$type[i],
         size = files$size[i]
       )
@@ -360,7 +360,7 @@
     }
 
     # Define path
-    typingFile <- file.path(pDir, activeProjectId(), "chat_files", "typing.txt")
+    typingFile <- file.path(pDir, activeProjectId(), ".chat_files", "typing.txt")
 
     # FIX: Ensure directory exists before writing
     dir.create(dirname(typingFile), recursive = TRUE, showWarnings = FALSE)
@@ -659,7 +659,7 @@
     pathHash <- digest::digest(filePath, algo = "crc32")
     folderName <- paste0(safeName, "_", pathHash)
 
-    histDir <- file.path(pDir, projId, "history", folderName)
+    histDir <- file.path(pDir, projId, ".history", folderName)
     if (!dir.exists(histDir)) {
       dir.create(histDir, recursive = TRUE)
     }
@@ -1840,7 +1840,7 @@
   # --- Server Logic ---
 
   # Helper: Chat Directory
-  CHAT_DIR <- "chat_sessions"
+  CHAT_DIR <- ".chat_sessions"
   if (!dir.exists(CHAT_DIR)) {
     dir.create(CHAT_DIR)
   }
@@ -2192,7 +2192,7 @@
   # --- Server Logic ---
 
   # Helper: Chat Directory
-  CHAT_DIR <- "chat_sessions"
+  CHAT_DIR <- ".chat_sessions"
   if (!dir.exists(CHAT_DIR)) {
     dir.create(CHAT_DIR)
   }

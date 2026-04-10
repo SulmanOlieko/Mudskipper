@@ -160,7 +160,7 @@
     }
 
     # Each user has their own projects.json inside their projects dir
-    userProjectsFile <- file.path(pDir, "projects.json")
+    userProjectsFile <- file.path(pDir, ".projects.json")
 
     tryCatch(
       {
@@ -208,7 +208,7 @@
       return(FALSE)
     }
 
-    userProjectsFile <- file.path(pDir, "projects.json")
+    userProjectsFile <- file.path(pDir, ".projects.json")
 
     tryCatch(
       {

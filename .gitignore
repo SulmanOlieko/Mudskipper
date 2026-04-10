@@ -25,3 +25,10 @@
 
 # OS files
 .DS_Store
+
+# Hidden files, JSON, DB
+.*
+!.gitignore
+!.github/
+*.json
+*.db

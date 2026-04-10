@@ -13,7 +13,7 @@ library(jose) # Required for decoding ID tokens
 # ==============================================================================
 
 # Define absolute path to ensure all parts of the app hit the same file
-DB_PATH <- file.path(getwd(), "users.db")
+DB_PATH <- file.path(getwd(), ".users.db")
 
 get_db_connection <- function() {
   con <- dbConnect(RSQLite::SQLite(), DB_PATH)
@@ -346,7 +346,7 @@ initUserDirectories <- function(userId) {
     if (!dir.exists(d)) dir.create(d, recursive = TRUE)
   }
 
-  profilePath <- file.path(getUserBaseDir(userId), "profile.json")
+  profilePath <- file.path(getUserBaseDir(userId), ".profile.json")
   if (!file.exists(profilePath)) {
     defaultProfile <- list(
       userId = userId,

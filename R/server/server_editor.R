@@ -1672,7 +1672,7 @@
     }
 
     # UI Settings
-    uiSettingsFile <- file.path(cacheDir, "uiSettings.json")
+    uiSettingsFile <- file.path(cacheDir, ".uiSettings.json")
     if (file.exists(uiSettingsFile)) {
       tryCatch(
         {
@@ -1853,7 +1853,7 @@
     )
     writeLines(
       toJSON(settings, auto_unbox = TRUE, pretty = TRUE),
-      file.path(cacheDir, "uiSettings.json")
+      file.path(cacheDir, ".uiSettings.json")
     )
   }
   observeEvent(input$pdfPreviewSizes, {
@@ -2058,6 +2058,7 @@
 
       # --- NEW: HIDE CACHE AND CHAT FOLDERS FROM UI ---
       items <- items[!items %in% c("compiled_cache", "chat_files", "history")]
+      items <- items[!grepl("\\.json$", items, ignore.case = TRUE)]
 
       if (length(items) == 0) {
         return(NULL)
@@ -2105,7 +2106,7 @@
                 style = "width: 24px; display: inline-flex; justify-content: center; align-items: center; color: var(--bs-secondary-color); transition: transform 0.2s; height: 24px;",
                 onclick = "var childUl = this.parentElement.nextElementSibling; childUl.classList.toggle('d-none'); this.querySelector('i').classList.toggle('fa-chevron-right'); this.querySelector('i').classList.toggle('fa-chevron-down'); event.stopPropagation();",
                 tags$i(
-                  class = "fa-solid fa-chevron-right",
+                  class = "fa-solid fa-chevron-down",
                   style = "font-size: 0.75rem;"
                 )
               ),
@@ -2171,7 +2172,7 @@
             ),
             # Children Container
             tags$ul(
-              class = "filetree-children d-none",
+              class = "filetree-children",
               style = "list-style: none; padding-left: 0; margin: 0; margin-left: 12px; border-left: 1px solid var(--tblr-secondary);",
               build_tree_recursive(item_rel_path)
             )

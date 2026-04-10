@@ -107,7 +107,7 @@ compile_bg_task <- function(
     compiledDir_norm <- normalizePath(compiledDir, winslash = "/", mustWork = FALSE)
     
     exclude_dirs <- c(
-      "compiled_cache", "history", "chat_files",
+      "compiled_cache", ".history", ".chat_files",
       ".git", ".svn", ".Rproj.user"
     )
     
