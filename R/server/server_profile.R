@@ -20,7 +20,7 @@
       {
         user <- dbGetQuery(
           con,
-          "SELECT * FROM users WHERE user_id = ?",
+          "SELECT * FROM users WHERE user_id = $1",
           list(uid)
         )
         if (nrow(user) == 1) {
@@ -82,7 +82,7 @@
       {
         dbExecute(
           con,
-          "UPDATE users SET username = ?, institution = ?, bio = ?, profile_picture = ? WHERE user_id = ?",
+          "UPDATE users SET username = $1, institution = $2, bio = $3, profile_picture = $4 WHERE user_id = $5",
           list(
             profile$username,
             profile$institution,

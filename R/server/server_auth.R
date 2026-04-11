@@ -80,7 +80,7 @@
           con <- get_db_connection()
           existing <- dbGetQuery(
             con,
-            "SELECT * FROM users WHERE email = ?",
+            "SELECT * FROM users WHERE email = $1",
             list(email)
           )
           
@@ -117,7 +117,7 @@
             uid <- uuid::UUIDgenerate()
             dbExecute(
               con,
-              "INSERT INTO users (email, user_id, provider, provider_id, username, profile_picture) VALUES (?, ?, ?, ?, ?, ?)",
+              "INSERT INTO users (email, user_id, provider, provider_id, username, profile_picture) VALUES ($1, $2, $3, $4, $5, $6)",
               list(email, uid, provider, ext_id, u_name, u_pic)
             )
           } else {
@@ -125,7 +125,7 @@
             uid <- existing$user_id[1]
             dbExecute(
               con,
-              "UPDATE users SET provider = ?, provider_id = ?, username = ?, profile_picture = ? WHERE email = ?",
+              "UPDATE users SET provider = $1, provider_id = $2, username = $3, profile_picture = $4 WHERE email = $5",
               list(provider, ext_id, u_name, u_pic, email)
             )
           }
@@ -137,11 +137,15 @@
           # 5. Robust IP Detection
           ip_addr <- get_ip(session$request)
           
-          # 6. INSERT ACTIVE SESSION (Multi-Session Logic)
-          # We insert a NEW row instead of overwriting, preserving other sessions.
+          # 6. INSERT ACTIVE SESSION (Redis-First)
+          # We store the session in Redis for high-performance retrieval
+          # and in Postgres for persistence/auditing.
+          user_data <- list(email = email, user_id = uid, provider = provider)
+          redis_create_session(session_token, user_data)
+          
           dbExecute(
             con,
-            "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES ($1, $2, $3, $4, $5)",
             list(session_token, uid, ip_addr, as.numeric(Sys.time()), as.numeric(Sys.time()))
           )
           dbDisconnect(con)
@@ -241,7 +245,7 @@
       con <- get_db_connection()
       user <- dbGetQuery(
         con,
-        "SELECT email, reset_expiry FROM users WHERE reset_token = ?",
+        "SELECT email, reset_expiry FROM users WHERE reset_token = $1",
         list(token)
       )
       
@@ -252,7 +256,7 @@
         
         dbExecute(
           con,
-          "UPDATE users SET password_hash = ?, reset_token = NULL, reset_expiry = NULL WHERE email = ?",
+          "UPDATE users SET password_hash = $1, reset_token = NULL, reset_expiry = NULL WHERE email = $2",
           list(new_hash, user$email)
         )
         
@@ -290,25 +294,39 @@
     req(!user_session$logged_in)
     token <- input$cookie_login_token
     
-    con <- get_db_connection()
-    # CHANGED: Join active_sessions with users to verify valid session
-    user <- tryCatch(
-      {
-        dbGetQuery(
-          con,
-          "SELECT u.email, u.user_id, u.provider, s.token 
-           FROM active_sessions s
-           JOIN users u ON s.user_id = u.user_id
-           WHERE s.token = ?",
-          list(token)
-        )
-      },
-      finally = {
-        dbDisconnect(con)
-      }
-    )
+    # 1. TRY REDIS FIRST (Fast Path)
+    user <- redis_get_session(token)
     
-    if (!is.null(user) && nrow(user) == 1) {
+    if (is.null(user)) {
+      # 2. FALLBACK TO POSTGRES (Slow Path)
+      con <- get_db_connection()
+      user <- tryCatch(
+        {
+          db_res <- dbGetQuery(
+            con,
+            "SELECT u.email, u.user_id, u.provider, s.token 
+             FROM active_sessions s
+             JOIN users u ON s.user_id = u.user_id
+             WHERE s.token = $1",
+            list(token)
+          )
+          if (nrow(db_res) == 1) {
+            # Sync back to Redis for next time
+            res_list <- as.list(db_res[1, ])
+            redis_create_session(token, res_list)
+            res_list
+          } else {
+            NULL
+          }
+        },
+        error = function(e) NULL,
+        finally = {
+          dbDisconnect(con)
+        }
+      )
+    }
+    
+    if (!is.null(user)) {
       # Valid Cookie
       resetUserSession()
       
@@ -322,7 +340,7 @@
       
       # Update Last Active
       con <- get_db_connection()
-      dbExecute(con, "UPDATE active_sessions SET last_active = ? WHERE token = ?", 
+      dbExecute(con, "UPDATE active_sessions SET last_active = $1 WHERE token = $2", 
                 list(as.numeric(Sys.time()), token))
       dbDisconnect(con)
       
@@ -348,7 +366,7 @@
     con <- get_db_connection()
     user_rec <- dbGetQuery(
       con,
-      "SELECT password_hash, user_id, provider FROM users WHERE email = ?",
+      "SELECT password_hash, user_id, provider FROM users WHERE email = $1",
       list(email)
     )
     
@@ -379,9 +397,13 @@
       ip_addr <- get_ip(session$request)
       # ---------------------------
       
+      # Redis Session
+      user_data <- list(email = email, user_id = uid, provider = "email")
+      redis_create_session(token, user_data)
+      
       dbExecute(
         con,
-        "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES ($1, $2, $3, $4, $5)",
         list(token, uid, ip_addr, as.numeric(Sys.time()), as.numeric(Sys.time()))
       )
       
@@ -419,7 +441,7 @@
         uid <- uuid::UUIDgenerate()
         dbExecute(
           con,
-          "INSERT INTO users (email, password_hash, user_id, provider) VALUES (?, ?, ?, 'email')",
+          "INSERT INTO users (email, password_hash, user_id, provider) VALUES ($1, $2, $3, 'email')",
           list(email, pass_hash, uid)
         )
         shinyjs::runjs(
@@ -454,7 +476,7 @@
     con <- get_db_connection()
     user <- dbGetQuery(
       con,
-      "SELECT user_id, provider FROM users WHERE email = ?",
+      "SELECT user_id, provider FROM users WHERE email = $1",
       list(email)
     )
 
@@ -463,7 +485,7 @@
       expiry <- as.numeric(Sys.time()) + 3600
       dbExecute(
         con,
-        "UPDATE users SET reset_token = ?, reset_expiry = ? WHERE email = ?",
+        "UPDATE users SET reset_token = $1, reset_expiry = $2 WHERE email = $3",
         list(token, expiry, email)
       )
 
@@ -572,10 +594,15 @@
     con <- get_db_connection()
     dbExecute(
       con,
-      "UPDATE users SET session_token = NULL WHERE email = ?",
+      "UPDATE users SET session_token = NULL WHERE email = $1",
       list(email)
     )
     dbDisconnect(con)
+
+    # Redis Cleanup
+    if (!is.null(user_session$token)) {
+      redis_delete_session(user_session$token)
+    }
 
     session$sendCustomMessage("delete_cookie", "app_session_token")
     shinyjs::runjs(sprintf(
@@ -671,7 +698,7 @@
     }
     
     con <- get_db_connection()
-    user_rec <- dbGetQuery(con, "SELECT password_hash, user_id FROM users WHERE email = ?", list(email))
+    user_rec <- dbGetQuery(con, "SELECT password_hash, user_id FROM users WHERE email = $1", list(email))
     dbDisconnect(con)
     
     if (nrow(user_rec) == 1 && password_verify(user_rec$password_hash, pass)) {
@@ -690,8 +717,12 @@
       if (!is.null(session$request$REMOTE_ADDR)) ip_addr <- session$request$REMOTE_ADDR
       
       con <- get_db_connection()
+      # Redis Session
+      user_data <- list(email = email, user_id = user_rec$user_id, provider = provider)
+      redis_create_session(token, user_data)
+      
       dbExecute(con, 
-                "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES ($1, $2, $3, $4, $5)",
                 list(token, user_rec$user_id, ip_addr, as.numeric(Sys.time()), as.numeric(Sys.time()))
       )
       dbDisconnect(con)
@@ -737,11 +768,15 @@
       }
     }
     
-    # CHANGED: Remove specific session from DB
+    # CHANGED: Remove specific session from DB & Redis
     curr_token <- user_session$token
     if (!is.null(curr_token)) {
+      # 1. Clean Redis
+      redis_delete_session(curr_token)
+      
+      # 2. Clean Postgres
       con <- get_db_connection()
-      dbExecute(con, "DELETE FROM active_sessions WHERE token = ?", list(curr_token))
+      dbExecute(con, "DELETE FROM active_sessions WHERE token = $1", list(curr_token))
       dbDisconnect(con)
     }
     

@@ -32,3 +32,10 @@
 !.github/
 *.json
 *.db
+
+# User Data & Databases
+project/
+postgres_data/
+compiled_cache/
+.history
+.chat_files/

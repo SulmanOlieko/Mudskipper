@@ -2,44 +2,48 @@
 # AUTHENTICATION & WRAPPER LOGIC (Updated for OAuth & SMTP)
 # ==============================================================================
 library(DBI)
-library(RSQLite)
+library(RPostgres)
 library(sodium)
 library(shinyjs)
 library(blastula) # Required for emails
 library(jose) # Required for decoding ID tokens
 
 # ==============================================================================
-# 1. ROBUST DATABASE HELPER (Lazy Initialization + Absolute Path)
+# 1. ROBUST DATABASE HELPER (PostgreSQL)
 # ==============================================================================
 
-# Define absolute path to ensure all parts of the app hit the same file
-DB_PATH <- file.path(getwd(), ".users.db")
-
 get_db_connection <- function() {
-  con <- dbConnect(RSQLite::SQLite(), DB_PATH)
+  # Connection details from environment variables
+  con <- dbConnect(
+    RPostgres::Postgres(),
+    host = Sys.getenv("DB_HOST", "localhost"),
+    port = as.integer(Sys.getenv("DB_PORT", "5432")),
+    dbname = Sys.getenv("DB_NAME", "mudskipper"),
+    user = Sys.getenv("DB_USER", "mud_user"),
+    password = Sys.getenv("DB_PASS", "mud_pass")
+  )
   
-  # AUTO-HEAL: If table is missing, create it immediately
+  # AUTO-HEAL: If tables are missing, create them immediately
   if (!dbExistsTable(con, "users")) {
     dbExecute(
       con,
       "CREATE TABLE users (
-      email TEXT PRIMARY KEY, 
-      password_hash TEXT, 
-      session_token TEXT, 
-      user_id TEXT,
-      username TEXT,
-      institution TEXT,
-      bio TEXT,
-      profile_picture TEXT,
-      provider TEXT DEFAULT 'email',
-      provider_id TEXT,
-      reset_token TEXT,
-      reset_expiry NUMERIC
-    )"
+        email TEXT PRIMARY KEY, 
+        password_hash TEXT, 
+        session_token TEXT, 
+        user_id TEXT,
+        username TEXT,
+        institution TEXT,
+        bio TEXT,
+        profile_picture TEXT,
+        provider TEXT DEFAULT 'email',
+        provider_id TEXT,
+        reset_token TEXT,
+        reset_expiry NUMERIC
+      )"
     )
   }
   
-  # --- NEW: Session Management Table ---
   if (!dbExistsTable(con, "active_sessions")) {
     dbExecute(
       con,
@@ -53,36 +57,75 @@ get_db_connection <- function() {
       )"
     )
   }
-  # -------------------------------------
-  
-  # AUTO-MIGRATE: Ensure all columns exist (for older DB files)
-  needed_cols <- c(
-    "username",
-    "institution",
-    "bio",
-    "profile_picture",
-    "provider",
-    "provider_id",
-    "reset_token",
-    "reset_expiry"
-  )
-  
-  existing_cols <- dbListFields(con, "users")
-  for (col in needed_cols) {
-    if (!(col %in% existing_cols)) {
-      tryCatch(
-        {
-          dbExecute(con, paste0("ALTER TABLE users ADD COLUMN ", col, " TEXT"))
-        },
-        error = function(e) {
-          NULL
-        }
-      )
-    }
-  }
   
   return(con)
 }
+
+# --- 1.5 REDIS SESSION HELPERS ---
+redis_create_session <- function(token, user_data, ttl_days = 30) {
+  if (is.null(redis_con)) return(FALSE)
+  tryCatch({
+    key <- paste0("session:", token)
+    val <- jsonlite::toJSON(user_data, auto_unbox = TRUE)
+    # TTL in seconds
+    redis_con$SETEX(key, ttl_days * 24 * 60 * 60, val)
+    TRUE
+  }, error = function(e) {
+    warning("Redis SETEX failed: ", e$message)
+    FALSE
+  })
+}
+
+redis_get_session <- function(token) {
+  if (is.null(redis_con)) return(NULL)
+  tryCatch({
+    key <- paste0("session:", token)
+    val <- redis_con$GET(key)
+    if (is.null(val)) return(NULL)
+    jsonlite::fromJSON(val)
+  }, error = function(e) {
+    warning("Redis GET failed: ", e$message)
+    NULL
+  })
+}
+
+redis_delete_session <- function(token) {
+  if (is.null(redis_con)) return(FALSE)
+  tryCatch({
+    key <- paste0("session:", token)
+    redis_con$DEL(key)
+    TRUE
+  }, error = function(e) {
+    warning("Redis DEL failed: ", e$message)
+    FALSE
+  })
+}
+
+# --- 1.6 REDIS CACHING HELPERS ---
+redis_cache_set <- function(key, value, ttl_seconds = 3600) {
+  if (is.null(redis_con)) return(FALSE)
+  tryCatch({
+    val <- jsonlite::toJSON(value, auto_unbox = TRUE)
+    redis_con$SETEX(paste0("cache:", key), ttl_seconds, val)
+    TRUE
+  }, error = function(e) {
+    warning("Redis cache SETEX failed: ", e$message)
+    FALSE
+  })
+}
+
+redis_cache_get <- function(key) {
+  if (is.null(redis_con)) return(NULL)
+  tryCatch({
+    val <- redis_con$GET(paste0("cache:", key))
+    if (is.null(val)) return(NULL)
+    jsonlite::fromJSON(val)
+  }, error = function(e) {
+    warning("Redis cache GET failed: ", e$message)
+    NULL
+  })
+}
+
 
 # Run once at startup to ensure DB exists
 tryCatch(
@@ -94,6 +137,7 @@ tryCatch(
     stop(paste("CRITICAL DB ERROR:", e$message))
   }
 )
+
 
 
 # --- 2. OAuth Configuration Helpers ---
@@ -143,7 +187,7 @@ get_oauth_url <- function(provider_state) {
 }
 
 exchange_oauth_code <- function(provider, code) {
-  app_url <- Sys.getenv("APP_URL", "http://127.0.0.1:3838")
+  app_url <- Sys.getenv("APP_URL", "http://127.0.0.1:8000")
   req <- NULL
 
   if (provider == "google") {

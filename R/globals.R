@@ -14,7 +14,7 @@ library(shinyjs)
 library(magrittr)
 library(base64enc)
 library(DBI)
-library(RSQLite)
+library(RPostgres)
 library(sodium)
 library(blastula)  # Required for emails
 library(jose)      # Required for decoding ID tokens
@@ -26,6 +26,21 @@ library(future)
 library(mailR)
 library(dotenv)
 load_dot_env()
+
+# ----------------------------- REDIS CONNECTION -----------------------------
+# Initialize a global Redis connection if possible
+redis_con <- tryCatch({
+  redux::hiredis(
+    redux::redis_config(
+      host = Sys.getenv("REDIS_HOST", "localhost"),
+      port = as.integer(Sys.getenv("REDIS_PORT", "6379"))
+    )
+  )
+}, error = function(e) {
+  warning("Redis connection failed: ", e$message)
+  NULL
+})
+
 
 # ----------------------------- OPTIONS --------------------------------------
 options(shiny.maxRequestSize = 100 * 1024^2)

@@ -1,17 +1,26 @@
+#install.packages("RPostgres")
+#install.packages('redux')
 setwd("~/Mudskipper")
 env_vars <- c(
-  SHINY_PORT = "8000",
-  SHINY_HOST = "127.0.0.1",
+  SHINY_PORT = "",
+  SHINY_HOST = "",
   GEMINI_API_KEY = "",
   GOOGLE_CLIENT_ID = "",
   GOOGLE_CLIENT_SECRET = "",
   GITHUB_CLIENT_ID = "",
   GITHUB_CLIENT_SECRET = "",
-  APP_URL = "http://localhost:8000",
-  SMTP_SERVER = "smtps://smtp.gmail.com",
-  SMTP_PORT = "465",
+  APP_URL = "",
+  SMTP_SERVER = "",
+  SMTP_PORT = "",
   SMTP_USER = "",
-  SMTP_PASSWORD = ""
+  SMTP_PASSWORD = "",
+  DB_HOST = "",
+  DB_PORT = "",
+  DB_NAME = "",
+  DB_USER = "",
+  DB_PASS = "",
+  REDIS_HOST = "",
+  REDIS_PORT = ""
 )
 env_file <- ".env"
 lines <- paste(names(env_vars), env_vars, sep = "=")

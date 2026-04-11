@@ -15,7 +15,7 @@
     curr_token <- user_session$token 
     
     con <- get_db_connection()
-    sessions <- dbGetQuery(con, "SELECT * FROM active_sessions WHERE user_id = ? ORDER BY last_active DESC", list(uid))
+    sessions <- dbGetQuery(con, "SELECT * FROM active_sessions WHERE user_id = $1 ORDER BY last_active DESC", list(uid))
     dbDisconnect(con)
     
     html_out <- tagList()
@@ -94,7 +94,7 @@
     
     con <- get_db_connection()
     # Delete everything for this user EXCEPT the current token
-    dbExecute(con, "DELETE FROM active_sessions WHERE user_id = ? AND token != ?", list(uid, curr_token))
+    dbExecute(con, "DELETE FROM active_sessions WHERE user_id = $1 AND token != $2", list(uid, curr_token))
     dbDisconnect(con)
     
     showTablerAlert("success", "Sessions Cleared", "All other sessions have been logged out.")

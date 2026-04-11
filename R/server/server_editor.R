@@ -705,33 +705,52 @@
   parseBibFile <- function(bibPath) {
     if (!file.exists(bibPath)) return(character(0))
     
-    # Read natively without concatenating
-    lines <- readLines(bibPath, warn = FALSE)
+    # 1. CHECK CACHE FIRST
+    finfo <- file.info(bibPath)
+    cache_key <- paste0("bib:", digest::digest(paste0(bibPath, finfo$mtime, finfo$size)))
+    cached <- redis_cache_get(cache_key)
+    if (!is.null(cached)) return(cached)
     
-    # Rapid vectorized search for @ strings
+    # 2. PARSE SINCE NO CACHE
+    lines <- readLines(bibPath, warn = FALSE)
     idx <- grep("^@", lines)
     if (length(idx) == 0) return(character(0))
-    
     valid_lines <- lines[idx]
     keys <- sub("^@\\w+\\s*\\{\\s*([^,\\s]+).*", "\\1", valid_lines, perl = TRUE)
-    return(unique(trimws(keys)))
+    keys <- unique(trimws(keys))
+    
+    # 3. SAVE TO CACHE
+    redis_cache_set(cache_key, keys)
+    return(keys)
   }
 
   # Function to parse LaTeX content and extract label keys
   parseLabelsFromContent <- function(content) {
     if (is.null(content) || !nzchar(trimws(content))) return(character(0))
     
+    # 1. CHECK CACHE FIRST
+    cache_key <- paste0("labels:", digest::digest(content))
+    cached <- redis_cache_get(cache_key)
+    if (!is.null(cached)) return(cached)
+    
+    # 2. PARSE
     lines <- strsplit(content, "\n")[[1]]
     idx <- grep("\\\\label\\{", lines)
     
-    if (length(idx) == 0) return(character(0))
+    if (length(idx) == 0) {
+      redis_cache_set(cache_key, character(0))
+      return(character(0))
+    }
     
     match_lines <- lines[idx]
     matches <- gregexpr("\\\\label\\{([^}]+)\\}", match_lines, perl = TRUE)
     matchData <- unlist(regmatches(match_lines, matches))
-    
     keys <- sub("\\\\label\\{([^}]+)\\}", "\\1", matchData, perl = TRUE)
-    return(unique(trimws(keys)))
+    keys <- unique(trimws(keys))
+    
+    # 3. SAVE
+    redis_cache_set(cache_key, keys)
+    return(keys)
   }
 
   # ---------------- HELPER: PUSH BIB CITATIONS TO JS ----------------

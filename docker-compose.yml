@@ -2,14 +2,47 @@ services:
   nginx:
     image: nginx:alpine
     container_name: mudskipper_nginx
+    restart: unless-stopped
     ports:
-      # Exposes the NGINX listening port on your localhost 8080
       - "8080:80"
     volumes:
-      # Mount the configuration we wrote
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      # Mount the Mudskipper directory so NGINX can access /project/ files
       - ./:/workspace
     extra_hosts:
-      # Allow the docker container to route to localhost:8000 on the host mac
       - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:alpine
+    container_name: mudskipper_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-mud_user}
+      POSTGRES_PASSWORD: ${DB_PASS:-mud_pass}
+      POSTGRES_DB: ${DB_NAME:-mudskipper}
+    # Keep ports here so the Shiny app on your host machine can connect
+    ports:
+      - "5432:5432"
+    volumes:
+      # Updated mount point to /var/lib/postgresql as recommended by the Postgres 18+ image
+      - ./postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mud_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:alpine
+    container_name: mudskipper_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
