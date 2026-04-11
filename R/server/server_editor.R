@@ -641,32 +641,25 @@
       return(character(0))
     }
 
+    # Vectorize by line to avoid Catastrophic Backtracking on huge strings
+    lines <- strsplit(texContent, "\n")[[1]]
     bibFiles <- character(0)
 
     # Check for \bibliography{} command
-    bibMatches <- gregexpr(
-      "\\\\bibliography\\{([^}]+)\\}",
-      texContent,
-      perl = TRUE
-    )
-    if (bibMatches[[1]][1] != -1) {
-      bibStrs <- regmatches(texContent, bibMatches)[[1]]
+    idx1 <- grep("\\\\bibliography\\{", lines)
+    if (length(idx1) > 0) {
+      match_lines <- lines[idx1]
+      matches <- gregexpr("\\\\bibliography\\{([^}]+)\\}", match_lines, perl = TRUE)
+      bibStrs <- unlist(regmatches(match_lines, matches))
+      bibStrs <- sub("\\\\bibliography\\{([^}]+)\\}", "\\1", bibStrs, perl = TRUE)
+      
       for (bibStr in bibStrs) {
-        bibNames <- sub(
-          "\\\\bibliography\\{([^}]+)\\}",
-          "\\1",
-          bibStr,
-          perl = TRUE
-        )
-        bibNames <- strsplit(bibNames, ",")[[1]]
-        bibNames <- trimws(bibNames)
-
+        bibNames <- trimws(strsplit(bibStr, ",")[[1]])
         for (bibName in bibNames) {
           if (!grepl("\\.bib$", bibName, ignore.case = TRUE)) {
             bibName <- paste0(bibName, ".bib")
           }
-          bibPath <- file.path(projDir, bibName)
-          if (file.exists(bibPath)) {
+          if (file.exists(file.path(projDir, bibName))) {
             bibFiles <- c(bibFiles, bibName)
           }
         }
@@ -674,27 +667,19 @@
     }
 
     # Check for \addbibresource{} (biblatex)
-    addbibMatches <- gregexpr(
-      "\\\\addbibresource\\{([^}]+)\\}",
-      texContent,
-      perl = TRUE
-    )
-    if (addbibMatches[[1]][1] != -1) {
-      addbibStrs <- regmatches(texContent, addbibMatches)[[1]]
-      for (addbibStr in addbibStrs) {
-        bibName <- sub(
-          "\\\\addbibresource\\{([^}]+)\\}",
-          "\\1",
-          addbibStr,
-          perl = TRUE
-        )
+    idx2 <- grep("\\\\addbibresource\\{", lines)
+    if (length(idx2) > 0) {
+      match_lines <- lines[idx2]
+      matches <- gregexpr("\\\\addbibresource\\{([^}]+)\\}", match_lines, perl = TRUE)
+      bibStrs <- unlist(regmatches(match_lines, matches))
+      bibStrs <- sub("\\\\addbibresource\\{([^}]+)\\}", "\\1", bibStrs, perl = TRUE)
+      
+      for (bibName in bibStrs) {
         bibName <- trimws(bibName)
-
         if (!grepl("\\.bib$", bibName, ignore.case = TRUE)) {
           bibName <- paste0(bibName, ".bib")
         }
-        bibPath <- file.path(projDir, bibName)
-        if (file.exists(bibPath)) {
+        if (file.exists(file.path(projDir, bibName))) {
           bibFiles <- c(bibFiles, bibName)
         }
       }
@@ -718,59 +703,35 @@
 
   # Function to parse .bib file and extract citation keys
   parseBibFile <- function(bibPath) {
-    if (!file.exists(bibPath)) {
-      return(character(0))
-    }
-
-    content <- paste(readLines(bibPath, warn = FALSE), collapse = "\n")
-
-    if (!nzchar(trimws(content))) {
-      return(character(0))
-    }
-
-    # Match @article, @book, etc. with their keys
-    pattern <- "@\\w+\\s*\\{\\s*([^,\\s]+)"
-    matches <- gregexpr(pattern, content, perl = TRUE)
-
-    if (matches[[1]][1] == -1) {
-      return(character(0))
-    }
-
-    keys <- character(0)
-    matchData <- regmatches(content, matches)[[1]]
-
-    for (match in matchData) {
-      key <- sub("@\\w+\\s*\\{\\s*([^,\\s]+)", "\\1", match, perl = TRUE)
-      keys <- c(keys, trimws(key))
-    }
-
-    return(unique(keys))
+    if (!file.exists(bibPath)) return(character(0))
+    
+    # Read natively without concatenating
+    lines <- readLines(bibPath, warn = FALSE)
+    
+    # Rapid vectorized search for @ strings
+    idx <- grep("^@", lines)
+    if (length(idx) == 0) return(character(0))
+    
+    valid_lines <- lines[idx]
+    keys <- sub("^@\\w+\\s*\\{\\s*([^,\\s]+).*", "\\1", valid_lines, perl = TRUE)
+    return(unique(trimws(keys)))
   }
 
   # Function to parse LaTeX content and extract label keys
   parseLabelsFromContent <- function(content) {
-    if (is.null(content) || !nzchar(trimws(content))) {
-      return(character(0))
-    }
-
-    labels <- character(0)
-
-    # Match \label{key} patterns
-    pattern <- "\\\\label\\{([^}]+)\\}"
-    matches <- gregexpr(pattern, content, perl = TRUE)
-
-    if (matches[[1]][1] == -1) {
-      return(character(0))
-    }
-
-    matchData <- regmatches(content, matches)[[1]]
-
-    for (match in matchData) {
-      key <- sub("\\\\label\\{([^}]+)\\}", "\\1", match, perl = TRUE)
-      labels <- c(labels, trimws(key))
-    }
-
-    return(unique(labels))
+    if (is.null(content) || !nzchar(trimws(content))) return(character(0))
+    
+    lines <- strsplit(content, "\n")[[1]]
+    idx <- grep("\\\\label\\{", lines)
+    
+    if (length(idx) == 0) return(character(0))
+    
+    match_lines <- lines[idx]
+    matches <- gregexpr("\\\\label\\{([^}]+)\\}", match_lines, perl = TRUE)
+    matchData <- unlist(regmatches(match_lines, matches))
+    
+    keys <- sub("\\\\label\\{([^}]+)\\}", "\\1", matchData, perl = TRUE)
+    return(unique(trimws(keys)))
   }
 
   # ---------------- HELPER: PUSH BIB CITATIONS TO JS ----------------
@@ -1532,6 +1493,78 @@
   lintAnnotations <- reactiveVal(list())
   compileAnnotations <- reactiveVal(list())
   commentUpdate <- reactiveVal(0)
+
+  # --- REAL-TIME LINTING (restored from legacy app) ---
+  # Debounced observer fires 1 second after last keystroke; never waits for compilation
+  lint_trigger <- reactive({
+    input$sourceEditor
+  }) %>%
+    debounce(1000)
+
+  observeEvent(lint_trigger(), {
+    req(activeProjectId())
+    req(currentFile())
+
+    # Only run on .tex files
+    if (!grepl("\\.tex$", currentFile(), ignore.case = TRUE)) {
+      lintAnnotations(list())
+      session$sendCustomMessage("setAnnotations", compileAnnotations())
+      return()
+    }
+
+    projDir <- getActiveProjectDir()
+
+    # Write current editor content to a temp hidden file so chktex can read it
+    actual_filename <- basename(currentFile())
+    temp_lint_filename <- paste0(".lint_", actual_filename)
+    temp_lint_path <- file.path(projDir, temp_lint_filename)
+
+    tryCatch(
+      writeLines(input$sourceEditor, temp_lint_path),
+      error = function(e) return()
+    )
+
+    # Run chktex inside the texlive Docker image (already pulled on your machine)
+    fmt <- "%l|%c|%d|%k|%m\n"
+    docker_args <- c(
+      "run", "--rm",
+      "-v", paste0(normalizePath(projDir), ":/project"),
+      "-w", "/project",
+      "texlive/texlive:latest",
+      "chktex", "-q", "-v0", "-f", fmt,
+      temp_lint_filename
+    )
+
+    output_raw <- tryCatch({
+      res <- processx::run("docker", docker_args, error_on_status = FALSE, timeout = 5)
+      res$stdout
+    }, error = function(e) "")
+
+    # Clean up temp file
+    if (file.exists(temp_lint_path)) unlink(temp_lint_path)
+
+    # Parse chktex output
+    annotations <- list()
+    if (nzchar(output_raw)) {
+      raw_lines <- strsplit(output_raw, "\n")[[1]]
+      for (raw_line in raw_lines) {
+        parts <- strsplit(raw_line, "\\|")[[1]]
+        if (length(parts) >= 5) {
+          row <- max(0, as.integer(parts[1]) - 1)
+          col <- max(0, as.integer(parts[2]) - 1)
+          kind_char <- toupper(substr(trimws(parts[4]), 1, 1))
+          type <- switch(kind_char, "E" = "error", "W" = "warning", "M" = "info", "info")
+          annotations[[length(annotations) + 1]] <- list(
+            row = row, column = col, text = parts[5], type = type
+          )
+        }
+      }
+    }
+
+    # Merge with persistent compilation annotations and push to Ace
+    lintAnnotations(annotations)
+    session$sendCustomMessage("setAnnotations", c(isolate(compileAnnotations()), annotations))
+  })
 
   # Function to load user preferences and state
   loadUserAppCache <- function(uid) {

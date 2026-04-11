@@ -356,6 +356,17 @@ compile_bg_task <- function(
       }
     }
     
+    # Attempt to copy the log file out regardless of success
+    candidate_log <- file.path(sandbox, mainFile_dir,
+                               sub("\\.tex$", ".log", mainFile_base))
+    fallback_log  <- file.path(sandbox, "output.log")
+    log_to_copy   <- if (file.exists(candidate_log)) candidate_log else fallback_log
+    
+    if (file.exists(log_to_copy)) {
+      # For success, save as output.log so server can parse warnings
+      file.copy(log_to_copy, file.path(compiledDir, "output.log"), overwrite = TRUE)
+    }
+
     if (file.exists(pdfSrc)) {
       file.copy(pdfSrc, file.path(compiledDir, "output.pdf"), overwrite = TRUE)
       streamLog(">> PDF Exported.")
@@ -369,11 +380,8 @@ compile_bg_task <- function(
       return(list(success = TRUE, message = "Compilation successful."))
       
     } else {
-      candidate_log <- file.path(sandbox, mainFile_dir,
-                                 sub("\\.tex$", ".log", mainFile_base))
-      fallback_log  <- file.path(sandbox, "output.log")
-      log_to_copy   <- if (file.exists(candidate_log)) candidate_log else fallback_log
       if (file.exists(log_to_copy)) {
+        # Keep error.log copy for backwards compatibility with error state UI
         file.copy(log_to_copy, file.path(compiledDir, "error.log"), overwrite = TRUE)
       }
       cleanup_sandbox(sandbox)
@@ -406,115 +414,94 @@ parse_tex_log <- function(log_path) {
 
   annotations <- list()
 
-  for (i in seq_along(lines)) {
-    line <- lines[i]
-
-    # --- 1. PRIORITY: Check for "-file-line-error" format ---
-    # Matches: "./filename.tex:123: Message"
-    # We use a robust regex that captures: (path):(line):(message)
-    if (grepl("^.*?:[0-9]+: ", line)) {
-      match <- regexec("^.*?:([0-9]+): (.*)$", line)
-      parts <- regmatches(line, match)[[1]]
-
-      if (length(parts) == 3) {
-        line_num <- as.numeric(parts[2])
-        msg <- parts[3]
-
-        # Determine type: Downgrade "Warning" or "Info" texts to warning type
-        type <- "error"
-        if (
-          grepl("Warning", msg, ignore.case = TRUE) ||
-            grepl("Info", msg, ignore.case = TRUE)
-        ) {
-          type <- "warning"
-        }
-
-        annotations[[length(annotations) + 1]] <- list(
-          row = max(0, line_num - 1), # Ace is 0-indexed
-          column = 0,
-          text = trimws(msg),
-          type = type
-        )
-        # If we matched this format, skip the rest for this line
-        next
-      }
+  # 1. PRIORITY: Check for "-file-line-error" format
+  idx1 <- grep("^.*?:[0-9]+: ", lines)
+  for (i in seq_along(idx1)) {
+    line <- lines[idx1[i]]
+    match <- regexec("^.*?:([0-9]+): (.*)$", line)
+    parts <- regmatches(line, match)[[1]]
+    if (length(parts) == 3) {
+      msg <- parts[3]
+      type <- "error"
+      if (grepl("Warning|Info", msg, ignore.case = TRUE)) type <- "warning"
+      annotations[[length(annotations) + 1]] <- list(row = max(0, as.numeric(parts[2]) - 1), column = 0, text = trimws(msg), type = type)
     }
+  }
 
-    # --- 2. Traditional LaTeX Errors ("! Error") ---
-    if (grepl("^! ", line)) {
-      msg <- sub("^! ", "", line)
-      line_num <- 0
-
-      # Look ahead 1-5 lines for "l.123" pattern
-      for (j in 1:5) {
-        if (i + j <= length(lines)) {
-          next_line <- lines[i + j]
-          if (grepl("^l\\.[0-9]+", next_line)) {
-            line_num <- as.numeric(sub("^l\\.([0-9]+).*", "\\1", next_line))
-            break
-          }
+  # 2. Traditional LaTeX Errors ("! Error")
+  idx2 <- grep("^! ", lines)
+  for (i in seq_along(idx2)) {
+    line_idx <- idx2[i]
+    if (line_idx %in% idx1) next # Skip if already processed
+    msg <- sub("^! ", "", lines[line_idx])
+    line_num <- 0
+    # Search next 5 lines
+    for (j in 1:6) {
+      if (line_idx + j <= length(lines)) {
+        if (grepl("^l\\.[0-9]+", lines[line_idx + j])) {
+          line_num <- as.numeric(sub("^l\\.([0-9]+).*", "\\1", lines[line_idx + j]))
+          break
         }
       }
-
-      annotations[[length(annotations) + 1]] <- list(
-        row = max(0, line_num - 1),
-        column = 0,
-        text = msg,
-        type = "error"
-      )
-    } else if (grepl("LaTeX Warning:", line)) {
-      # --- 3. LaTeX Warnings ---
-      if (grepl("input line [0-9]+", line)) {
-        # Warning with line number
-        line_num <- as.numeric(sub(".*input line ([0-9]+).*", "\\1", line))
-        msg <- sub("LaTeX Warning: (.*) on input line.*", "\\1", line)
-
-        annotations[[length(annotations) + 1]] <- list(
-          row = max(0, line_num - 1),
-          column = 0,
-          text = trimws(msg),
-          type = "warning"
-        )
-      } else {
-        # Global warning (no line number)
-        msg <- sub("LaTeX Warning: ", "", line)
-        annotations[[length(annotations) + 1]] <- list(
-          row = 0,
-          column = 0,
-          text = trimws(msg),
-          type = "warning"
-        )
-      }
-    } else if (grepl("(Overfull|Underfull) \\\\(hbox|vbox)", line)) {
-      # --- 4. Bad Boxes (Overfull/Underfull) ---
-      # Regex to grab the first number after "line" or "lines"
-      line_num <- 0
-      lines_match <- regmatches(line, regexpr("lines? ([0-9]+)", line))
-
-      if (length(lines_match) > 0) {
-        line_num <- as.numeric(sub("lines? ", "", lines_match))
-      }
-
-      is_over <- grepl("Overfull", line)
-      # Overfull = warning (orange), Underfull = info (blue)
-      type <- if (is_over) "warning" else "info"
-
-      annotations[[length(annotations) + 1]] <- list(
-        row = max(0, line_num - 1),
-        column = 0,
-        text = line,
-        type = type
-      )
-    } else if (grepl("File `.*' not found", line)) {
-      # --- 5. Critical Missing Files (Fallback) ---
-      fname <- sub(".*File `(.*?)' not found.*", "\\1", line)
-      annotations[[length(annotations) + 1]] <- list(
-        row = 0,
-        column = 0,
-        text = paste("Missing file:", fname),
-        type = "error"
-      )
     }
+    annotations[[length(annotations) + 1]] <- list(row = max(0, line_num - 1), column = 0, text = msg, type = "error")
+  }
+
+  # 3. LaTeX Warnings
+  idx3 <- grep("LaTeX Warning:", lines)
+  for (i in seq_along(idx3)) {
+    line <- lines[idx3[i]]
+    if (grepl("input line [0-9]+", line)) {
+      line_num <- as.numeric(sub(".*input line ([0-9]+).*", "\\1", line))
+      msg <- sub("LaTeX Warning: (.*) on input line.*", "\\1", line)
+      annotations[[length(annotations) + 1]] <- list(row = max(0, line_num - 1), column = 0, text = trimws(msg), type = "warning")
+    } else {
+      msg <- sub("LaTeX Warning: ", "", line)
+      annotations[[length(annotations) + 1]] <- list(row = 0, column = 0, text = trimws(msg), type = "warning")
+    }
+  }
+
+  # 3.5 Package Warnings
+  idx35 <- grep("Package [A-Za-z0-9_-]+ Warning:", lines, ignore.case = TRUE)
+  for (i in seq_along(idx35)) {
+    line_idx <- idx35[i]
+    line <- lines[line_idx]
+    pkg <- sub("Package ([A-Za-z0-9_-]+) Warning:.*", "\\1", line, ignore.case = TRUE)
+    msg <- sub(paste0("Package ", pkg, " Warning: "), "", line, ignore.case = TRUE)
+    line_num <- 0
+    for (j in 1:4) {
+      if (line_idx + j <= length(lines)) {
+        next_line <- lines[line_idx + j]
+        if (grepl("on input line [0-9]+", next_line) || grepl("on line [0-9]+", next_line)) {
+          line_num <- as.numeric(sub(".*line ([0-9]+).*", "\\1", next_line))
+          break
+        } else if (nzchar(trimws(next_line))) {
+          msg <- paste(msg, trimws(next_line))
+        }
+      }
+    }
+    annotations[[length(annotations) + 1]] <- list(row = max(0, line_num - 1), column = 0, text = trimws(paste0("[", pkg, "] ", msg)), type = "warning")
+  }
+
+  # 4. Bad Boxes
+  idx4 <- grep("(Overfull|Underfull) \\\\(hbox|vbox)", lines)
+  for (i in seq_along(idx4)) {
+    line <- lines[idx4[i]]
+    line_num <- 0
+    lines_match <- regmatches(line, regexpr("lines? ([0-9]+)", line))
+    if (length(lines_match) > 0) {
+      line_num <- as.numeric(sub("lines? ", "", lines_match))
+    }
+    is_over <- grepl("Overfull", line)
+    type <- if (is_over) "warning" else "info"
+    annotations[[length(annotations) + 1]] <- list(row = max(0, line_num - 1), column = 0, text = line, type = type)
+  }
+
+  # 5. Missing Files
+  idx5 <- grep("File `.*' not found", lines)
+  for (i in seq_along(idx5)) {
+    fname <- sub(".*File `(.*?)' not found.*", "\\1", lines[idx5[i]])
+    annotations[[length(annotations) + 1]] <- list(row = 0, column = 0, text = paste("Missing file:", fname), type = "error")
   }
 
   return(annotations)
@@ -541,3 +528,46 @@ get_ip <- function(req) {
   return("Unknown")
 }
 
+# =================== HELPER: CHKTEX LINTER ===================
+run_chktex <- function(projDir, fileRelPath) {
+  # Run chktex via Docker
+  cmd <- c(
+    "run", "--rm",
+    "-v", paste0(projDir, ":/workdir"),
+    "-w", "/workdir",
+    "texlive/texlive:latest",
+    "chktex", "-q", "-v0", "-I0", "-f", "%l:%c:%d:%k:%n:%m\n", fileRelPath
+  )
+  
+  res <- tryCatch({
+    processx::run("docker", cmd, error_on_status = FALSE, timeout = 10)
+  }, error = function(e) { NULL })
+  
+  if (is.null(res)) return(list())
+  
+  # Parse output
+  # Format: "line:column:length:type:code:message"
+  # e.g., "12:5:3:Warning:1:Command terminated with space."
+  lines <- strsplit(res$stdout, "\n")[[1]]
+  annotations <- list()
+  for (line in lines) {
+    if (!nzchar(trimws(line))) next
+    parts <- strsplit(line, ":")[[1]]
+    if (length(parts) >= 6) {
+      row <- as.numeric(parts[1]) - 1
+      col <- as.numeric(parts[2]) - 1
+      len <- as.numeric(parts[3])
+      msg_type <- tolower(parts[4])
+      code <- parts[5]
+      msg <- paste(parts[6:length(parts)], collapse = ":")
+      
+      annotations[[length(annotations) + 1]] <- list(
+        row = max(0, row),
+        column = max(0, col),
+        text = trimws(msg),
+        type = "warning"
+      )
+    }
+  }
+  return(annotations)
+}
