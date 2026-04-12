@@ -2757,7 +2757,8 @@ app_ui <- fluidPage(
   display: flex;
   flex-direction: column; /* Restored Vertical */
   align-items: flex-end;
-  gap: 3px;
+  gap: 2px;
+  max-height: 95%;
   z-index: 15;
   pointer-events: none;
   transform: translateY(-1px);
@@ -2774,7 +2775,7 @@ app_ui <- fluidPage(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px;
   background: var(--tblr-bg-surface-secondary);
   border: 1px solid var(--tblr-border-color);
   border-radius: var(--tblr-border-radius);
@@ -2798,6 +2799,37 @@ app_ui <- fluidPage(
 .project-card.active {
   border-color: var(--tblr-primary);
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* --- MODERN CUSTOM TOOLTIP (Shared) --- */
+.ms-tooltip {
+   position: fixed;
+   pointer-events: none;
+   /* Light mode: Dark background, White text */
+   background: var(--tblr-gray-900);
+   color: var(--tblr-gray-50);
+   border: 1px solid var(--tblr-border-color);
+   border-radius: var(--tblr-border-radius);
+   padding: .25rem .5rem;
+   font-family: var(--tblr-font-sans-serif);
+   font-size: .76562rem;
+   font-weight: 400;
+   line-height: 1.71429;
+   box-shadow: var(--tblr-shadow-card);
+   z-index: 100000;
+   opacity: 0;
+   transform: translate(-50%, -100%) translateY(-10px);
+   transition: opacity 0.1s ease, transform 0.1s ease;
+   white-space: nowrap;
+}
+/* Dark mode: Light background, Dark text */
+[data-bs-theme='dark'] .ms-tooltip {
+   background: var(--tblr-gray-100);
+   color: var(--tblr-gray-900);
+}
+.ms-tooltip.show {
+   opacity: 1;
+   transform: translate(-50%, -100%) translateY(-15px);
 }
 
 /* Empty State */

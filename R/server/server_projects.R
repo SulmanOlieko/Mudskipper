@@ -1227,6 +1227,11 @@
   # ----------------------------- UPDATED DASHBOARD -----------------------------
 
   output$projectsDashboard <- renderUI({
+    # Hide loader whenever this UI is updated (handles all return paths)
+    session$onFlushed(function() {
+       shinyjs::runjs("var l = document.getElementById('dashboardLoader'); if(l) l.classList.remove('show');")
+    }, once = TRUE)
+
     search_term <- input$projectSearch
     sort_by <- projectSort()
     change_trigger <- projectChangeTrigger()
@@ -1622,6 +1627,41 @@
 
       // Reset on render
       setTimeout(window.updateBulkActions, 100);
+
+      // --- PROJECT SINGLETON TOOLTIP ENGINE ---
+      (function() {
+        var tooltip = document.querySelector('.ms-tooltip');
+        if (!tooltip) {
+          tooltip = document.createElement('div');
+          tooltip.className = 'ms-tooltip';
+          document.body.appendChild(tooltip);
+        }
+        
+        var container = document.querySelector('.projects-wrapper');
+        if (!container) return;
+        
+        container.addEventListener('mouseover', function(e) {
+          var target = e.target.closest('[data-ms-tooltip]');
+          if (target && target.dataset.msTooltip) {
+            tooltip.textContent = target.dataset.msTooltip;
+            tooltip.classList.add('show');
+          }
+        });
+        
+        container.addEventListener('mousemove', function(e) {
+          if (tooltip.classList.contains('show')) {
+            tooltip.style.left = e.clientX + 'px';
+            tooltip.style.top = e.clientY + 'px';
+          }
+        });
+        
+        container.addEventListener('mouseout', function(e) {
+          var target = e.target.closest('[data-ms-tooltip]');
+          if (target) {
+            tooltip.classList.remove('show');
+          }
+        });
+      })();
     ", if (view_mode == "table") "none" else "")))
     
     # --- PAGER ---
@@ -1683,16 +1723,16 @@
       # Single-Item Action Buttons
       action_buttons <- if (currentView == "active") {
         paste0(
-          '<a style="color:var(--text)!important; cursor:pointer;" title="Add Tag" data-bs-toggle="tooltip" onclick="event.stopPropagation(); Shiny.setInputValue(\'openTagModal\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M23.12,11.58,18.84,5.17A1.49,1.49,0,0,0,17.60,4.5H3.75A1.5,1.5,0,0,0,2.25,6V18a1.5,1.5,0,0,0,1.5,1.5H17.60a1.5,1.5,0,0,0,1.24-.67h0l4.28-6.41A0.75,0.75,0,0,0,23.12,11.58Z"></path></svg></a>',
-          '<a style="color:var(--text)!important; cursor:pointer;" title="Archive" onclick="event.stopPropagation(); Shiny.setInputValue(\'archiveProject\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="3" y="4" width="18" height="4" rx="2" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><line x1="10" y1="12" x2="14" y2="12" /></svg></a> ',
-          '<a style="color:var(--text)!important; cursor:pointer;" title="Trash" onclick="event.stopPropagation(); Shiny.setInputValue(\'trashProject\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon" title="Trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a> ',
-          '<a style="color:var(--text)!important; cursor:pointer;" title="Edit" onclick="event.stopPropagation(); openEditProjectOverlay(\'', safe_proj$id, '\', \'', js_name, '\', \'', js_desc, '\')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon" title="Edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></a> ',
-          '<a style="color:var(--text)!important; cursor:pointer;" id="download_', safe_proj$id, '" href="#" onclick="event.preventDefault(); event.stopPropagation(); Shiny.setInputValue(\'downloadProject\', \'', safe_proj$id, '\', {priority: \'event\'});"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon" title="Download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></a>'
+          '<a style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Add Tag" onclick="event.stopPropagation(); Shiny.setInputValue(\'openTagModal\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M23.12,11.58,18.84,5.17A1.49,1.49,0,0,0,17.60,4.5H3.75A1.5,1.5,0,0,0,2.25,6V18a1.5,1.5,0,0,0,1.5,1.5H17.60a1.5,1.5,0,0,0,1.24-.67h0l4.28-6.41A0.75,0.75,0,0,0,23.12,11.58Z"></path></svg></a>',
+          '<a style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Archive" onclick="event.stopPropagation(); Shiny.setInputValue(\'archiveProject\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="3" y="4" width="18" height="4" rx="2" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><line x1="10" y1="12" x2="14" y2="12" /></svg></a> ',
+          '<a style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Trash" onclick="event.stopPropagation(); Shiny.setInputValue(\'trashProject\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a> ',
+          '<a style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Edit" onclick="event.stopPropagation(); openEditProjectOverlay(\'', safe_proj$id, '\', \'', js_name, '\', \'', js_desc, '\')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></a> ',
+          '<a style="color:var(--text)!important; cursor:pointer;" id="download_', safe_proj$id, '" href="#" data-ms-tooltip="Download" onclick="event.preventDefault(); event.stopPropagation(); Shiny.setInputValue(\'downloadProject\', \'', safe_proj$id, '\', {priority: \'event\'});"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></a>'
         )
       } else { 
         paste0(
-          '<a style="color:var(--text)!important; cursor:pointer;" title="Restore" onclick="event.stopPropagation(); Shiny.setInputValue(\'restoreProject\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1" /></svg></a> ',
-          '<a style="color:var(--tblr-danger)!important; cursor:pointer;" id="delete_', safe_proj$id, '" href="#" title="Delete Forever" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById(\'deleteProjectModal_', safe_proj$id, '\').style.display = \'flex\';"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a>'
+          '<a style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Restore" onclick="event.stopPropagation(); Shiny.setInputValue(\'restoreProject\', \'', safe_proj$id, '\', {priority:\'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1" /></svg></a> ',
+          '<a style="color:var(--tblr-danger)!important; cursor:pointer;" id="delete_', safe_proj$id, '" href="#" data-ms-tooltip="Delete Forever" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById(\'deleteProjectModal_', safe_proj$id, '\').style.display = \'flex\';"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a>'
         )
       }
       
@@ -1778,28 +1818,28 @@
       
       div(class = "d-flex align-items-center gap-3",
           # Download
-          HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" title="Download" data-bs-toggle="tooltip" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'download\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></a>'),
+          HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Download" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'download\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></a>'),
           
           # Tag
           if(currentView == "active") {
-            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" title="Tag" data-bs-toggle="tooltip" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'tag\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M23.12,11.58,18.84,5.17A1.49,1.49,0,0,0,17.60,4.5H3.75A1.5,1.5,0,0,0,2.25,6V18a1.5,1.5,0,0,0,1.5,1.5H17.60a1.5,1.5,0,0,0,1.24-.67h0l4.28-6.41A0.75,0.75,0,0,0,23.12,11.58Z"></path></svg></a>')
+            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Tag" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'tag\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M23.12,11.58,18.84,5.17A1.49,1.49,0,0,0,17.60,4.5H3.75A1.5,1.5,0,0,0,2.25,6V18a1.5,1.5,0,0,0,1.5,1.5H17.60a1.5,1.5,0,0,0,1.24-.67h0l4.28-6.41A0.75,0.75,0,0,0,23.12,11.58Z"></path></svg></a>')
           },
           
           # Archive
           if(currentView == "active") {
-            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" title="Archive" data-bs-toggle="tooltip" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'archive\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="3" y="4" width="18" height="4" rx="2" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><line x1="10" y1="12" x2="14" y2="12" /></svg></a>')
+            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Archive" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'archive\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="3" y="4" width="18" height="4" rx="2" /><path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" /><line x1="10" y1="12" x2="14" y2="12" /></svg></a>')
           },
           
           # Restore
           if(currentView != "active") {
-            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" title="Restore" data-bs-toggle="tooltip" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'restore\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1" /></svg></a>')
+            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Restore" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'restore\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l-4 4l4 4m-4 -4h11a4 4 0 0 0 0 -8h-1" /></svg></a>')
           },
           
           # Trash / Delete Forever
           if(currentView == "trashed") {
-            HTML('<a class = "rail-btn" style="color:var(--tblr-danger)!important; cursor:pointer;" title="Delete Forever" data-bs-toggle="tooltip" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'trash\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a>')
+            HTML('<a class = "rail-btn" style="color:var(--tblr-danger)!important; cursor:pointer;" data-ms-tooltip="Delete Forever" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'trash\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a>')
           } else {
-            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" title="Trash" data-bs-toggle="tooltip" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'trash\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a>')
+            HTML('<a class = "rail-btn" style="color:var(--text)!important; cursor:pointer;" data-ms-tooltip="Trash" onclick="Shiny.setInputValue(\'bulkActionTrigger\', \'trash\', {priority: \'event\'})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg></a>')
           }
       )
     )
@@ -1831,10 +1871,6 @@
       )
     }
     
-    # Hide loader when done
-    session$onFlushed(function() {
-       shinyjs::runjs("var l = document.getElementById('dashboardLoader'); if(l) l.classList.remove('show');")
-    }, once = TRUE)
 
     div(
       class = "projects-wrapper",

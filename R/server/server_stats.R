@@ -82,11 +82,11 @@
 
         stats$lastUpdated <- as.character(Sys.time())
 
-        # Keep only last 90 days
+        # Keep only last 4 years (1460 days) to support multi-year view
         if (!is.null(stats$dailyStats) && length(stats$dailyStats) > 0) {
           dates <- names(stats$dailyStats)
           if (length(dates) > 0) {
-            cutoff_date <- Sys.Date() - 366
+            cutoff_date <- Sys.Date() - 1460
             stats$dailyStats <- stats$dailyStats[
               dates >= as.character(cutoff_date)
             ]
@@ -190,65 +190,67 @@
     }
   }
 
-  getActivityLevel <- function(stats, date) {
-    dateStr <- as.character(date)
-
-    if (is.null(stats$dailyStats[[dateStr]])) {
-      return("none")
-    }
-
-    dayStats <- stats$dailyStats[[dateStr]]
-
-    # Score based on meaningful actions only
+  calculateWeightedActivities <- function(dayStats) {
+    if (is.null(dayStats)) return(0)
     score <- 0
     if (!is.null(dayStats$filesEdited)) {
       score <- score + (dayStats$filesEdited * 0.2)
-    } # Weight files more
+    }
     if (!is.null(dayStats$compilations)) {
       score <- score + (dayStats$compilations * 0.5)
-    } # Compiles are important
+    }
     if (!is.null(dayStats$projectsOpened)) {
       score <- score + (dayStats$projectsOpened * 0.05)
     }
+    return(round(score))
+  }
 
-    if (score == 0) {
-      return("none")
-    }
-    if (score <= 5) {
-      return("low")
-    }
-    if (score <= 100) {
-      return("moderate")
-    }
+  getActivityLevel <- function(stats, date) {
+    dateStr <- as.character(date)
+    if (is.null(stats$dailyStats[[dateStr]])) return("none")
+
+    dayStats <- stats$dailyStats[[dateStr]]
+    score <- calculateWeightedActivities(dayStats)
+
+    if (score == 0) return("none")
+    if (score <= 1) return("low")
+    if (score <= 3) return("moderate")
+    if (score <= 5) return("high")
     return("high")
   }
 
-  generateGitHubHeatmap <- function(period = "month") {
+  generateGitHubHeatmap <- function(period = "year") {
     stats <- loadUsageStats()
     today <- Sys.Date()
-    current_year <- as.integer(format(today, "%Y"))
+    current_year_system <- as.integer(format(today, "%Y"))
 
     # 1. Determine Date Range based on Period
+    # Period can be "year" (current), or a specific year string like "2025"
     if (period == "year") {
-      # Static Year: Jan 1 to Dec 31 of CURRENT YEAR
-      startDate <- as.Date(paste0(current_year, "-01-01"))
-      endDate <- as.Date(paste0(current_year, "-12-31"))
+        startDate <- as.Date(paste0(current_year_system, "-01-01"))
+        endDate <- as.Date(paste0(current_year_system, "-12-31"))
+    } else if (grepl("^[0-9]{4}$", period)) {
+        selected_year <- as.integer(period)
+        startDate <- as.Date(paste0(selected_year, "-01-01"))
+        endDate <- as.Date(paste0(selected_year, "-12-31"))
     } else {
-      # Rolling window for shorter periods, but strict Left-to-Right
-      days_back <- switch(period, "quarter" = 90, 30)
-      startDate <- today - days_back
-      endDate <- today
+        # Fallback to current year
+        startDate <- as.Date(paste0(current_year_system, "-01-01"))
+        endDate <- as.Date(paste0(current_year_system, "-12-31"))
     }
 
-    # 2. Grid Alignment (Find the Sunday before startDate)
-    # This ensures the grid always starts at the top-left (Sunday)
+    # 2. Grid Alignment (Find the Sunday before/on startDate)
     startDayOfWeek <- as.integer(format(startDate, "%w")) # 0=Sun
     gridStartDate <- startDate - startDayOfWeek
+    
+    # End date adjustment for grid: Find the Saturday after/on endDate
+    endDayOfWeek <- as.integer(format(endDate, "%w"))
+    gridEndDate <- endDate + (6 - endDayOfWeek)
 
     # Generate full date sequence
-    dateSeq <- seq.Date(from = gridStartDate, to = endDate, by = "day")
+    dateSeq <- seq.Date(from = gridStartDate, to = gridEndDate, by = "day")
 
-    # 3. CSS (Adjusted for larger text and tighter fit)
+    # 3. CSS (Restored to Original Aesthetics)
     css_styles <- "
   <style>
     .gh-container {
@@ -326,12 +328,11 @@
     [data-bs-theme='dark'] .gh-lvl-2 { background-color: #006d32; }
     [data-bs-theme='dark'] .gh-lvl-3 { background-color: #26a641; }
     [data-bs-theme='dark'] .gh-lvl-4 { background-color: #39d353; }
+
   </style>
   "
 
     # 4. Generate Layout Parts
-
-    # Days Column (Mon, Wed, Fri)
     days_html <- '<div class="gh-col-days">
                   <div class="gh-day-label"></div> <div class="gh-day-label">Mon</div>
                   <div class="gh-day-label"></div> <div class="gh-day-label">Wed</div>
@@ -342,7 +343,6 @@
     heatmap_html <- '<div class="gh-heatmap-grid">'
 
     # Split dates into Weeks (chunks of 7)
-    # We generate enough weeks to cover the dateSeq
     total_days <- length(dateSeq)
     week_indices <- split(1:total_days, ceiling(seq_along(1:total_days) / 7))
 
@@ -350,103 +350,60 @@
 
     for (wk_idx in week_indices) {
       week_dates <- dateSeq[wk_idx]
-
-      # --- Month Label Logic ---
-      # We check the first day of the week to decide if we show the month label
       current_month_str <- format(week_dates[1], "%b")
 
       label_text <- ""
-      # Only show label if month changed AND the date is actually within the requested range
-      # (prevents labeling the padding days before Jan 1)
       if (current_month_str != last_month_str && week_dates[1] >= startDate) {
         label_text <- current_month_str
         last_month_str <- current_month_str
       }
 
-      months_html <- paste0(
-        months_html,
-        '<div class="gh-month-label">',
-        label_text,
-        '</div>'
-      )
+      months_html <- paste0(months_html, '<div class="gh-month-label">', label_text, '</div>')
 
-      # --- Heatmap Grid Logic ---
       heatmap_html <- paste0(heatmap_html, '<div class="gh-week">')
-
-      for (d in 0:6) {
-        if ((d + 1) <= length(week_dates)) {
-          currDate <- week_dates[d + 1]
-
-          # VISIBILITY CHECK:
-          # 1. If date < startDate (it's padding for the grid alignment), make it invisible
-          # 2. If date > endDate (it's future or outside range), make it invisible or gray
-
-          is_padding <- currDate < startDate
+      for (d in 1:7) {
+        if (d <= length(week_dates)) {
+          currDate <- week_dates[d]
+          
+          # Visibility logic for specific year grid
+          is_out_of_year <- format(currDate, "%Y") != format(startDate, "%Y")
           is_future <- currDate > today
 
-          if (is_padding) {
-            heatmap_html <- paste0(
-              heatmap_html,
-              '<div class="gh-day-cell" style="background:transparent;"></div>'
-            )
+          if (is_out_of_year) {
+             heatmap_html <- paste0(heatmap_html, '<div class="gh-day-cell" style="visibility:hidden;"></div>')
           } else {
-            # Get Stats
             level <- getActivityLevel(stats, currDate)
+            if (is_future) level <- "none"
 
-            # Force future days to level 0 (Gray)
-            if (is_future) {
-              level <- "none"
-            }
-
-            colorClass <- switch(
-              level,
+            colorClass <- switch(level,
               "none" = "gh-lvl-0",
               "low" = "gh-lvl-1",
               "moderate" = "gh-lvl-2",
-              "high" = "gh-lvl-4",
+              "high" = "gh-lvl-3", # Use lvl 3 for standard high
               "gh-lvl-0"
             )
-
-            # Tooltip
-            if (is_future) {
-              tooltip <- paste0(format(currDate, "%b %d, %Y"), " (Future)")
+            
+            # Weighted Count for Tooltip
+            ds <- stats$dailyStats[[as.character(currDate)]]
+            weighted_count <- calculateWeightedActivities(ds)
+            
+            # Use trimws to remove leading space from %e (day with space-padding)
+            month_day <- trimws(format(currDate, "%B %e"))
+            if (weighted_count > 0) {
+              tooltip <- sprintf("%d activities on %s", weighted_count, month_day)
             } else {
-              dateStr <- as.character(currDate)
-              tooltip <- format(currDate, "%b %d, %Y")
-              if (!is.null(stats$dailyStats[[dateStr]])) {
-                ds <- stats$dailyStats[[dateStr]]
-                tooltip <- paste0(
-                  tooltip,
-                  "\n",
-                  (ds$filesEdited %||% 0),
-                  " Files | ",
-                  (ds$compilations %||% 0),
-                  " Compiles"
-                )
-              } else {
-                tooltip <- paste0(tooltip, ": No activity")
-              }
+              tooltip <- sprintf("No activities on %s", month_day)
             }
 
             heatmap_html <- paste0(
               heatmap_html,
-              '<div class="gh-day-cell ',
-              colorClass,
-              '" ',
-              'data-bs-toggle="tooltip" data-bs-placement="top" title="',
-              tooltip,
-              '"></div>'
+              '<div class="gh-day-cell ', colorClass, '" ',
+              'data-ms-tooltip="', tooltip, '"></div>'
             )
           }
-        } else {
-          # Empty slots for incomplete weeks
-          heatmap_html <- paste0(
-            heatmap_html,
-            '<div class="gh-day-cell" style="background:transparent;"></div>'
-          )
         }
       }
-      heatmap_html <- paste0(heatmap_html, '</div>') # End Week
+      heatmap_html <- paste0(heatmap_html, '</div>')
     }
 
     months_html <- paste0(months_html, '</div>')
@@ -462,7 +419,43 @@
       heatmap_html,
       '</div>',
       '</div>',
-      '</div>'
+      '</div>',
+      # JS to initialize custom singleton tooltip
+      '<script>
+        (function() {
+          var tooltip = document.querySelector(".ms-tooltip");
+          if (!tooltip) {
+            tooltip = document.createElement("div");
+            tooltip.className = "ms-tooltip";
+            document.body.appendChild(tooltip);
+          }
+          
+          var grid = document.querySelector(".gh-heatmap-grid");
+          if (!grid) return;
+          
+          grid.addEventListener("mouseover", function(e) {
+            var target = e.target.closest(".gh-day-cell");
+            if (target && target.dataset.msTooltip) {
+              tooltip.textContent = target.dataset.msTooltip;
+              tooltip.classList.add("show");
+            }
+          });
+          
+          grid.addEventListener("mousemove", function(e) {
+            if (tooltip.classList.contains("show")) {
+              tooltip.style.left = e.clientX + "px";
+              tooltip.style.top = e.clientY + "px";
+            }
+          });
+          
+          grid.addEventListener("mouseout", function(e) {
+            var target = e.target.closest(".gh-day-cell");
+            if (target) {
+              tooltip.classList.remove("show");
+            }
+          });
+        })();
+      </script>'
     )
 
     return(final_html)
@@ -472,14 +465,22 @@
     stats <- loadUsageStats()
 
     endDate <- Sys.Date()
-    startDate <- switch(
-      period,
-      "week" = endDate - 7,
-      "month" = endDate - 30,
-      "quarter" = endDate - 90,
-      "year" = endDate - 365,
-      endDate - 365
-    )
+    
+    # Handle Year string (e.g., "2025") in getUsageSummary
+    if (grepl("^[0-9]{4}$", period)) {
+        selected_year <- as.integer(period)
+        startDate <- as.Date(paste0(selected_year, "-01-01"))
+        endDate <- as.Date(paste0(selected_year, "-12-31"))
+    } else {
+        startDate <- switch(
+          period,
+          "week" = endDate - 7,
+          "month" = endDate - 30,
+          "quarter" = endDate - 90,
+          "year" = as.Date(paste0(format(endDate, "%Y"), "-01-01")),
+          as.Date(paste0(format(endDate, "%Y"), "-01-01"))
+        )
+    }
 
     summary <- list(
       totalDays = 0,
@@ -544,26 +545,42 @@
     return(summary)
   }
 
-  output$userActivityTracking <- renderText({
+  output$userActivityTracking <- renderUI({
     trigger <- usageStatsTrigger()
+    
+    # Get last 4 years dynamically
+    current_year <- as.integer(format(Sys.Date(), "%Y"))
+    years <- as.character(current_year:(current_year - 3))
+    
     currentPeriod <- if (!is.null(input$activityPeriod)) {
       input$activityPeriod
     } else {
       "year"
     }
 
-    # Pass the period name directly to the generator
     blocks_html <- generateGitHubHeatmap(currentPeriod)
 
-    periodText <- switch(
-      currentPeriod,
-      "year" = paste("Year", format(Sys.Date(), "%Y")),
-      "quarter" = "Last 90 Days",
-      "month" = "Last 30 Days",
-      "This year"
-    )
+    periodText <- if (currentPeriod == "year") {
+      as.character(current_year)
+    } else if (grepl("^[0-9]{4}$", currentPeriod)) {
+      currentPeriod
+    } else {
+      as.character(current_year)
+    }
 
-    html <- paste0(
+    # Generate Dynamic Year Dropdown Items
+    dropdown_items <- lapply(years, function(y) {
+      is_active <- (currentPeriod == y) || (currentPeriod == "year" && y == as.character(current_year))
+      sprintf(
+        '<a class="dropdown-item %s" href="#" onclick="Shiny.setInputValue(\'activityPeriod\', \'%s\', {priority: \'event\'}); return false;">%s</a>',
+        if (is_active) "active" else "",
+        y,
+        y
+      )
+    })
+    dropdown_html <- paste(dropdown_items, collapse = "\n")
+
+    html <- HTML(paste0(
       '
       <div class="card" style="width: 100%; height: 100%; padding-top: 0; padding-bottom: 0;">
         <div class="card-body">
@@ -572,31 +589,17 @@
             <div class="ms-auto lh-1">
               <div class="dropdown">
                 <a class="dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  ',
-      periodText,
-      '
+                  ', periodText, '
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
-                  <a class="dropdown-item ',
-      if (currentPeriod == "year") "active" else "",
-      '" href="#" onclick="Shiny.setInputValue(\'activityPeriod\', \'year\', {priority: \'event\'}); return false;">Year ',
-      format(Sys.Date(), "%Y"),
-      '</a>
-                  <a class="dropdown-item ',
-      if (currentPeriod == "quarter") "active" else "",
-      '" href="#" onclick="Shiny.setInputValue(\'activityPeriod\', \'quarter\', {priority: \'event\'}); return false;">Last 90 Days</a>
-                  <a class="dropdown-item ',
-      if (currentPeriod == "month") "active" else "",
-      '" href="#" onclick="Shiny.setInputValue(\'activityPeriod\', \'month\', {priority: \'event\'}); return false;">Last 30 Days</a>
+                  ', dropdown_html, '
                 </div>
               </div>
             </div>
           </div>
           
           <div class="d-flex justify-content-center">
-             ',
-      blocks_html,
-      '
+             ', blocks_html, '
           </div>
           
           <div class="d-flex align-items-center justify-content-end mt-1 gap-1 small" style="font-size: 0.75rem;">
@@ -609,34 +612,9 @@
             <span>More</span>
           </div>
         </div>
-        
-        <script>
-          (function() {
-            var updatePeriod = function() {
-              var width = $(window).width();
-              var target = \"year\";
-              
-              // Define your breakpoints here
-              if (width < 600) { target = \"month\"; }       // Mobile
-              else if (width < 1000) { target = \"quarter\"; } // Tablet
-              
-              // Only trigger update if the target differs from what is currently rendered
-              // \"currentPeriod\" comes from the R variable injected below
-              if (target !== \"',
-      currentPeriod,
-      '\") {
-                 Shiny.setInputValue(\"activityPeriod\", target, {priority: \"event\"});
-              }
-            };
-            
-            // Run on load and whenever window resizes
-            updatePeriod();
-            $(window).off(\"resize.activity\").on(\"resize.activity\", updatePeriod);
-          })();
-        </script>
       </div>
     '
-    )
+    ))
 
     return(html)
   })

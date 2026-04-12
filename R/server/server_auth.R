@@ -15,9 +15,18 @@
   projectDashboardState <- reactiveVal("active") # Can be "active", "archived", or "trashed"
   
   # Observers to listen to UI buttons that swap the dashboard
-  observeEvent(input$viewActiveProjects, { projectDashboardState("active") })
-  observeEvent(input$viewArchivedProjects, { projectDashboardState("archived") })
-  observeEvent(input$viewTrashedProjects, { projectDashboardState("trashed") })
+  observeEvent(input$viewActiveProjects, { 
+    projectDashboardState("active") 
+    projectChangeTrigger(projectChangeTrigger() + 1)
+  })
+  observeEvent(input$viewArchivedProjects, { 
+    projectDashboardState("archived") 
+    projectChangeTrigger(projectChangeTrigger() + 1)
+  })
+  observeEvent(input$viewTrashedProjects, { 
+    projectDashboardState("trashed") 
+    projectChangeTrigger(projectChangeTrigger() + 1)
+  })
 
   # --- CRITICAL HELPER: Strict Session Reset ---
   # This wipes all user-specific data from memory to prevent leaks between sessions
