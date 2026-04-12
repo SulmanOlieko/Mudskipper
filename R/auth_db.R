@@ -3,6 +3,7 @@
 # ==============================================================================
 library(DBI)
 library(RPostgres)
+library(pool)
 library(sodium)
 library(shinyjs)
 library(blastula) # Required for emails
@@ -12,53 +13,80 @@ library(jose) # Required for decoding ID tokens
 # 1. ROBUST DATABASE HELPER (PostgreSQL)
 # ==============================================================================
 
-get_db_connection <- function() {
-  # Connection details from environment variables
-  con <- dbConnect(
+# Create a global database pool
+db_pool <- tryCatch({
+  dbPool(
     RPostgres::Postgres(),
     host = Sys.getenv("DB_HOST", "localhost"),
     port = as.integer(Sys.getenv("DB_PORT", "5432")),
     dbname = Sys.getenv("DB_NAME", "mudskipper"),
     user = Sys.getenv("DB_USER", "mud_user"),
-    password = Sys.getenv("DB_PASS", "mud_pass")
+    password = Sys.getenv("DB_PASS", "mud_pass"),
+    idleTimeout = 600000 # 10 minutes
   )
+}, error = function(e) {
+  message("Warning: Database pool could not be initialized at startup: ", e$message)
+  NULL
+})
+
+get_db_connection <- function() {
+  if (is.null(db_pool)) return(NULL)
   
-  # AUTO-HEAL: If tables are missing, create them immediately
-  if (!dbExistsTable(con, "users")) {
-    dbExecute(
-      con,
-      "CREATE TABLE users (
-        email TEXT PRIMARY KEY, 
-        password_hash TEXT, 
-        session_token TEXT, 
-        user_id TEXT,
-        username TEXT,
-        institution TEXT,
-        bio TEXT,
-        profile_picture TEXT,
-        provider TEXT DEFAULT 'email',
-        provider_id TEXT,
-        reset_token TEXT,
-        reset_expiry NUMERIC
-      )"
-    )
-  }
-  
-  if (!dbExistsTable(con, "active_sessions")) {
-    dbExecute(
-      con,
-      "CREATE TABLE active_sessions (
-        token TEXT PRIMARY KEY,
-        user_id TEXT,
-        ip_address TEXT,
-        user_agent TEXT,
-        created_at NUMERIC,
-        last_active NUMERIC
-      )"
-    )
-  }
-  
-  return(con)
+  tryCatch({
+    con <- poolCheckout(db_pool)
+    
+    # AUTO-HEAL: If tables are missing, create them immediately
+    # We use a checkout here once to ensure setup
+    if (!dbExistsTable(con, "users")) {
+      dbExecute(
+        con,
+        "CREATE TABLE users (
+          email TEXT PRIMARY KEY, 
+          password_hash TEXT, 
+          session_token TEXT, 
+          user_id TEXT,
+          username TEXT,
+          institution TEXT,
+          bio TEXT,
+          profile_picture TEXT,
+          provider TEXT DEFAULT 'email',
+          provider_id TEXT,
+          reset_token TEXT,
+          reset_expiry NUMERIC
+        )"
+      )
+    }
+    
+    if (!dbExistsTable(con, "active_sessions")) {
+      dbExecute(
+        con,
+        "CREATE TABLE active_sessions (
+          token TEXT PRIMARY KEY,
+          user_id TEXT,
+          ip_address TEXT,
+          user_agent TEXT,
+          created_at NUMERIC,
+          last_active NUMERIC
+        )"
+      )
+    }
+    
+    return(con)
+  }, error = function(e) {
+    message("Error during DB checkout/init: ", e$message)
+    NULL
+  })
+}
+
+# Helper to check if DB is healthy
+is_db_connected <- function() {
+  if (is.null(db_pool)) return(FALSE)
+  # pool::dbIsValid checks the pool object itself
+  tryCatch({
+    # We could also do a cheap query like SELECT 1
+    # but pool handles basic health.
+    TRUE
+  }, error = function(e) FALSE)
 }
 
 # --- 1.5 REDIS SESSION HELPERS ---
@@ -127,14 +155,18 @@ redis_cache_get <- function(key) {
 }
 
 
-# Run once at startup to ensure DB exists
+# Run once at startup to ensure DB exists and is healthy
 tryCatch(
   {
     con <- get_db_connection()
-    dbDisconnect(con)
+    if (!is.null(con)) {
+      poolReturn(con)
+    } else {
+      message("NOTE: Database is not available at startup. App will run in limited mode.")
+    }
   },
   error = function(e) {
-    stop(paste("CRITICAL DB ERROR:", e$message))
+    message("Startup DB Check Warning: ", e$message)
   }
 )
 

@@ -7,6 +7,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  function triggerParentLoading(msg) {
+    if (window.parent && window.parent.setPreloaderText) {
+      window.parent.setPreloaderText(msg);
+      var pl = window.parent.document.getElementById('app-preloader');
+      if (pl) {
+        pl.classList.remove('fade-out');
+        pl.style.display = 'flex';
+      }
+    }
+  }
+
 
   // --- FORGOT PASSWORD SUBMIT (New) ---
   const forgotSubmitBtn = document.getElementById('submit_forgot');
@@ -43,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (loginBtn) {
     loginBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      triggerParentLoading('Authenticating...');
       const email = document.getElementById('email').value;
       const pass = document.getElementById('password').value;
       const checkbox = document.getElementById('remember_me');
@@ -62,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (signupBtn) {
     signupBtn.addEventListener('click', function(e) {
       e.preventDefault();
+      triggerParentLoading('Initializing...');
       const email = document.getElementById('signup_email').value;
       const pass = document.getElementById('signup_password').value;
       sendToShiny('signup_data', {email: email, password: pass, nonce: Math.random()});

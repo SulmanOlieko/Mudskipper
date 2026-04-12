@@ -111,6 +111,7 @@ compile_bg_task <- function(
       ".git", ".svn", ".Rproj.user"
     )
     
+    streamLog("[STATUS] Syncing")
     all_files  <- list.files(projDir, recursive = TRUE, full.names = TRUE)
     keep_files <- sapply(all_files, function(f) {
       f <- normalizePath(f, winslash = "/")
@@ -224,12 +225,14 @@ compile_bg_task <- function(
     }
     
     if (compileMode == "fast") {
+      steps[[length(steps) + 1]] <- "echo '[STATUS] Pass #1' ; "
       steps[[length(steps) + 1]] <- paste(
         compile_cmd, base_flags, "-synctex=1",
         output_dir_flag, shQuote(mainFile)
       )
     } else {
       # Step A: Draft pass
+      steps[[length(steps) + 1]] <- "echo '[STATUS] Pass #1' ; "
       steps[[length(steps) + 1]] <- paste(
         compile_cmd, base_flags,
         output_dir_flag, shQuote(mainFile)
@@ -273,6 +276,7 @@ compile_bg_task <- function(
           )
         }
         
+        steps[[length(steps) + 1]] <- "echo '[STATUS] Pass #2' ; "
         steps[[length(steps) + 1]] <- bibtex_cmd
         streamLog(sprintf(">> BibTeX BIBINPUTS: %s", bibinputs))
       }
@@ -281,6 +285,7 @@ compile_bg_task <- function(
       if (length(steps) > 0 && steps[[length(steps)]] != "&&") {
         steps[[length(steps) + 1]] <- chain_sep
       }
+      steps[[length(steps) + 1]] <- "echo '[STATUS] Pass #3' ; "
       steps[[length(steps) + 1]] <- paste(
         compile_cmd, base_flags,
         output_dir_flag, shQuote(mainFile)
@@ -290,6 +295,7 @@ compile_bg_task <- function(
       if (length(steps) > 0 && steps[[length(steps)]] != "&&") {
         steps[[length(steps) + 1]] <- chain_sep
       }
+      steps[[length(steps) + 1]] <- "echo '[STATUS] Pass #4' ; "
       steps[[length(steps) + 1]] <- paste(
         compile_cmd, base_flags, "-synctex=1",
         output_dir_flag, shQuote(mainFile)

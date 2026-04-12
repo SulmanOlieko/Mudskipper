@@ -4,7 +4,7 @@ presentation_path <- file.path("www", "presentation.html")
 writeLines(
   '
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark" data-bs-theme-base="zinc" data-bs-theme-primary="green">
 <head>
   <meta charset="UTF-8">
   <title>Mudskipper Presentation</title>

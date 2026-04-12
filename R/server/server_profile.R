@@ -14,7 +14,19 @@
     }
 
     con <- get_db_connection()
-    on.exit(dbDisconnect(con))
+    if (is.null(con)) {
+      # Log but otherwise return safe default
+      message("Database connection failed in loadUserProfile")
+      return(list(
+        username = "Guest / Error",
+        email = "",
+        userId = uid,
+        bio = "Database connection lost.",
+        institution = "",
+        profilePicture = ""
+      ))
+    }
+    on.exit(poolReturn(con))
 
     tryCatch(
       {
@@ -76,7 +88,16 @@
     }
 
     con <- get_db_connection()
-    on.exit(dbDisconnect(con))
+    if (is.null(con)) {
+      showTablerAlert(
+        "danger",
+        "Database Error",
+        "Could not connect to database to save profile.",
+        5000
+      )
+      return(FALSE)
+    }
+    on.exit(poolReturn(con))
 
     tryCatch(
       {

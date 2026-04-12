@@ -791,17 +791,20 @@
     }
 
     if (isTRUE(rv$fileJustLoaded)) {
-      rv$fileJustLoaded <- FALSE
       return()
     }
 
+    # 7. Safety: Ensure we haven't switched targets mid-debouncing
+    current_target <- isolate(currentFile())
+    if (is.null(current_target) || current_target == "") return()
+
     # ADD CONTENT VALIDATION: Compare with disk content
     projDir <- getActiveProjectDir()
-    fullPath <- file.path(projDir, currentFile())
+    fullPath <- file.path(projDir, current_target)
 
     if (file.exists(fullPath)) {
-      disk_content <- paste(readLines(fullPath, warn = FALSE), collapse = "\n")
-      # Skip if identical to disk (prevents initial load snapshots)
+      disk_content <- tryCatch(paste(readLines(fullPath, warn = FALSE), collapse = "\n"), error = function(e) "")
+      # Skip if identical to disk (prevents initial load snapshots or redundant saves)
       if (identical(editor_content_debounced(), disk_content)) {
         return()
       }
@@ -809,7 +812,7 @@
 
     saveHistorySnapshot(
       activeProjectId(),
-      currentFile(),
+      current_target,
       editor_content_debounced()
     )
   })

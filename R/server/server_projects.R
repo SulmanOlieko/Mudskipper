@@ -480,6 +480,7 @@
   loadProjectToWorkspace <- function(projectId) {
     session$sendCustomMessage("togglePdfSpinner", TRUE)
     session$sendCustomMessage("toggleEditorSpinner", TRUE)
+    shinyjs::runjs("setDashboardLoaderText('Syncing workspace...');")
     uid <- isolate(user_session$user_info$user_id)
     if (is.null(uid)) {
       return(FALSE)
@@ -1696,7 +1697,7 @@
       }
       
       card_onclick <- if (currentView == "active") {
-        sprintf("document.getElementById('dashboardLoader').classList.add('show'); Shiny.setInputValue('loadProject', '%s', {priority: 'event'})", safe_proj$id)
+        sprintf("setDashboardLoaderText('Opening project...'); document.getElementById('dashboardLoader').classList.add('show'); Shiny.setInputValue('loadProject', '%s', {priority: 'event'})", safe_proj$id)
       } else { "" }
       
       card_cursor <- if (currentView == "active") "cursor: pointer;" else "cursor: default;"
@@ -1737,8 +1738,6 @@
                 # The project name (truncates if it gets too long)
                 span(class = "text-truncate", safe_proj$name)
             ),
-            # --------------------------------------------------------------
-            
             div(class = "project-description", if (nzchar(safe_proj$description)) safe_proj$description else "No description"),
             div(class = "project-tags mt-1 mb-1 px-3", style = "line-height: 1;", HTML(tags_html)),
             div(class = "project-meta",
@@ -1832,6 +1831,11 @@
       )
     }
     
+    # Hide loader when done
+    session$onFlushed(function() {
+       shinyjs::runjs("var l = document.getElementById('dashboardLoader'); if(l) l.classList.remove('show');")
+    }, once = TRUE)
+
     div(
       class = "projects-wrapper",
       style = "overflow: auto !important;",

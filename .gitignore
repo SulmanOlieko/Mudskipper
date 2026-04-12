@@ -39,3 +39,9 @@ postgres_data/
 compiled_cache/
 .history
 .chat_files/
+# .dockerignore
+.Rproj.user
+renv/
+node_modules/
+postgres_data/
+*.log

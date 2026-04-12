@@ -61,6 +61,8 @@
       provider <- parts[1]
       intent <- if (length(parts) > 1) parts[2] else "login"
       
+      shinyjs::runjs(sprintf("setPreloaderText('Authenticating with %s...');", tools::toTitleCase(provider)))
+      
       tryCatch(
         {
           # 1. Exchange Code for Token
@@ -91,12 +93,13 @@
             # User does not exist in DB
             if (intent == "login") {
               # Login attempted but no account -> Reject
-              dbDisconnect(con)
+              poolReturn(con)
               
               # Clean URL immediately to prevent reload loops
               shinyjs::runjs("window.history.replaceState({}, '', window.location.pathname);")
               
               # Redirect to Sign Up Page with Alert
+              shinyjs::runjs("setPreloaderText('Account not found...');")
               shinyjs::show("auth_wrapper")
               shinyjs::hide("main_app_wrapper")
               shinyjs::addClass(id = "app-preloader", class = "fade-out")
@@ -148,7 +151,7 @@
             "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES ($1, $2, $3, $4, $5)",
             list(session_token, uid, ip_addr, as.numeric(Sys.time()), as.numeric(Sys.time()))
           )
-          dbDisconnect(con)
+            poolReturn(con)
           
           # 7. Initialize Environment
           initUserDirectories(uid)
@@ -203,7 +206,7 @@
           shinyjs::hide("lock_wrapper") # Explicitly hide lock overlay
           shinyjs::show("main_app_wrapper")
           
-          shinyjs::runjs("window.dispatchEvent(new Event('resize'));")
+          shinyjs::runjs("setPreloaderText('Ready'); window.dispatchEvent(new Event('resize'));")
           shinyjs::addClass(id = "app-preloader", class = "fade-out")
         },
         error = function(e) {
@@ -216,6 +219,7 @@
             shinyjs::show("auth_wrapper")
             shinyjs::hide("main_app_wrapper")
             shinyjs::hide("lock_wrapper") # Ensure lock screen is gone so they can try logging in again
+            shinyjs::runjs("setPreloaderText('Error occurred');")
             shinyjs::addClass(id = "app-preloader", class = "fade-out")
             
             # Optional: Force a reload to clear any internal browser state
@@ -234,6 +238,7 @@
       ))
       shinyjs::show("auth_wrapper")
       shinyjs::hide("main_app_wrapper")
+      shinyjs::runjs("setPreloaderText('Ready');")
       shinyjs::addClass(id = "app-preloader", class = "fade-out")
     }
     
@@ -285,7 +290,7 @@
         )
       }
       
-      dbDisconnect(con)
+      if (!is.null(con)) poolReturn(con)
     }
   })
 
@@ -293,6 +298,7 @@
   observeEvent(input$cookie_login_token, {
     req(!user_session$logged_in)
     token <- input$cookie_login_token
+    shinyjs::runjs("setPreloaderText('Checking session...');")
     
     # 1. TRY REDIS FIRST (Fast Path)
     user <- redis_get_session(token)
@@ -321,7 +327,7 @@
         },
         error = function(e) NULL,
         finally = {
-          dbDisconnect(con)
+          if (!is.null(con)) poolReturn(con)
         }
       )
     }
@@ -342,23 +348,43 @@
       con <- get_db_connection()
       dbExecute(con, "UPDATE active_sessions SET last_active = $1 WHERE token = $2", 
                 list(as.numeric(Sys.time()), token))
-      dbDisconnect(con)
+      if (!is.null(con)) poolReturn(con)
       
       initUserDirectories(user$user_id)
       loadUserAppCache(user$user_id)
       
+      # Add small delay for readability
+      Sys.sleep(0.5)
+      
+      shinyjs::runjs("setPreloaderText('Initializing workspace...');")
+      
+      # Final delay before revealing app
+      Sys.sleep(0.5)
+      
       shinyjs::runjs("$('#auth_wrapper').hide(); $('#main_app_wrapper').show(); window.dispatchEvent(new Event('resize'));")
+      shinyjs::runjs("setPreloaderText('Ready');")
       shinyjs::addClass(id = "app-preloader", class = "fade-out")
       showTablerAlert("info", "OAuth success", paste("Welcome back,", user$email))
     } else {
-      # Invalid Cookie
-      shinyjs::runjs("$('#main_app_wrapper').hide(); $('#auth_wrapper').show();")
-      shinyjs::addClass(id = "app-preloader", class = "fade-out")
+      # Invalid Cookie - CHECK IF WE ARE IN AN AUTH TRANSITION FIRST
+      query <- parseQueryString(session$clientData$url_search)
+      isAuthTransition <- !is.null(query$code) || !is.null(query$reset_token) || (!is.null(query$action) && query$action == "password_update_submit")
+      
+      if (!isAuthTransition) {
+        shinyjs::runjs("$('#main_app_wrapper').hide(); $('#auth_wrapper').show();")
+        shinyjs::runjs("setPreloaderText('Please Sign In');")
+        shinyjs::addClass(id = "app-preloader", class = "fade-out")
+      } else {
+        # Just update text, R is still processing OAuth block
+        shinyjs::runjs("setPreloaderText('Verifying credentials...');")
+      }
     }
   })
   
   # --- B. Manual Login REPLACEMENT (With Robust IP Detection) ---
   observeEvent(input$login_data, {
+    shinyjs::runjs("setPreloaderText('Authenticating...'); $('#app-preloader').removeClass('fade-out').show();")
+    
     email <- input$login_data$email
     pass <- input$login_data$password
     remember <- isTRUE(input$login_data$remember)
@@ -427,7 +453,7 @@
       }
       shinyjs::runjs(sprintf("document.getElementById('auth_frame').contentWindow.alert('%s');", msg))
     }
-    dbDisconnect(con)
+    if (!is.null(con)) poolReturn(con)
   })
   # --- C. Sign Up Logic ---
   observeEvent(input$signup_data, {
@@ -457,7 +483,7 @@
         )
       },
       finally = {
-        dbDisconnect(con)
+        if (!is.null(con)) poolReturn(con)
       }
     )
   })
@@ -532,7 +558,7 @@
         )
       }
     }
-    dbDisconnect(con)
+    if (!is.null(con)) poolReturn(con)
   })
 
   # --- G. Navigation Handler ---
@@ -597,7 +623,7 @@
       "UPDATE users SET session_token = NULL WHERE email = $1",
       list(email)
     )
-    dbDisconnect(con)
+    if (!is.null(con)) poolReturn(con)
 
     # Redis Cleanup
     if (!is.null(user_session$token)) {
@@ -699,7 +725,7 @@
     
     con <- get_db_connection()
     user_rec <- dbGetQuery(con, "SELECT password_hash, user_id FROM users WHERE email = $1", list(email))
-    dbDisconnect(con)
+    if (!is.null(con)) poolReturn(con)
     
     if (nrow(user_rec) == 1 && password_verify(user_rec$password_hash, pass)) {
       user_session$logged_in <- TRUE
@@ -725,7 +751,7 @@
                 "INSERT INTO active_sessions (token, user_id, ip_address, created_at, last_active) VALUES ($1, $2, $3, $4, $5)",
                 list(token, user_rec$user_id, ip_addr, as.numeric(Sys.time()), as.numeric(Sys.time()))
       )
-      dbDisconnect(con)
+      if (!is.null(con)) poolReturn(con)
       
       session$sendCustomMessage("set_cookie", list(name = "app_session_token", value = token, days = 0))
       
@@ -777,7 +803,7 @@
       # 2. Clean Postgres
       con <- get_db_connection()
       dbExecute(con, "DELETE FROM active_sessions WHERE token = $1", list(curr_token))
-      dbDisconnect(con)
+      if (!is.null(con)) poolReturn(con)
     }
     
     resetUserSession()

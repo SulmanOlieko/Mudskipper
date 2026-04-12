@@ -118,6 +118,17 @@
       return()
     }
 
+    # Prepare status text injection
+    shinyjs::runjs("
+      window.updateCompileButtonText = function(text) {
+        const btn = document.getElementById('compile');
+        if (!btn) return;
+        const spinner = document.getElementById('compileSpinner');
+        const spinnerHtml = spinner ? spinner.outerHTML : '';
+        btn.innerHTML = text + ' &nbsp; ' + spinnerHtml;
+      };
+    ")
+    
     req(input$compileMainFile)
     projDir <- getActiveProjectDir()
     req(projDir)
@@ -156,6 +167,7 @@
     session$sendCustomMessage("toggleCompileSpinner", TRUE)
     shinyjs::enable("stopCompilation")
     shinyjs::addClass("compile", "btn-compiling")
+    shinyjs::runjs("updateCompileButtonText('Syncing');")
     tryCatch(
       {
         absProjDir <- normalizePath(projDir, winslash = "/", mustWork = FALSE)
@@ -192,6 +204,7 @@
         session$sendCustomMessage("toggleCompileSpinner", FALSE)
         shinyjs::disable("stopCompilation")
         shinyjs::removeClass("compile", "btn-compiling")
+        shinyjs::runjs("updateCompileButtonText('Recompile');")
       }
     )
   }
@@ -246,6 +259,14 @@
               )
             }
 
+            # Check for [STATUS] markers
+            status_lines <- grep("\\[STATUS\\]", new_lines, value = TRUE)
+            if (length(status_lines) > 0) {
+              last_status <- tail(status_lines, 1)
+              status_msg <- sub(".*\\[STATUS\\]\\s*", "", last_status)
+              shinyjs::runjs(sprintf("updateCompileButtonText('%s');", status_msg))
+            }
+
             chunk <- paste(new_lines, collapse = "\n")
 
             # Update UI
@@ -269,6 +290,7 @@
       session$sendCustomMessage("toggleCompileSpinner", FALSE)
       shinyjs::disable("stopCompilation")
       shinyjs::removeClass("compile", "btn-compiling")
+      shinyjs::runjs("updateCompileButtonText('Recompile');")
 
       # Check if worker crashed internally
       try(proc$get_result(), silent = TRUE)
@@ -409,6 +431,7 @@
       session$sendCustomMessage("toggleCompileSpinner", FALSE)
       shinyjs::disable("stopCompilation")
       shinyjs::removeClass("compile", "btn-compiling")
+      shinyjs::runjs("updateCompileButtonText('Recompile');")
     }
   })
 
@@ -520,7 +543,6 @@
 
       # 1. Flag Check: Skip if we just loaded this file programmatically
       if (isTRUE(rv$fileJustLoaded)) {
-        rv$fileJustLoaded <- FALSE
         return()
       }
 

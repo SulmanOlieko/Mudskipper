@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark" data-bs-theme-base="zinc" data-bs-theme-primary="green">
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
@@ -247,6 +247,10 @@ html, body {
         
                 <script>
                   function switchDashboardView(view, element) {
+                    setDashboardLoaderText('Syncing projects...');
+                    var loader = document.getElementById('dashboardLoader');
+                    if(loader) loader.classList.add('show');
+                    
                     if (window.Shiny) {
                       if (view === 'active') Shiny.setInputValue('viewActiveProjects', Math.random(), {priority: 'event'});
                       if (view === 'archived') Shiny.setInputValue('viewArchivedProjects', Math.random(), {priority: 'event'});
@@ -541,8 +545,11 @@ html, body {
                                 <div id="dashboardLoader" class="dashboard-loader">
                                   <div class="container container-slim py-4">
                                     <div class="text-center">
+                                      <div class="mb-3">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                      </div>
                                       <div class="text-secondary mb-3">
-                                        Connecting editor<span class="animated-dots"></span>
+                                        <span id="dashboard-loader-text-msg">Connecting editor</span><span class="animated-dots"></span>
                                       </div>
                                       <div class="progress progress-sm">
                                         <div class="progress-bar progress-bar-indeterminate"></div>

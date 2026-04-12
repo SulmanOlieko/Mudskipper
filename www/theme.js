@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
   var themeConfig = {
-    "theme": "light",
-    "theme-base": "slate",
+    "theme": "dark",
+    "theme-base": "zinc",
     "theme-font": "sans-serif",
-    "theme-primary": "blue",
+    "theme-primary": "green",
     "theme-radius": "1",
   };
   
@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
     resetButton.addEventListener("click", function () {
       for (var key in themeConfig) {
         var value = themeConfig[key];
-        document.documentElement.removeAttribute("data-bs-" + key);
+        document.documentElement.setAttribute("data-bs-" + key, value);
         window.localStorage.removeItem("tabler-" + key);
         url.searchParams.delete(key);
       }
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Ensure default color is selected if none is checked
   setTimeout(function() {
     if (!form.querySelector('[name="theme-primary"]:checked')) {
-      var defaultColor = form.querySelector('[name="theme-primary"][value="blue"]');
+      var defaultColor = form.querySelector('[name="theme-primary"][value="green"]');
       if (defaultColor) {
         defaultColor.checked = true;
         defaultColor.setAttribute('checked', 'checked');
@@ -114,10 +114,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // URL parameter handling (keep your existing code)
 var themeConfig2 = {
-  "theme": "light",
-  "theme-base": "slate",
+  "theme": "dark",
+  "theme-base": "zinc",
   "theme-font": "sans-serif",
-  "theme-primary": "blue",
+  "theme-primary": "green",
   "theme-radius": "1",
 }
 
@@ -137,11 +137,8 @@ for (const key in themeConfig2) {
     selectedValue = storedTheme ? storedTheme : themeConfig2[key]
   }
 
-  if (selectedValue !== themeConfig2[key]) {
-    document.documentElement.setAttribute('data-bs-' + key, selectedValue)
-  } else {
-    document.documentElement.removeAttribute('data-bs-' + key)
-  }
+  // Always set the attribute even if it matches the default, to ensure consistency across pages
+  document.documentElement.setAttribute('data-bs-' + key, selectedValue)
 }
 
 var saveSettingsBtn = document.getElementById('save-settings');

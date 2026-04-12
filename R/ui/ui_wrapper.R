@@ -19,17 +19,28 @@ ui <- fluidPage(
   ),
   # ------------------------------------------
   HTML(paste(readLines("www/preloader.html", warn = FALSE), collapse = "\n")),
-  # --- 2.1 LOGIN WRAPPER (Visible by Default, Z-Index: 1) ---
-  # Strategy: Let it render immediately so it's ready. The preloader covers it.
+  # --- 2.1 LOGIN WRAPPER (Hidden by Default) ---
   div(
     id = "auth_wrapper",
-    style = "width: 100%; height: 100vh; display: block;",
+    style = "width: 100%; height: 100vh; display: none;",
     tags$iframe(
       id = "auth_frame",
       src = "sign_in.html",
       style = "width:100%; height:100%; border:none;"
     )
   ),
+
+  # --- HELPER JS: Dynamic Loading Text ---
+  tags$script(HTML("
+    function setPreloaderText(msg) {
+      const el = document.getElementById('preloader-text-msg');
+      if (el) el.textContent = msg;
+    }
+    function setDashboardLoaderText(msg) {
+      const el = document.getElementById('dashboard-loader-text-msg');
+      if (el) el.textContent = msg;
+    }
+  ")),
 
   # --- 2.2 LOCK WRAPPER ---
   div(

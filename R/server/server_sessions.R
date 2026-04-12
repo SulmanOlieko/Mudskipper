@@ -15,8 +15,12 @@
     curr_token <- user_session$token 
     
     con <- get_db_connection()
+    if (is.null(con)) {
+      message("Database connection failed in sessionListTrigger")
+      return()
+    }
     sessions <- dbGetQuery(con, "SELECT * FROM active_sessions WHERE user_id = $1 ORDER BY last_active DESC", list(uid))
-    dbDisconnect(con)
+    poolReturn(con)
     
     html_out <- tagList()
     
@@ -93,9 +97,13 @@
     curr_token <- user_session$token
     
     con <- get_db_connection()
-    # Delete everything for this user EXCEPT the current token
-    dbExecute(con, "DELETE FROM active_sessions WHERE user_id = $1 AND token != $2", list(uid, curr_token))
-    dbDisconnect(con)
+    if (!is.null(con)) {
+      # Delete everything for this user EXCEPT the current token
+      dbExecute(con, "DELETE FROM active_sessions WHERE user_id = $1 AND token != $2", list(uid, curr_token))
+      poolReturn(con)
+    } else {
+      showTablerAlert("danger", "Database Error", "Could not connect to database to clear sessions.")
+    }
     
     showTablerAlert("success", "Sessions Cleared", "All other sessions have been logged out.")
     sessionListTrigger(sessionListTrigger() + 1)

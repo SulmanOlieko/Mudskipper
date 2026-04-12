@@ -434,6 +434,7 @@
       # 4. Update State
       currentFile(filePath)
       updateStatus(filePath)
+      rv$fileJustLoaded <- TRUE # IMMEDIATE LOCK to prevent history race
 
       if (ext == "tex") {
         if (
@@ -456,7 +457,12 @@
                 force = TRUE
               )
             )
-            rv$fileJustLoaded <- TRUE
+            rv$fileJustLoaded <- TRUE 
+
+            # FINAL RESET: after all loading is likely done, clear the lock
+            later::later(function() { 
+              rv$fileJustLoaded <- FALSE 
+            }, 0.5)
 
             savedRow <- 0
             savedCol <- 0

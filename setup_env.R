@@ -1,5 +1,6 @@
 #install.packages("RPostgres")
 #install.packages('redux')
+#install.packages("pool")
 setwd("~/Mudskipper")
 env_vars <- c(
   SHINY_PORT = "",
