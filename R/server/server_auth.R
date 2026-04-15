@@ -4,6 +4,17 @@
     block_comment_update = FALSE,
     editor_active = FALSE
   )
+  
+  # Global Reactive Values (shared across modules)
+  rv_files <- reactiveVal(character(0))
+  currentFile <- reactiveVal("")
+  compileLog <- reactiveVal("")
+  rv_compiled <- reactiveVal(character(0))
+  dockerLog <- reactiveVal("")
+  outlineData <- reactiveVal(NULL)
+  lintAnnotations <- reactiveVal(list())
+  compileAnnotations <- reactiveVal(list())
+  commentUpdate <- reactiveVal(0)
 
   # User Session State
   user_session <- reactiveValues(
@@ -13,6 +24,22 @@
   )
   
   projectDashboardState <- reactiveVal("active") # Can be "active", "archived", or "trashed"
+  
+  # State management for homepage sub-views (dashboard vs profile)
+  rv$homeSubView <- "dashboard"
+  
+  output$isProfileView <- reactive({
+    (rv$homeSubView %||% "dashboard") == "profile"
+  })
+  outputOptions(output, "isProfileView", suspendWhenHidden = FALSE)
+  
+  observeEvent(input$showProfilePage, {
+    rv$homeSubView <- "profile"
+  })
+  
+  observeEvent(input$showDashboard, {
+    rv$homeSubView <- "dashboard"
+  })
   
   # Observers to listen to UI buttons that swap the dashboard
   observeEvent(input$viewActiveProjects, { 

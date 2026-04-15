@@ -253,8 +253,18 @@
     
     # Trigger UI refresh
     if (shiny::isRunning()) {
-      isolate({ projectChangeTrigger(projectChangeTrigger() + 1) })
+      isolate({
+        projectChangeTrigger(projectChangeTrigger() + 1)
+      })
     }
+    
+    # Record activity
+    recordDailyActivity(activityType = "projectStatus", details = list(
+      projectId = projectId,
+      projectName = projects[[targetIdx]]$name,
+      status = newStatus
+    ))
+    
     return(TRUE)
   }
   

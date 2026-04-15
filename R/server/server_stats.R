@@ -125,6 +125,12 @@
         projectsOpened = 0,
         compilations = 0,
         totalEdits = 0,
+        projectCreate = 0,
+        fileCreate = 0,
+        fileDelete = 0,
+        projectCopy = 0,
+        projectStatus = 0,
+        profileUpdate = 0,
         sessionDuration = 0,
         activities = list(),
         # NEW: Track unique items to prevent double counting
@@ -168,6 +174,11 @@
       # Compiles always count (each one is meaningful)
       stats$dailyStats[[today]]$compilations <-
         stats$dailyStats[[today]]$compilations + 1
+    } else if (activityType %in% c("projectCreate", "fileCreate", "fileDelete", "projectCopy", "projectStatus", "profileUpdate")) {
+      # Increment specific counters if they exist
+      if (!is.null(stats$dailyStats[[today]][[activityType]])) {
+        stats$dailyStats[[today]][[activityType]] <- stats$dailyStats[[today]][[activityType]] + 1
+      }
     }
 
     # Record activity with timestamp
@@ -202,6 +213,27 @@
     if (!is.null(dayStats$projectsOpened)) {
       score <- score + (dayStats$projectsOpened * 0.05)
     }
+    
+    # NEW: Add weights for new activity types
+    if (!is.null(dayStats$projectCreate)) {
+      score <- score + (dayStats$projectCreate * 1.0)
+    }
+    if (!is.null(dayStats$fileCreate)) {
+      score <- score + (dayStats$fileCreate * 0.1)
+    }
+    if (!is.null(dayStats$fileDelete)) {
+      score <- score + (dayStats$fileDelete * 0.1)
+    }
+    if (!is.null(dayStats$projectCopy)) {
+      score <- score + (dayStats$projectCopy * 0.5)
+    }
+    if (!is.null(dayStats$projectStatus)) {
+      score <- score + (dayStats$projectStatus * 0.2)
+    }
+    if (!is.null(dayStats$profileUpdate)) {
+      score <- score + (dayStats$profileUpdate * 0.3)
+    }
+    
     return(round(score))
   }
 
@@ -786,6 +818,10 @@
     success <- saveUserProfile(profile)
 
     if (success) {
+      recordDailyActivity(activityType = "profileUpdate", details = list(
+        username = profile$username,
+        institution = profile$institution
+      ))
       userProfileTrigger(userProfileTrigger() + 1)
       showTablerAlert(
         "success",
@@ -802,4 +838,271 @@
       )
     }
   })
+
+  # ----------------------------- PROFILE PAGE & TIMELINE -----------------------------
+  
+  renderTimelineHTML <- function() {
+    stats <- loadUsageStats()
+    if (is.null(stats$dailyStats) || length(stats$dailyStats) == 0) {
+      return(HTML('<div class="text-secondary p-4 text-center">No activities recorded yet.</div>'))
+    }
+
+    # Flatten all activities from all days into a single list
+    all_activities <- list()
+    for (day in stats$dailyStats) {
+      if (!is.null(day$activities) && length(day$activities) > 0) {
+        # Filter out session events
+        filtered_day_acts <- Filter(function(act) act$type != "session", day$activities)
+        all_activities <- c(all_activities, filtered_day_acts)
+      }
+    }
+
+    if (length(all_activities) == 0) {
+      return(HTML('<div class="text-secondary p-4 text-center">No activities recorded yet.</div>'))
+    }
+
+    # Sort latest to earliest
+    all_activities <- all_activities[order(sapply(all_activities, function(x) x$timestamp), decreasing = TRUE)]
+
+    # Take latest 50 for the immersive page
+    latest_activities <- head(all_activities, 50)
+
+    timeline_items <- lapply(latest_activities, function(act) {
+      ts <- as.POSIXct(act$timestamp)
+      time_diff <- difftime(Sys.time(), ts, units = "auto")
+      
+      # Friendly time string
+      friendly_time <- if (units(time_diff) == "secs" && time_diff < 60) {
+        "Just now"
+      } else if (units(time_diff) == "mins" && time_diff < 60) {
+        sprintf("%.0f mins ago", time_diff)
+      } else if (units(time_diff) == "hours" && time_diff < 24) {
+        sprintf("%.0f hours ago", time_diff)
+      } else {
+        format(ts, "%b %d, %H:%M")
+      }
+
+      icon_html <- switch(act$type,
+        "fileEdit" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>',
+        "projectOpen" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><polyline points="7 9 12 4 17 9" /><line x1="12" y1="4" x2="12" y2="16" /></svg>',
+        "compile" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M5 12l5 5l10 -10" /></svg>',
+        "projectCreate" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1 text-success"><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>',
+        "projectDelete" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1 text-danger"><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>',
+        "projectCopy" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M7 7m0 2.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667z" /><path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.412 .412 1.737 1.012" /></svg>',
+        "projectStatus" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 9l0 3" /><path d="M12 15l.01 0" /></svg>',
+        "fileCreate" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1 text-success"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M12 11l0 6" /><path d="M9 14l6 0" /></svg>',
+        "fileDelete" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1 text-danger"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M9 14l6 0" /></svg>',
+        "profileUpdate" = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1 text-info"><path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" /><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /></svg>',
+        '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>'
+      )
+
+      title <- switch(act$type,
+        "fileEdit" = sprintf("Edited %s", act$details$file),
+        "projectOpen" = sprintf("Opened project: %s", act$details$projectName %||% act$details$projectId),
+        "compile" = "Compiled project",
+        "projectCreate" = sprintf("Created project: %s", act$details$name),
+        "projectDelete" = sprintf("Deleted project: %s", act$details$name),
+        "projectCopy" = sprintf("Duplicated project: %s", act$details$newName),
+        "projectStatus" = sprintf("%s project: %s", tools::toTitleCase(act$details$status), act$details$projectName %||% act$details$projectId),
+        "fileCreate" = sprintf("Added file: %s", act$details$file),
+        "fileDelete" = sprintf("Removed file: %s", act$details$file),
+        "profileUpdate" = "Updated profile details",
+        sprintf("Event: %s", act$type %||% "Unspecified")
+      )
+
+      details_text <- if (!is.null(act$details$details)) {
+        sprintf('<p class="text-secondary small mt-1">%s</p>', act$details$details)
+      } else if (act$type == "fileCreate" || act$type == "fileDelete" || act$type == "fileEdit") {
+        sprintf('<p class="text-secondary small mt-1">In project: %s</p>', act$details$projectName %||% act$details$projectId)
+      } else if (act$type == "projectCopy") {
+        sprintf('<p class="text-secondary small mt-1">Source: %s</p>', act$details$oldName)
+      } else if (act$type == "profileUpdate") {
+        sprintf('<p class="text-secondary small mt-1">Username set to: %s</p>', act$details$username)
+      } else {
+        ""
+      }
+
+      sprintf(
+        '<li class="timeline-event">
+          <div class="timeline-event-icon">%s</div>
+          <div class="card timeline-event-card">
+            <div class="card-body">
+              <div class="text-secondary float-end">%s</div>
+              <h4 class="mb-0">%s</h4>
+              %s
+            </div>
+          </div>
+        </li>',
+        icon_html,
+        friendly_time,
+        title,
+        details_text
+      )
+    })
+
+    HTML(paste0('<ul class="timeline">', paste(timeline_items, collapse = ""), '</ul>'))
+  }
+
+  output$profile_page_ui <- renderUI({
+    # Dependency on trigger
+    trigger <- usageStatsTrigger()
+    
+    avatar_html <- generateAvatarSpanHTML(avatarClass = "avatar-github rounded-circle shadow-sm")
+    profile <- loadUserProfile()
+    
+    # Scrollable Timeline Section
+    timeline_content <- renderTimelineHTML()
+    
+    tags$div(
+      class = "page",
+      tags$div(
+        class = "page-wrapper",
+        tags$div(
+          class = "profile-page-view",
+          style = "min-height: 100vh; background: color-mix(in srgb, var(--tblr-primary) 4%, var(--tblr-bg-surface)) !important; padding: 2.5rem 0; font-family: var(--tblr-body-font-family); font-feature-settings: 'cv03', 'cv04', 'cv11';",
+          tags$div(
+            class = "container-xl",
+        # Custom styles for the scrollable container
+        tags$head(tags$style("
+          .scrollable-timeline-container {
+            max-height: 675px;
+            overflow-y: auto;
+            padding-right: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--tblr-border-color) transparent;
+          }
+          .scrollable-timeline-container::-webkit-scrollbar {
+            width: 6px;
+          }
+          .scrollable-timeline-container::-webkit-scrollbar-thumb {
+            background-color: var(--tblr-border-color);
+            border-radius: 10px;
+          }
+          .avatar-github {
+            width: 120px !important;
+            height: 120px !important;
+            font-size: 3rem !important;
+            line-height: 120px !important;
+            border: 3px solid var(--tblr-bg-surface);
+          }
+        ")),
+        
+        # Navigation Header
+        tags$div(
+          class = "d-flex align-items-center mb-5",
+          tags$h1(class = "m-0", style = "font-weight: 700;", "User Profile"),
+          tags$div(
+            class = "ms-auto",
+            tags$button(
+              class = "btn btn-outline-secondary btn-pill",
+              onclick = "if (window.Shiny) Shiny.setInputValue('showDashboard', Date.now(), {priority:'event'});",
+              HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>'),
+              "Back to Dashboard"
+            )
+          )
+        ),
+        
+        tags$div(
+          class = "row g-4",
+          # Left Column: Profile Card
+          tags$div(
+            class = "col-lg-4",
+            tags$div(
+              class = "card h-100",
+              tags$div(
+                class = "card-body text-center p-5",
+                HTML(avatar_html),
+                tags$h2(class = "mt-3 mb-0", textOutput("userName", inline = TRUE)),
+                tags$p(class = "text-secondary", textOutput("userInstitution", inline = TRUE)),
+                tags$div(class = "hr-text", "About"),
+                tags$div(
+                  class = "text-start mt-4",
+                  tags$label(class = "form-label text-muted small uppercase fw-bold", "Email"),
+                  tags$p(class = "mb-3", textOutput("userEmail", inline = TRUE)),
+                  tags$label(class = "form-label text-muted small uppercase fw-bold", "Bio"),
+                  tags$p(class = "mb-3", textOutput("userBio", inline = TRUE)),
+                  tags$label(class = "form-label text-muted small uppercase fw-bold", "Member Since"),
+                  tags$p(class = "mb-0", textOutput("userMemberSince", inline = TRUE)),
+                  
+                  tags$div(class = "hr-text", "Project Composition"),
+                  tags$div(
+                    class = "mt-3",
+                    tags$div(
+                      class = "d-flex align-items-center justify-content-between mb-1",
+                      tags$span(class = "text-muted small", "Active Projects"),
+                      tags$span(class = "fw-bold small", textOutput("pctActive", inline = TRUE))
+                    ),
+                    uiOutput("activeProjectBar"),
+                    tags$div(
+                      class = "mt-4",
+                      tags$label(class = "form-label text-muted small uppercase fw-bold", "Tag Distribution"),
+                      uiOutput("tagDistributionBar"),
+                      tags$div(class = "mt-2", uiOutput("tagDistributionLegend"))
+                    )
+                  )
+                )
+              ),
+              tags$div(
+                class = "card-footer text-center bg-transparent",
+                tags$button(
+                  class = "btn btn-primary w-100",
+                  onclick = "openEditProfileOverlay()",
+                  "Edit Profile"
+                )
+              )
+            )
+          ),
+          
+          # Right Column: Timeline & Stats
+          tags$div(
+            class = "col-lg-8",
+            # Stats Cards Row
+            tags$div(
+              class = "row g-3 mb-4",
+              tags$div(
+                class = "col-4",
+                tags$div(
+                  class = "card card-sm",
+                  tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-primary text-white avatar", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19h-7a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v3.5" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("projectCount", inline = TRUE)), tags$div(class = "text-secondary", "Projects"))))
+                )
+              ),
+              tags$div(
+                class = "col-4",
+                tags$div(
+                  class = "card card-sm",
+                  tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-green text-white avatar", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("totalFiles", inline = TRUE)), tags$div(class = "text-secondary", "Files"))))
+                )
+              ),
+              tags$div(
+                class = "col-4",
+                tags$div(
+                  class = "card card-sm",
+                  tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-orange text-white avatar", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8l0 4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("lastActivity", inline = TRUE)), tags$div(class = "text-secondary", "Last Seen"))))
+                )
+              )
+            ),
+            
+            # Scrollable Timeline Card
+            tags$div(
+              class = "card",
+              tags$div(
+                class = "card-header",
+                tags$h3(class = "card-title", "Activity Feed")
+              ),
+              tags$div(
+                class = "card-body",
+                # Wrap timeline in a scrollable div
+                tags$div(
+                  class = "scrollable-timeline-container",
+                  timeline_content
+                )
+              )
+            )
+            )
+          )
+        )
+      )
+    )
+  )
+})
 

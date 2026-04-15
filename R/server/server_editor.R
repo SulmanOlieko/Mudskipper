@@ -704,6 +704,7 @@
       }
     }
 
+
     return(unique(bibFiles))
   }
 
@@ -1139,21 +1140,7 @@
     )
   })
 
-  # Track session start ONCE per day (not every 5 minutes)
-  sessionTracked <- reactiveVal(FALSE)
-
-  observe({
-    if (!sessionTracked()) {
-      recordDailyActivity(
-        "session",
-        list(
-          action = "app_start",
-          timestamp = Sys.time()
-        )
-      )
-      sessionTracked(TRUE)
-    }
-  })
+  #   # Session start tracking disabled as per user request
 
   # COMPREHENSIVE VS Code Material Icon Theme Implementation
   # Verified icon names from the official repository
@@ -1509,15 +1496,6 @@
 
     mk_icon(icon_name)
   }
-  rv_files <- reactiveVal(character(0)) # Will be populated when project loads
-  currentFile <- reactiveVal("")
-  compileLog <- reactiveVal("")
-  rv_compiled <- reactiveVal(character(0)) # Initialize empty, update when user logs in
-  dockerLog <- reactiveVal("")
-  outlineData <- reactiveVal(NULL)
-  lintAnnotations <- reactiveVal(list())
-  compileAnnotations <- reactiveVal(list())
-  commentUpdate <- reactiveVal(0)
 
   # --- REAL-TIME LINTING (restored from legacy app) ---
   # Debounced observer fires 1 second after last keystroke; never waits for compilation

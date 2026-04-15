@@ -935,6 +935,107 @@
     as.character(total)
   })
 
+  output$pctActive <- renderText({
+    change_trigger <- projectChangeTrigger()
+    projects <- loadProjects()
+    if (length(projects) == 0) return("0%")
+    active <- sum(sapply(projects, function(p) (p$status %||% "active") == "active"))
+    total <- length(projects)
+    sprintf("%.0f%%", (active / total) * 100)
+  })
+
+  output$activeProjectBar <- renderUI({
+    change_trigger <- projectChangeTrigger()
+    projects <- loadProjects()
+    total <- length(projects)
+    active <- if(total == 0) 0 else sum(sapply(projects, function(p) (p$status %||% "active") == "active"))
+    pct <- if(total == 0) 0 else (active/total)*100
+    
+    tags$div(
+      class = "progress progress-sm",
+      tags$div(
+        class = "progress-bar bg-primary",
+        style = sprintf("width: %d%%", as.integer(pct)),
+        role = "progressbar",
+        aria_valuenow = as.integer(pct),
+        aria_valuemin = "0",
+        aria_valuemax = "100"
+      )
+    )
+  })
+
+  output$tagDistributionBar <- renderUI({
+    change_trigger <- projectChangeTrigger()
+    projects <- loadProjects()
+    
+    all_tags <- list()
+    for (p in projects) {
+      if (!is.null(p$tags)) {
+        for (t in p$tags) {
+          all_tags <- c(all_tags, list(t))
+        }
+      }
+    }
+    
+    if (length(all_tags) == 0) {
+      return(tags$div(class = "text-muted small", "No tags assigned yet."))
+    }
+    
+    tag_counts <- table(sapply(all_tags, function(t) t$name))
+    tag_colors <- list()
+    for (t in all_tags) {
+      tag_colors[[t$name]] <- t$color
+    }
+    
+    tag_names <- names(tag_counts)
+    # Sort by frequency
+    tag_names <- tag_names[order(tag_counts, decreasing = TRUE)]
+    total_tags <- length(all_tags)
+    
+    bars <- lapply(tag_names, function(name) {
+      pct <- (tag_counts[[name]] / total_tags) * 100
+      color <- tag_colors[[name]] %||% "blue"
+      tags$div(
+        class = sprintf("progress-bar bg-%s", color),
+        style = sprintf("width: %f%%", pct)
+      )
+    })
+    
+    tags$div(class = "progress progress-sm progress-stacked", bars)
+  })
+
+  output$tagDistributionLegend <- renderUI({
+    change_trigger <- projectChangeTrigger()
+    projects <- loadProjects()
+    
+    all_tags <- list()
+    for (p in projects) {
+        if (!is.null(p$tags)) {
+            for (t in p$tags) all_tags <- c(all_tags, list(t))
+        }
+    }
+    if (length(all_tags) == 0) return(NULL)
+    
+    tag_counts <- table(sapply(all_tags, function(t) t$name))
+    tag_colors <- list()
+    for (t in all_tags) tag_colors[[t$name]] <- t$color
+    tag_names <- names(tag_counts)
+    tag_names <- tag_names[order(tag_counts, decreasing = TRUE)]
+    total_tags <- length(all_tags)
+    
+    legend_items <- lapply(tag_names, function(name) {
+      color <- tag_colors[[name]] %||% "blue"
+      pct <- (tag_counts[[name]] / total_tags) * 100
+      tags$div(
+        class = "d-flex align-items-center me-3 mb-1",
+        tags$span(class = sprintf("status-dot bg-%s me-2", color)),
+        tags$span(class = "text-muted small", sprintf("%s (%.0f%%)", name, pct))
+      )
+    })
+    
+    tags$div(class = "d-flex flex-wrap mt-2", legend_items)
+  })
+
   output$lastActivity <- renderText({
     change_trigger <- projectChangeTrigger()
     projects <- loadProjects()
@@ -1339,6 +1440,13 @@
                     if (!is.null(activeProjectId())) {
                       updateProjectFileCount(activeProjectId())
                     }
+
+                    # Record activity
+                    recordDailyActivity(activityType = "fileDelete", details = list(
+                      projectId = activeProjectId(),
+                      projectName = activeProject()$name,
+                      file = basename(item)
+                    ))
 
                     showTablerAlert(
                       "success",

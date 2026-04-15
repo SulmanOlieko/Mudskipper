@@ -742,6 +742,14 @@
           5000
         )
 
+        # Record activity
+        recordDailyActivity(activityType = "projectCopy", details = list(
+          oldId = oldProjId,
+          oldName = oldProjData$name,
+          newId = newId,
+          newName = newName
+        ))
+
         # Switch workspace
         loadProjectToWorkspace(newId)
       },
@@ -1048,6 +1056,13 @@
           insertLatexFigure(input$fig_upload_name, caption, label, width)
           rv_files(getVisibleFiles(projDir))
 
+          # Record activity
+          recordDailyActivity(activityType = "fileCreate", details = list(
+            projectId = activeProjectId(),
+            projectName = activeProject()$name,
+            file = input$fig_upload_name
+          ))
+
           # 4. Clean up Dropzone UI
           shinyjs::runjs(
             "
@@ -1074,6 +1089,13 @@
           file.copy(input$fig_upload_fallback$datapath, dest, overwrite = TRUE)
           insertLatexFigure(input$fig_upload_name, caption, label, width)
           rv_files(getVisibleFiles(projDir))
+
+          # Record activity
+          recordDailyActivity(activityType = "fileCreate", details = list(
+            projectId = activeProjectId(),
+            projectName = activeProject()$name,
+            file = input$fig_upload_name
+          ))
         },
         error = function(e) {
           showTablerAlert(
@@ -1174,6 +1196,13 @@
           file.copy(sourcePath, destPath, overwrite = TRUE)
           insertLatexFigure(input$fig_other_name, caption, label, width)
           rv_files(getVisibleFiles(projDir))
+
+          # Record activity
+          recordDailyActivity(activityType = "fileCreate", details = list(
+            projectId = activeProjectId(),
+            projectName = activeProject()$name,
+            file = input$fig_other_name
+          ))
         },
         error = function(e) {
           showTablerAlert(
@@ -1259,6 +1288,13 @@
         if (file.exists(destPath)) {
           insertLatexFigure(input$fig_url_name, caption, label, width)
           rv_files(getVisibleFiles(projDir))
+
+          # Record activity
+          recordDailyActivity(activityType = "fileCreate", details = list(
+            projectId = activeProjectId(),
+            projectName = activeProject()$name,
+            file = input$fig_url_name
+          ))
         } else {
           stop("Download completed but file not found.")
         }
@@ -1346,6 +1382,12 @@
     # --- 2. Create & Append ---
     if (!file.exists(bibFile)) {
       file.create(bibFile)
+      # Record activity if new file created
+      recordDailyActivity(activityType = "fileCreate", details = list(
+        projectId = activeProjectId(),
+        projectName = activeProject()$name,
+        file = target_file
+      ))
     }
 
     # Append the new entry

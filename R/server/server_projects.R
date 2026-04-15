@@ -427,6 +427,13 @@
         # Trigger UI update
         projectChangeTrigger(projectChangeTrigger() + 1)
 
+        # Record activity
+        recordDailyActivity(activityType = "projectCreate", details = list(
+          projectId = newId,
+          name = name,
+          template = template
+        ))
+
         return(newId)
       },
       error = function(e) {
@@ -449,6 +456,16 @@
     pDir <- getUserProjectDir(uid)
 
     projects <- loadProjects()
+    
+    # Find project name for logging before deleting
+    projName <- "Unknown"
+    for (p in projects) {
+      if (p$id == projectId) {
+        projName <- p$name
+        break
+      }
+    }
+    
     projects <- projects[sapply(projects, function(x) x$id != projectId)]
     saveProjects(projects)
 
@@ -457,6 +474,12 @@
     if (dir.exists(projDir)) {
       unlink(projDir, recursive = TRUE)
     }
+
+    # Record activity
+    recordDailyActivity(activityType = "projectDelete", details = list(
+      projectId = projectId,
+      name = projName
+    ))
 
     # Trigger UI update
     projectChangeTrigger(projectChangeTrigger() + 1)

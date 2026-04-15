@@ -8,16 +8,16 @@ app_ui <- fluidPage(
     <!-- Banners -->
       <div id="connectivityBanner" class="banner hidden">
       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-      Your internet connectivity is slow or down. Retrying sync in 
+      Your internet connectivity is slow or down. Retrying sync in
     <span id="retryCountdown">10</span>
       seconds… Changes you make offline are saved and will be synced when you get online.
     </div>
-      
+
       <div id="onlineBanner" class="banner hidden">
       <i class="fa-solid fa-signal"></i>
       You are back online!
       </div>
-      
+
       <div id="alertContainer"
         class="alert-container"
         style="position: fixed; top: 80px; right: 20px; z-index: 1060; width: 400px; max-width: 90vw;">
@@ -200,7 +200,6 @@ app_ui <- fluidPage(
         )
       )
     ),
-
     tags$style(HTML(
       "
       #wordCountOverlay {
@@ -214,13 +213,12 @@ app_ui <- fluidPage(
       #wordCountOverlay.show { display: flex; opacity: 1; }
     "
     )),
-
     HTML(
       '
      <!-- --- TABLE BUILDER --- -->
 <div id="tableOverlay">
   <div class="settings-dialog" style="max-width: 1000px;">
-    
+
     <!-- Header -->
     <div class="settings-header">
       <h3>Visual Table Builder</h3>
@@ -268,7 +266,7 @@ app_ui <- fluidPage(
             class="nav-link"
             aria-selected="false"
             tabindex="-1">
-  
+
             <input
               type="color"
               id="cellTextColor"
@@ -744,7 +742,6 @@ app_ui <- fluidPage(
                   rows = 2
                 ),
                 textInput("fig_proj_label", "Label", placeholder = "fig:label"),
-
                 tags$label(class = "form-label", "Width"),
                 div(
                   class = "btn-group w-100",
@@ -810,7 +807,6 @@ app_ui <- fluidPage(
                                 });
                               "
                 )),
-
                 div(
                   class = "mt-4 pt-3 border-top text-end",
                   tags$button(
@@ -850,7 +846,6 @@ app_ui <- fluidPage(
                   "Label",
                   placeholder = "fig:label"
                 ),
-
                 tags$label(class = "form-label", "Width"),
                 div(
                   class = "btn-group w-100",
@@ -909,7 +904,6 @@ app_ui <- fluidPage(
                     "1"
                   )
                 ),
-
                 tags$script(HTML(
                   "
                                 $(document).on('change', 'input[name=\"fig_other_width\"]', function() {
@@ -917,7 +911,6 @@ app_ui <- fluidPage(
                                 });
                               "
                 )),
-
                 div(
                   class = "mt-4 pt-3 border-top text-end",
                   tags$button(
@@ -956,7 +949,6 @@ app_ui <- fluidPage(
                   rows = 2
                 ),
                 textInput("fig_url_label", "Label", placeholder = "fig:label"),
-
                 tags$label(class = "form-label", "Width"),
                 div(
                   class = "btn-group w-100",
@@ -1015,7 +1007,6 @@ app_ui <- fluidPage(
                     "1"
                   )
                 ),
-
                 tags$script(HTML(
                   "
                                 $(document).on('change', 'input[name=\"fig_url_width\"]', function() {
@@ -1023,7 +1014,6 @@ app_ui <- fluidPage(
                                 });
                               "
                 )),
-
                 div(
                   class = "mt-4 pt-3 border-top text-end",
                   tags$button(
@@ -1045,11 +1035,10 @@ app_ui <- fluidPage(
         )
       )
     ),
-
     HTML(
       '
-    
- <! --- HISTORY OVERLAY (Fixed Layout) ---> 
+
+ <! --- HISTORY OVERLAY (Fixed Layout) --->
   <div id="historyOverlay">
   <header class="navbar navbar-expand-sm d-print-none border-bottom">
     <div class="container-fluid">
@@ -1152,7 +1141,6 @@ app_ui <- fluidPage(
         )
       )
     ),
-
     HTML(
       '
 
@@ -1194,7 +1182,7 @@ app_ui <- fluidPage(
       }
       #copyProjectOverlay.show { display: flex; opacity: 1; }
     </style>
-        
+
 <div id="settingsOverlay">
       <div class="settings-dialog" style="max-width: 1000px;">
         <div class="settings-header">
@@ -1232,13 +1220,13 @@ app_ui <- fluidPage(
                     <p class="form-hint mb-2">Choose a color mode.</p>
                     <div class="form-selectgroup">
                       <label class="form-selectgroup-item">
-                        <input type="radio" name="theme" value="light" class="form-selectgroup-input" checked />
+                        <input type="radio" name="theme" value="light" class="form-selectgroup-input" />
                         <span class="form-selectgroup-label">
                           <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><circle cx="12" cy="12" r="4" /><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" /></svg>
                         </span>
                       </label>
                       <label class="form-selectgroup-item">
-                        <input type="radio" name="theme" value="dark" class="form-selectgroup-input" />
+                        <input type="radio" name="theme" value="dark" class="form-selectgroup-input" checked />
                         <span class="form-selectgroup-label">
                           <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg>
                         </span>
@@ -1266,7 +1254,7 @@ app_ui <- fluidPage(
                     <label class="form-label">Color scheme</label>
                     <p class="form-hint mb-2">Choose a color scheme.</p>
                     <div class="row g-2">
-                      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="blue" class="form-colorinput-input" checked /><span class="form-colorinput-color bg-blue"></span></label></div>
+                      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="blue" class="form-colorinput-input" /><span class="form-colorinput-color bg-blue"></span></label></div>
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="azure" class="form-colorinput-input" /><span class="form-colorinput-color bg-azure"></span></label></div>
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="indigo" class="form-colorinput-input" /><span class="form-colorinput-color bg-indigo"></span></label></div>
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="purple" class="form-colorinput-input" /><span class="form-colorinput-color bg-purple"></span></label></div>
@@ -1275,7 +1263,7 @@ app_ui <- fluidPage(
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="orange" class="form-colorinput-input" /><span class="form-colorinput-color bg-orange"></span></label></div>
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="yellow" class="form-colorinput-input" /><span class="form-colorinput-color bg-yellow"></span></label></div>
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="lime" class="form-colorinput-input" /><span class="form-colorinput-color bg-lime"></span></label></div>
-                      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="green" class="form-colorinput-input" /><span class="form-colorinput-color bg-green"></span></label></div>
+                      <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="green" class="form-colorinput-input" checked /><span class="form-colorinput-color bg-green"></span></label></div>
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="teal" class="form-colorinput-input" /><span class="form-colorinput-color bg-teal"></span></label></div>
                       <div class="col-6 col-sm-4 col-md-3 col-lg-2"><label class="form-colorinput"><input name="theme-primary" type="radio" value="cyan" class="form-colorinput-input" /><span class="form-colorinput-color bg-cyan"></span></label></div>
                     </div>
@@ -1285,9 +1273,9 @@ app_ui <- fluidPage(
                     <label class="form-label">Theme base</label>
                     <p class="form-hint mb-2">Choose a gray shade.</p>
                     <div class="form-selectgroup">
-                      <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="slate" class="form-selectgroup-input" checked/><span class="form-selectgroup-label">Slate</span></label>
+                      <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="slate" class="form-selectgroup-input" /><span class="form-selectgroup-label">Slate</span></label>
                       <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="gray" class="form-selectgroup-input" /><span class="form-selectgroup-label">Gray</span></label>
-                      <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="zinc" class="form-selectgroup-input" /><span class="form-selectgroup-label">Zinc</span></label>
+                      <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="zinc" class="form-selectgroup-input" checked /><span class="form-selectgroup-label">Zinc</span></label>
                       <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="neutral" class="form-selectgroup-input" /><span class="form-selectgroup-label">Neutral</span></label>
                       <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="stone" class="form-selectgroup-input" /><span class="form-selectgroup-label">Stone</span></label>
                       <label class="form-selectgroup-item"><input type="radio" name="theme-base" value="black" class="form-selectgroup-input" /><span class="form-selectgroup-label">Black</span></label>
@@ -1307,7 +1295,7 @@ app_ui <- fluidPage(
                   </div>
 
                   <div class="d-flex gap-2 mt-4">
-                    <button type="button" class="btn w-100" id="reset-settings-overlay">
+                    <button type="reset" class="btn w-100" id="reset-settings-overlay" value="reset">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon me-2"><path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5" /></svg>
                       Reset changes
                     </button>
@@ -1487,7 +1475,7 @@ app_ui <- fluidPage(
         </div>
       </div>
     </div>
-    
+
     <div id="addFilesOverlay">
       <div class="settings-dialog" style="max-width: 1000px;">
         <div class="settings-header">
@@ -1501,22 +1489,22 @@ app_ui <- fluidPage(
                 <i class="fa-solid fa-file-circle-plus"></i>&nbsp;
                 New file
               </a>
-              
+
               <a class="nav-link" href="#add-folder-tab" role="tab" onclick="switchAddFilesTab(event, \'add-folder-tab\')">
                 <i class="fa-solid fa-folder-plus"></i>&nbsp;
                 New folder
               </a>
-              
+
               <a class="nav-link" href="#upload-tab" role="tab" onclick="switchAddFilesTab(event, \'upload-tab\')">
                 <i class="fa-solid fa-upload"></i>&nbsp;
                 Upload files
               </a>
             </div>
           </div>
-          
+
           <div class="settings-content">
             <div class="tab-content">
-              
+
               <div class="tab-pane show active" id="add-file-tab" role="tabpanel">
               <h2 class="mb-4">File name</h2>
                 <div class="mb-3">
@@ -1524,26 +1512,26 @@ app_ui <- fluidPage(
                   <input type="text" class="form-control" id="newFileNameInput" value="fileName.tex" placeholder="fileName.tex" />
                   <div class="form-text text-muted">e.g., main.tex, references.bib, notes.txt</div>
                 </div>
-                
+
                   <div class="mt-4 pt-3 border-top text-end">
                     <button type="button" class="btn" onclick="closeAddFilesOverlay()">Cancel</button>
                     <button type="button" class="btn btn-primary" id="createNewFileBtn">Create</button>
                   </div>
               </div>
-              
+
               <div class="tab-pane" id="add-folder-tab" role="tabpanel">
               <h2 class="mb-4">Folder name</h2>
                 <div class="mb-3">
                   <label class="form-label required">Input folder name</label>
                   <input type="text" class="form-control" id="newFolderNameInput" placeholder="folder name" />
                 </div>
-                
+
                  <div class="mt-4 pt-3 border-top text-end">
                     <button type="button" class="btn" onclick="closeAddFilesOverlay()">Cancel</button>
                     <button type="button" class="btn btn-primary" id="createNewFolderBtn">Create</button>
                   </div>
               </div>
-              
+
               <div class="tab-pane" id="upload-tab" role="tabpanel">
               <h2 class="mb-4">Upload</h2>
                 <form class="dropzone" id="dropzone-upload" action="." autocomplete="off" novalidate>
@@ -1555,19 +1543,19 @@ app_ui <- fluidPage(
                     <span class="dropzone-msg-desc">Upload .tex, .bib, images, PDFs, and other project files</span>
                   </div>
                 </form>
-                
+
                   <div class="mt-4 pt-3 border-top text-end">
                     <button type="button" class="btn" onclick="closeAddFilesOverlay()">Cancel</button>
                     <button type="button" class="btn btn-primary" id="processUploadBtn">Upload</button>
                   </div>
-                
+
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
+
     <style>
       #addFilesOverlay {
         position: fixed;
@@ -1588,7 +1576,7 @@ app_ui <- fluidPage(
       #addFilesOverlay .tab-pane { display: none; }
       #addFilesOverlay .tab-pane.active { display: block; }
     </style>
-    
+
     <div id="createProjectOverlay">
       <div class="settings-dialog" style="max-width: 1000px;">
         <div class="settings-header">
@@ -1617,7 +1605,7 @@ app_ui <- fluidPage(
                   &nbsp;
                 Blank project
               </a>
-              
+
               <a class="nav-link" href="#create-upload-tab" role="tab" onclick="switchCreateProjectTab(event, \'create-upload-tab\')">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1647,10 +1635,10 @@ app_ui <- fluidPage(
               </a>
             </div>
           </div>
-          
+
           <div class="settings-content">
             <div class="tab-content">
-              
+
               <div class="tab-pane show active" id="create-blank-tab" role="tabpanel">
                 <h2 class="mb-4">Start from a template</h2>
                 <div class="mb-3">
@@ -1685,7 +1673,7 @@ app_ui <- fluidPage(
                   <label class="form-label">Description</label>
                   <textarea class="form-control" id="uploadProjectDesc" rows="2" placeholder="Description..."></textarea>
                 </div>
-                
+
                 <label class="form-label">Upload project files</label>
                 <form class="dropzone" id="dropzone-project" action="." autocomplete="off" novalidate>
                   <div class="fallback">
@@ -1696,7 +1684,7 @@ app_ui <- fluidPage(
                     <span class="dropzone-msg-desc">Upload .tex, .bib, images, etc.</span>
                   </div>
                 </form>
-                
+
                 <div class="mt-4 pt-3 border-top text-end">
                   <button type="button" class="btn" onclick="closeCreateProjectOverlay()">Cancel</button>
                    <button type="button" class="btn btn-primary" id="btnCreateFromUpload">Upload</button>
@@ -1710,7 +1698,7 @@ app_ui <- fluidPage(
                   <input type="text" class="form-control" id="importZipName" placeholder="Leave empty to use compressed filename">
                   <small class="form-hint">The contents of the zip file will be extracted into the new project folder.</small>
                 </div>
-                
+
                 <div class="mb-3">
                   <label class="form-label required">Select compressed file</label>
                   <form class="dropzone" id="dropzone-import-zip" action="." autocomplete="off" style="border: 2px dashed var(--tblr-border-color); background: var(--tblr-bg-surface-secondary);">
@@ -1720,13 +1708,13 @@ app_ui <- fluidPage(
                     </div>
                   </form>
                 </div>
-              
+
                 <div class="mt-4 pt-3 border-top text-end">
                   <button type="button" class="btn me-2" onclick="closeCreateProjectOverlay()">Cancel</button>
                   <button type="button" class="btn btn-primary" id="btnImportZip">Import Project</button>
                 </div>
               </div>
-              
+
 
             </div>
           </div>
@@ -1753,13 +1741,13 @@ app_ui <- fluidPage(
               </a>
             </div>
           </div>
-          
+
           <div class="settings-content">
             <div class="tab-content">
               <div class="tab-pane show active" id="edit-general-tab" role="tabpanel">
                 <h2 class="mb-4">Project settings</h2>
                 <input type="hidden" id="editProjectId" />
-                
+
                 <div class="mb-3">
                   <label class="form-label">Project name</label>
                   <input type="text" class="form-control" id="editProjectName" />
@@ -1768,7 +1756,7 @@ app_ui <- fluidPage(
                   <label class="form-label">Description</label>
                   <textarea class="form-control" id="editProjectDesc" rows="3"></textarea>
                 </div>
-                
+
                 <div class="mt-4 pt-3 border-top text-end">
                   <button type="button" class="btn" onclick="closeEditProjectOverlay()">Cancel</button>
                   <button type="button" class="btn btn-primary" id="btnSaveProjectEdit">Save</button>
@@ -1818,7 +1806,7 @@ app_ui <- fluidPage(
                 </svg>
                 General info
               </a>
-              
+
               <a class="nav-link" href="#profile-avatar-tab" role="tab" onclick="switchEditProfileTab(event, \'profile-avatar-tab\')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                   <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
@@ -1830,10 +1818,10 @@ app_ui <- fluidPage(
               </a>
             </div>
           </div>
-          
+
           <div class="settings-content">
             <div class="tab-content">
-              
+
               <div class="tab-pane show active" id="profile-general-tab" role="tabpanel">
                 <h2 class="mb-4">Personal information</h2>
                 <div class="mb-3">
@@ -1856,7 +1844,7 @@ app_ui <- fluidPage(
 
               <div class="tab-pane" id="profile-avatar-tab" role="tabpanel">
                 <h2 class="mb-4">Change profile picture</h2>
-                
+
                 <form class="dropzone" id="dropzone-profile" action="." autocomplete="off" novalidate>
                   <div class="fallback">
                     <input name="file" type="file" />
@@ -1867,12 +1855,12 @@ app_ui <- fluidPage(
                   </div>
                 </form>
               </div>
-              
+
               <div class="mt-4 pt-3 border-top text-end">
                  <button type="button" class="btn" onclick="closeEditProfileOverlay()">Cancel</button>
                  <button type="button" class="btn btn-primary ms-2" id="saveProfileChangesBtn">Save</button>
               </div>
-              
+
             </div>
           </div>
         </div>
@@ -1898,7 +1886,7 @@ app_ui <- fluidPage(
       }
       #editProfileOverlay .tab-pane { display: none; }
       #editProfileOverlay .tab-pane.active { display: block; }
-      
+
       /* Circular preview for profile dropzone */
       #dropzone-profile {
         max-width: 400px;
@@ -1911,7 +1899,6 @@ app_ui <- fluidPage(
     </style>
     '
     ),
-
     tags$head(
       shinyjs::useShinyjs(),
       tags$script(src = "theme.js", defer = NA),
@@ -1975,16 +1962,14 @@ app_ui <- fluidPage(
       tags$script(
         src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
       ),
-      #tags$script(src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"),
+      # tags$script(src = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"),
 
       tags$script(
         src = "https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"
       ),
-
       tags$script(
         src = "https://cdn.jsdelivr.net/npm/typo-js@1.0.3/typo.min.js"
       ),
-
       tags$link(
         href = "https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.css",
         rel = "stylesheet"
@@ -1992,7 +1977,6 @@ app_ui <- fluidPage(
       tags$script(
         src = "https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/min/dropzone.min.js"
       ),
-
       tags$script(
         src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
       ),
@@ -2014,44 +1998,44 @@ app_ui <- fluidPage(
           });
         });
       }
-      
+
       // =================== PRELOADER REMOVAL LOGIC ===================
       (function() {
         let preloaderRemoved = false;
-        
+
         // Function to hide preloader (can only run once)
         function hidePreloader(reason) {
           if (preloaderRemoved) return;
           preloaderRemoved = true;
-          
+
           const preloader = document.getElementById('app-preloader');
           const appContent = document.getElementById('app-content');
-          
+
           if (preloader) {
             preloader.classList.add('fade-out');
             setTimeout(function() {
               preloader.remove();
             }, 500);
           }
-          
+
           if (appContent) {
             appContent.classList.add('visible');
           }
-          
+
         }
-        
+
         // FORCE REMOVAL AFTER 7 SECONDS
         setTimeout(function() {
           hidePreloader('7-second force timeout');
         }, 6000);
-        
+
         // Try to remove if Shiny connects
         $(document).on('shiny:connected', function() {
           setTimeout(function() {
             hidePreloader('Shiny connected');
           }, 6000);
         });
-        
+
         // Optional: Try to remove when resources load
         window.addEventListener('load', function() {
           setTimeout(function() {
@@ -2060,10 +2044,9 @@ app_ui <- fluidPage(
         });
       })();
 
-      
+
     "
       )),
-
       tags$script(HTML(
         "
   window.onload = function () {
@@ -2071,17 +2054,17 @@ app_ui <- fluidPage(
     if (!document.getElementById('hiddenEqInput')) {
       var hiddenInput = document.createElement('textarea');
       hiddenInput.id = 'hiddenEqInput';
-      
+
       // Use the HTML 'hidden' attribute as requested
       hiddenInput.setAttribute('hidden', '');
-      
-      // SAFETY NET: Move it off-screen. 
+
+      // SAFETY NET: Move it off-screen.
       // This prevents the library from making it visible if it overrides the 'hidden' attribute.
       hiddenInput.style.position = 'absolute';
       hiddenInput.style.left = '-9999px';
       hiddenInput.style.top = '0';
       hiddenInput.style.opacity = '0';
-      
+
       document.body.appendChild(hiddenInput);
     }
 
@@ -2093,8 +2076,8 @@ app_ui <- fluidPage(
     eqInterface.insert = function(latex) {
       var editor = ace.edit('sourceEditor');
       if(editor) {
-        editor.insert(latex); 
-        editor.focus();       
+        editor.insert(latex);
+        editor.focus();
       }
     };
 
@@ -2125,40 +2108,40 @@ app_ui <- fluidPage(
 }
 
 /* =============================== Layout =============================== */
-#mainArea{ 
-  height:94vh; 
-  display:flex; 
+#mainArea{
+  height:94vh;
+  display:flex;
   flex-wrap: nowrap; /* Prevent wrapping */
   width: 100%;       /* Ensure full width context */
-  overflow:hidden; 
-  background:var(--bs-body-bg)!important; 
+  overflow:hidden;
+  background:var(--bs-body-bg)!important;
 }
 
 #utilityRail{
-  width:38px; 
-  min-width:38px; 
+  width:38px;
+  min-width:38px;
   background: var(--tblr-body-bg);
   border-right:1px solid var(--tblr-border-color);
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
-  padding:10px 6px; 
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:10px 6px;
 }
 
-#fileSidebar, #editorArea, #pdfPreview { 
+#fileSidebar, #editorArea, #pdfPreview {
   height: 100%;
   color: var(--tblr-body-color)!important;
-  
+
   /* PREVENT PANES FROM SHRINKING AUTOMATICALLY (Browser logic) */
   flex-shrink: 0 !important;
   flex-grow: 0 !important;
-  
+
   /* FORCE PANES TO ACCEPT 0 WIDTH (Fixes gutters getting pushed off screen) */
-  min-width: 0 !important; 
-  overflow: hidden !important; 
+  min-width: 0 !important;
+  overflow: hidden !important;
 }
-#editorArea{ 
-  border-right:0px solid var(--bs-border-color)!important; 
+#editorArea{
+  border-right:0px solid var(--bs-border-color)!important;
 }
 
 #pdfViewUI.placeholder-active {
@@ -2166,9 +2149,9 @@ app_ui <- fluidPage(
   overflow: hidden;
 }
 
-#pdfPreview{ 
-  display:flex; 
-  flex-direction:column; 
+#pdfPreview{
+  display:flex;
+  flex-direction:column;
 }
 
 /* === Move settings button to the bottom of the utility rail === */
@@ -2184,21 +2167,21 @@ app_ui <- fluidPage(
 }
 
 /* =============================== Sidebar =============================== */
-#fileSidebar{ 
-  border-right:1px solid var(--bs-border-color)!important; 
-  overflow:hidden; 
+#fileSidebar{
+  border-right:1px solid var(--bs-border-color)!important;
+  overflow:hidden;
 }
-#fileSidebar.collapsed{ 
-  width:0!important; 
-  min-width:0!important; 
-  display:none!important; 
+#fileSidebar.collapsed{
+  width:0!important;
+  min-width:0!important;
+  display:none!important;
 }
 
 #filesPane, #outlinePane{
-  height:100%; 
-  display:flex; 
-  flex-direction:column; 
-  overflow:hidden; 
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
 }
 
 #filesPane .pane-body {
@@ -2239,13 +2222,13 @@ app_ui <- fluidPage(
 }
 
 /* ============================== Ace editor ============================== */
-.ace_editor{ 
-  border:1px solid var(--bs-border-color)!important; 
-  border-radius: 0px; 
-  box-shadow: none; 
+.ace_editor{
+  border:1px solid var(--bs-border-color)!important;
+  border-radius: 0px;
+  box-shadow: none;
 }
-#editorSplit{ 
-  height:calc(100% - 40px); 
+#editorSplit{
+  height:calc(100% - 40px);
 }
 
 /* ============================== Ace Editor Scrollbar Visibility ============================== */
@@ -2264,16 +2247,16 @@ app_ui <- fluidPage(
 /* THE RAIL (TRACK) - Now styled to be visible */
 .ace_scrollbar::-webkit-scrollbar-track {
   /* Use a secondary background color to distinguish the rail from the editor */
-  background: var(--tblr-bg-surface-secondary, #f1f5f9) !important; 
+  background: var(--tblr-bg-surface-secondary, #f1f5f9) !important;
   border-left: 1px solid var(--tblr-secondary) !important; /* Border separates rail from code */
 }
 
 /* THE THUMB (HANDLE) */
 .ace_scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--tblr-secondary-color, #9ca3af) !important; 
+  background-color: var(--tblr-secondary-color, #9ca3af) !important;
   border-radius: 10px;
   border: 3px solid transparent; /* Creates padding so thumb sits 'inside' the rail */
-  background-clip: content-box; 
+  background-clip: content-box;
 }
 
 /* Hover State */
@@ -2302,9 +2285,9 @@ app_ui <- fluidPage(
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-right: 8px;  
+  margin-right: 8px;
   margin-left: -16px;
-  vertical-align: middle; 
+  vertical-align: middle;
 }
 
 .ace_gutter-cell.ace_error::before {
@@ -2361,66 +2344,66 @@ app_ui <- fluidPage(
 
 /* =============================== PDF area =============================== */
 #pdfPreview .pdf-header{
-  padding:10px; 
+  padding:10px;
   background:var(--bs-light);
-  border-bottom:1px solid var(--bs-border-color); 
+  border-bottom:1px solid var(--bs-border-color);
   color:var(--bs-body-color);
-  display:flex; 
-  align-items:center; 
+  display:flex;
+  align-items:center;
   justify-content:space-between;
   /* Prevent header from shrinking/growing unexpectedly */
-  flex: 0 0 38px; 
+  flex: 0 0 38px;
 }
 
 /* ================================ Banners =============================== */
 .banner{
-  position:fixed; 
+  position:fixed;
   left:0;
   right:0;
   bottom: -1px;
   z-index:1052;
-  background:var(--tblr-orange); 
+  background:var(--tblr-orange);
   color:var(--tblr-white);
-  border: none; 
-  padding:1px 1px; 
-  border-radius: 0px; 
+  border: none;
+  padding:1px 1px;
+  border-radius: 0px;
   align-items: center;
   justify-content: center;
   text-align: center;
-  
+
 }
-#connectivityBanner{ 
-  position:fixed; 
+#connectivityBanner{
+  position:fixed;
   left:0;
   right:0;
   bottom: -1px;
   z-index:1052;
-  background:var(--tblr-orange); 
+  background:var(--tblr-orange);
   color:var(--tblr-white);
-  border: none; 
-  padding:1px 1px; 
-  border-radius: 0px; 
+  border: none;
+  padding:1px 1px;
+  border-radius: 0px;
   align-items: center;
   justify-content: center;
-  text-align: center; 
+  text-align: center;
 }
 #onlineBanner{
-  position:fixed; 
+  position:fixed;
   left:0;
   right:0;
   bottom: -1px;
   z-index:1052;
-  background:var(--tblr-green); 
+  background:var(--tblr-green);
   color:var(--tblr-white);
-  border: none; 
-  padding:1px 1px; 
-  border-radius: 0px; 
+  border: none;
+  padding:1px 1px;
+  border-radius: 0px;
   align-items: center;
   justify-content: center;
   text-align: center;
 }
-.hidden{ 
-  display:none!important; 
+.hidden{
+  display:none!important;
 }
 
 
@@ -2428,8 +2411,8 @@ app_ui <- fluidPage(
 #settingsOverlay {
   position: fixed;
   top: 0;
-  left: 0;    
-  right: 0;        
+  left: 0;
+  right: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
@@ -2457,7 +2440,7 @@ app_ui <- fluidPage(
   flex-direction: column;
   overflow: hidden;
 
-  margin: 5vh auto; 
+  margin: 5vh auto;
 }
 
 .settings-header {
@@ -2535,54 +2518,54 @@ app_ui <- fluidPage(
 }
 
 /* ============================ Kebab & menu ============================ */
-.kebab-wrap{ 
-  position:relative; 
-  flex:0 0 auto; 
+.kebab-wrap{
+  position:relative;
+  flex:0 0 auto;
 }
 .kebab-btn{
-  width:0px; 
-  height:0px; 
-  display:flex; 
-  align-items:center; 
+  width:0px;
+  height:0px;
+  display:flex;
+  align-items:center;
   justify-content:center;
-  background-color:inherit; 
+  background-color:inherit;
   cursor:pointer;
-  font-weight:700; 
+  font-weight:700;
   line-height:1;
   color:inherit;
   border:none !important;
 }
-.kebab-btn:hover{ 
-  background-color:none !important; 
+.kebab-btn:hover{
+  background-color:none !important;
   border:none !important;
 }
 
 .context-menu{
-  position:fixed; 
-  min-width:14rem; 
+  position:fixed;
+  min-width:14rem;
   z-index:1000;
   background-color: var(--tblr-body-bg) !important;
-  border:1px solid var(--tblr-border-color) !important; 
-  border-radius: var(--tblr-border-radius); 
-  display:none; 
-  padding:.5rem 0; 
+  border:1px solid var(--tblr-border-color) !important;
+  border-radius: var(--tblr-border-radius);
+  display:none;
+  padding:.5rem 0;
   color: inherit;
   font-size:.875rem;
 }
-.context-menu.open{ 
-  display:block; 
+.context-menu.open{
+  display:block;
 }
 .context-menu .menu-item{
   display:flex;
   align-items:center;
-  padding:.25rem 1rem; 
-  color:inherit; 
-  text-decoration:none; 
+  padding:.25rem 1rem;
+  color:inherit;
+  text-decoration:none;
   cursor:pointer;
   line-height:1.71429;
   margin:0;
 }
-.context-menu .menu-item:hover{ 
+.context-menu .menu-item:hover{
   background-color: var(--tblr-border-color) !important;
   color:inherit;
   border-left: 4px solid var(--tblr-primary) !important;
@@ -2590,35 +2573,35 @@ app_ui <- fluidPage(
 
 
 /* --- PDF fills panel; console is split + collapsible --- */
-#pdfPreview{ 
-  display:flex; 
-  flex-direction:column; 
+#pdfPreview{
+  display:flex;
+  flex-direction:column;
 }
-#pdfContainer{ 
-  flex:1 1 auto; 
-  overflow:hidden; 
+#pdfContainer{
+  flex:1 1 auto;
+  overflow:hidden;
 }
 
 /* Console container cooperates with Split.js; header stays 36px */
-#dockerConsoleContainer{ 
-  overflow:hidden; 
-  border-top:1px solid var(--bs-border-color); 
+#dockerConsoleContainer{
+  overflow:hidden;
+  border-top:1px solid var(--bs-border-color);
 }
-#dockerConsoleContainer .pdf-header{ 
-  min-height:36px; 
+#dockerConsoleContainer .pdf-header{
+  min-height:36px;
 }
-#dockerConsoleContainer .ace_editor{ 
-  height:calc(100% - 36px) !important; 
+#dockerConsoleContainer .ace_editor{
+  height:calc(100% - 36px) !important;
 }
 
 /* Collapsed state keeps only header visible (when not using Split sizing) */
-#dockerConsoleContainer.collapsed{ 
-  height:36px !important; 
+#dockerConsoleContainer.collapsed{
+  height:36px !important;
 }
-#dockerConsoleContainer.collapsed .ace_editor{ 
-  height:0 !important; 
-  opacity:0; 
-  pointer-events:none; 
+#dockerConsoleContainer.collapsed .ace_editor{
+  height:0 !important;
+  opacity:0;
+  pointer-events:none;
 }
 /* ========================= PROJECT CARDS (Code Block Skin - Final) ========================= */
 
@@ -2635,13 +2618,13 @@ app_ui <- fluidPage(
   --grad-end: var(--tblr-primary);
   --grad: linear-gradient(90deg, var(--grad-start), var(--grad-end));
   --muted: var(--tblr-secondary-color);
-  
+
   /* --- THEME INTEGRATION --- */
   background: var(--tblr-bg-surface);
   color: var(--tblr-body-color);
   border: 1px solid var(--tblr-border-color);
   border-radius: var(--tblr-border-radius);
-  
+
   /* --- LAYOUT & ANIMATION --- */
   position: relative;
   overflow: hidden;
@@ -2650,7 +2633,7 @@ app_ui <- fluidPage(
   height: 100%;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   cursor: pointer;
-  padding: 0; 
+  padding: 0;
   box-sizing: border-box;
   box-shadow: var(--tblr-shadow-card, 0 4px 6px rgba(0, 0, 0, 0.05));
 }
@@ -2693,9 +2676,9 @@ app_ui <- fluidPage(
   color: var(--tblr-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  
+
   /* The Fix: Line-height handles the vertical centering for the first line */
-  line-height: 36px; 
+  line-height: 36px;
 
   /* Truncation / Clamping */
   display: -webkit-box;
@@ -2764,7 +2747,7 @@ app_ui <- fluidPage(
   transform: translateY(-1px);
 }
 
-.project-card:hover .project-actions, 
+.project-card:hover .project-actions,
 .project-card.active .project-actions {
   opacity: 1;
   transform: translateY(0);
@@ -2866,7 +2849,7 @@ app_ui <- fluidPage(
 /* 2. Update Alert Item Styles to target .toast */
 .alert-container .toast {
   margin-bottom: 10px;
-  animation: slideInDown 0.3s ease-out forwards !important; 
+  animation: slideInDown 0.3s ease-out forwards !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   pointer-events: auto;
   opacity: 1 !important; /* Override Bootstrap's hidden state */
@@ -2928,7 +2911,7 @@ app_ui <- fluidPage(
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0; /* Never shrink the header */
-  background: var(--tblr-body-bg); 
+  background: var(--tblr-body-bg);
   height: 40px; /* Fixed height to match editor toolbar if possible */
   box-sizing: border-box;
 }
@@ -3383,7 +3366,7 @@ app_ui <- fluidPage(
 
 .navbar .avatar,
 .navbar .avatar-sm {
-  width: calc(var(--nav-height) - 2px) !important; 
+  width: calc(var(--nav-height) - 2px) !important;
   height: calc(var(--nav-height) - 2px) !important;
   min-width: 0 !important;
   display: inline-block !important;
@@ -3477,9 +3460,9 @@ app_ui <- fluidPage(
     min-width: 60px;
     height: 24px;
   }
-  
+
 /* 1. Make the Pane Bodies relative so absolute positioning works inside them */
-#filesPaneBody, 
+#filesPaneBody,
 #outlinePaneBody {
   position: relative !important;
   min-height: 200px; /* Ensure there is height to center within */
@@ -3495,7 +3478,7 @@ app_ui <- fluidPage(
   transform: translate(-50%, -50%);
   z-index: 50;
   /* Override the inline margin from your HTML */
-  margin-left: 0 !important; 
+  margin-left: 0 !important;
 }
 
 /* 3. Style the Spinner Animation */
@@ -3515,20 +3498,20 @@ app_ui <- fluidPage(
 
 /* ================================= Gutters =============================== */
 .gutter.gutter-horizontal{
-  cursor:col-resize; 
+  cursor:col-resize;
   background:var(--tblr-border-color);
   box-shadow:inset 0 -1px 0 var(--tblr-border-color), inset 0 1px 0 var(--tblr-border-color);
 }
-.gutter.gutter-horizontal:hover{ 
-  background:var(--tblr-border-color); 
+.gutter.gutter-horizontal:hover{
+  background:var(--tblr-border-color);
 }
 .gutter.gutter-vertical{
-  cursor:row-resize; 
+  cursor:row-resize;
   background:var(--tblr-border-color);
   box-shadow:inset 0 -1px 0 var(--tblr-border-color), inset 0 1px 0 var(--tblr-border-color);
 }
-.gutter.gutter-vertical:hover{ 
-  background:var(--tblr-border-color); 
+.gutter.gutter-vertical:hover{
+  background:var(--tblr-border-color);
 }
 
 /* --- GUTTER STYLES --- */
@@ -3537,15 +3520,15 @@ app_ui <- fluidPage(
     background: var(--tblr-border-color);
     position: relative;
     z-index: 4;
-    
+
     /* Center content (the button) */
     display: flex !important;
     align-items: center;
     justify-content: center;
-    
+
     /* Allow button to be wider than the gutter without being clipped */
-    overflow: visible !important; 
-    
+    overflow: visible !important;
+
     /* Layout strictness */
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
@@ -3560,21 +3543,21 @@ app_ui <- fluidPage(
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    
+
     /* Rectangle Dimensions */
-    width: 8px; 
+    width: 8px;
     height: 48px;
-    
+
     /* Visual Style */
     background: var(--tblr-secondary);
     color: white;
     border-radius: 0px;
-    
+
     /* Flex to center the chevron icon inside the button */
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     cursor: pointer;
     font-size: 10px;
     transition: all 0.2s ease;
@@ -3682,8 +3665,8 @@ app_ui <- fluidPage(
   width: 98%;
   margin-left: auto;
   margin-right: auto;
-  justify-content: center; 
-  min-height: 50px; 
+  justify-content: center;
+  min-height: 50px;
 }
 
 .search-result-file {
@@ -3766,7 +3749,7 @@ app_ui <- fluidPage(
   margin-bottom: 12px;
   transition: all 0.2s ease;
   position: relative;
-  border-left: 3px solid var(--tblr-primary); 
+  border-left: 3px solid var(--tblr-primary);
   min-width: 250px;
 }
 
@@ -3825,11 +3808,11 @@ app_ui <- fluidPage(
   gap: 8px;
   font-weight: 600;
   font-size: 0.85rem;
-  z-index: 2; 
+  z-index: 2;
   position: relative;
-  white-space: nowrap; 
-  text-overflow: ellipsis; 
-  width: 100%; 
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .comment-meta {
@@ -3838,8 +3821,8 @@ app_ui <- fluidPage(
   display: flex;
   align-items: center;
   gap: 6px;
-  white-space: nowrap; 
-  text-overflow: ellipsis;  
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Content Body */
@@ -3884,7 +3867,7 @@ app_ui <- fluidPage(
 .reply-item {
   position: relative;
   margin-top: 8px;
-  background: var(--tblr-bg-surface-secondary); 
+  background: var(--tblr-bg-surface-secondary);
   border: 1px solid var(--tblr-border-color-light);
   border-radius: var(--tblr-border-radius);
   padding: 8px 10px;
@@ -3915,9 +3898,9 @@ app_ui <- fluidPage(
   position: relative;
   z-index: 1;
   position: relative;
-  white-space: nowrap; 
-  text-overflow: ellipsis; 
-  width: 100%; 
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 /* Reply Input Areas */
@@ -4054,7 +4037,7 @@ app_ui <- fluidPage(
 }
 
 .suggestion-item {
-  padding: 6px 8px; 
+  padding: 6px 8px;
   cursor: pointer;
   color: var(--tblr-body-color);
   transition: background 0.1s ease;
@@ -4107,7 +4090,7 @@ app_ui <- fluidPage(
 }
 
 .autocomplete-item {
-  padding: 6px 8px; 
+  padding: 6px 8px;
   cursor: pointer;
   color: var(--tblr-body-color);
   transition: background 0.1s ease;
@@ -4203,7 +4186,7 @@ app_ui <- fluidPage(
   padding: 12px;
   margin-bottom: 10px;
   cursor: pointer;
-  border-left: 4px solid var(--tblr-primary); 
+  border-left: 4px solid var(--tblr-primary);
   transition: all 0.2s ease;
 }
 
@@ -4233,7 +4216,7 @@ app_ui <- fluidPage(
 
 /* Ace Highlights */
 .history-marker-added {
-    background-color: rgba(46, 164, 79, 0.2); 
+    background-color: rgba(46, 164, 79, 0.2);
     position: absolute;
     z-index: 20;
     border-bottom: 2px solid #2ea44f;
@@ -4289,7 +4272,7 @@ app_ui <- fluidPage(
   font-size: 12px; /* Matches input size */
   pointer-events: none; /* Allows clicking through the text to focus the div */
   display: block; /* Ensures it renders correctly */
-} 
+}
 
 /* Blinking Mic Icon Animation */
 .icon-blink {
@@ -4326,8 +4309,8 @@ app_ui <- fluidPage(
 }
 
 /* --- UPDATED: Editor Area Layout (Flex Column) --- */
-#editorArea { 
-  border-right: 0px solid var(--bs-border-color)!important; 
+#editorArea {
+  border-right: 0px solid var(--bs-border-color)!important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
@@ -4346,7 +4329,7 @@ app_ui <- fluidPage(
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 200px; 
+  height: 200px;
   background: var(--tblr-border-color);
   border-top: 4px solid var(--tblr-border-color);
   z-index: 10;
@@ -4394,7 +4377,7 @@ app_ui <- fluidPage(
   overflow-x: auto;
   white-space: nowrap;
   overflow-y: hidden;
-  border-radius: 0 !important; 
+  border-radius: 0 !important;
   background: var(--tblr-bg-surface-secondary);
   color: var(--tblr-body-color);
   border-bottom: none;
@@ -4466,7 +4449,7 @@ app_ui <- fluidPage(
   border-color: var(--tblr-border-color) !important;
   opacity: 1 !important;
 }
-#figureOverlay .form-select:disabled, 
+#figureOverlay .form-select:disabled,
 #figureOverlay .form-select[readonly] {
   background-color: var(--tblr-body-bg) !important;
   opacity: 1 !important;
@@ -4552,7 +4535,7 @@ app_ui <- fluidPage(
   padding-bottom: 2px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   font-size: 14px;
-  pointer-events: none; 
+  pointer-events: none;
   transform: translateY(10px);
   transition: opacity 0.2s, transform 0.2s;
   opacity: 0;
@@ -4595,13 +4578,13 @@ app_ui <- fluidPage(
   bottom: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); 
-  z-index: 1060;  
-  display: none; 
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1060;
+  display: none;
   opacity: 0;
   transition: opacity 0.3s ease;
-  align-items: center; 
-  justify-content: center; 
+  align-items: center;
+  justify-content: center;
 }
 
 #citationOverlay.show {
@@ -4662,7 +4645,7 @@ app_ui <- fluidPage(
   outline: none;
   border: 1px solid transparent; /* Hidden by default, toggled via classes */
   /* Dashed guide lines (visual aid only) */
-  background-image: 
+  background-image:
     linear-gradient(to right, #e2e2e2 1px, transparent 1px),
     linear-gradient(to bottom, #e2e2e2 1px, transparent 1px);
   background-size: 100% 100%; /* Only show on edges */
@@ -4732,13 +4715,13 @@ app_ui <- fluidPage(
 }
 
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(12px); 
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -5125,8 +5108,8 @@ app_ui <- fluidPage(
 #chat-scroll-container {
   flex: 1;
   opacity: 1;
-  transition: flex-grow 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.4s ease, 
+  transition: flex-grow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s ease,
               padding 0.4s ease;
 }
 
@@ -5135,8 +5118,8 @@ app_ui <- fluidPage(
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  transition: flex-grow 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
-              padding 0.6s ease, 
+  transition: flex-grow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.6s ease,
               background 0.4s ease;
 }
 
@@ -5192,13 +5175,13 @@ app_ui <- fluidPage(
 }
 
 @keyframes fadeInUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(24px); 
+  from {
+    opacity: 0;
+    transform: translateY(24px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -5207,27 +5190,27 @@ app_ui <- fluidPage(
   .ai-pane .card {
     max-width: 95% !important;
   }
-  
+
   .ai-pane code {
     font-size: 0.8rem;
   }
-  
+
   .code-language {
     font-size: 0.7rem;
   }
-  
+
   .history-sidebar {
     width: 260px;
   }
-  
+
   .pane-header {
     padding: 1rem;
   }
-  
+
   .ai-pane.chat-empty .input-group-modern {
     width: 90%;
   }
-  
+
   .btn-icon {
     width: 24px;
     height: 24px;
@@ -5237,17 +5220,17 @@ app_ui <- fluidPage(
 /*==========Hover stules==========*/
 
 #utilityRail .rail-btn{
-  width:30px; 
-  height:30px; 
-  border-radius: var(--tblr-border-radius); 
+  width:30px;
+  height:30px;
+  border-radius: var(--tblr-border-radius);
   background:var(--bs-body-bg);
   border:0;
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
+  display:flex;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
   color:var(--bs-body-color);
-  margin: 15px 0 !important; 
+  margin: 15px 0 !important;
 }
 
 .rail-btn.active {
@@ -5286,10 +5269,16 @@ app_ui <- fluidPage(
     div(
       id = "appContainer",
 
-      # HOMEPAGE: show when output.showHomepage is TRUE
+      # HOMEPAGE DASHBOARD: show when output.showHomepage is TRUE and NOT in profile view
       conditionalPanel(
-        condition = "output.showHomepage == true",
+        condition = "output.showHomepage == true && output.isProfileView == false",
         div(id = "homePage", class = "homepage", uiOutput("tabler_home"))
+      ),
+
+      # PROFILE PAGE: show when output.showHomepage is TRUE and IN profile view
+      conditionalPanel(
+        condition = "output.showHomepage == true && output.isProfileView == true",
+        div(id = "profilePage", class = "profilepage", uiOutput("profile_page_ui"))
       ),
 
       # Editor View (your existing main UI)
@@ -5329,7 +5318,6 @@ app_ui <- fluidPage(
               '
           )
         ),
-
         div(
           class = "card border border-opacity-100",
           style = "border-radius: var(--tblr-border-radius); border-color: var(--tblr-border-color); height: 100%; background-color: var(--tblr-bg-surface); border-collapse: separate; border-spacing: 0; overflow: hidden; ",
@@ -5343,15 +5331,15 @@ app_ui <- fluidPage(
               <div class="container-xl">
               <div class="navbar-nav flex-row align-items-center gap-2 nav-brand-toggle"
                onclick="if (window.Shiny) Shiny.setInputValue(\'backToHomepage\', Date.now(), {priority:\'event\'})"
-               title="Go to Homepage (Ctrl+Shift+P)" 
-               data-bs-toggle="tooltip" 
+               title="Go to Homepage (Ctrl+Shift+P)"
+               data-bs-toggle="tooltip"
                data-bs-placement="bottom"
                style="cursor: pointer; position: relative; width: 34px; height: 34px; padding: 0 !important; margin-left: 0 !important; margin: 0 0 !important;">
-               
+
                <div class="brand-layer brand-default">
                   <img src="mudskipper_logo.svg" alt="Mudskipper" width="34" height="34" decoding="async" style="display:block;" />
                </div>
-      
+
                <div class="brand-layer brand-hover">
                   <div class="project-icon-circle">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="18" height="18" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -5360,9 +5348,9 @@ app_ui <- fluidPage(
                   </div>
                </div>
           </div>
-          
+
           <div class="nav-item">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </div>
-          
+
           <div class="nav-item dropdown ms-2">
             <a href="javascript:void(0);" class="nav-link d-flex lh-1 p-0" data-bs-toggle="dropdown" aria-label="Open File Menu">
               <span class="nav-link-title" style="color: var(--tblr-body-color); font-weight: 500; font-size: 0.95rem;">File</span>
@@ -5556,7 +5544,7 @@ app_ui <- fluidPage(
               <span class="nav-link-title" style="color: var(--tblr-body-color); font-weight: 500; font-size: 0.95rem;">Insert</span>
             </a>
             <div class="dropdown-menu">
-              
+
               <div class="dropend">
                 <a class="dropdown-item dropdown-toggle" href="javascript:void(0);">
                 <svg
@@ -5696,7 +5684,7 @@ app_ui <- fluidPage(
               </div>
 
               <div class="dropdown-divider"></div>
-              
+
               <div class="dropend">
               <a class="dropdown-item dropdown-toggle" href="javascript:void(0);">
               <svg
@@ -5765,7 +5753,7 @@ app_ui <- fluidPage(
                 </a>
               </div>
               </div>
-              
+
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" onclick="insertLatex(\'cite\')">
               <svg
@@ -5836,9 +5824,9 @@ app_ui <- fluidPage(
                 </a>
             </div>
           </div>
-          
+
           <div class="nav-item">&nbsp; &nbsp; &nbsp;</div>
-          
+
                 <div class="nav-item dropdown ms-2">
                 <a href="javascript:void(0);"
                    class="nav-link d-flex lh-1 p-0"
@@ -5848,10 +5836,10 @@ app_ui <- fluidPage(
                     View
                   </span>
                 </a>
-              
+
                 <div class="dropdown-menu">
                   <div class="dropdown-header">Layout</div>
-                
+
                   <a class="dropdown-item layout-selector" data-layout="split" onclick="toggleMainLayout(\'split\');">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -5863,7 +5851,7 @@ app_ui <- fluidPage(
                     </svg>
                     Split view
                   </a>
-                
+
                   <a class="dropdown-item layout-selector" data-layout="editor-only" onclick="toggleMainLayout(\'editor-only\');">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -5874,7 +5862,7 @@ app_ui <- fluidPage(
                     </svg>
                     Editor only
                   </a>
-                
+
                   <a class="dropdown-item layout-selector" data-layout="pdf-only" onclick="toggleMainLayout(\'pdf-only\');">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -5888,7 +5876,7 @@ app_ui <- fluidPage(
                     </svg>
                     PDF only
                   </a>
-              
+
                   <a class="dropdown-item"
                      onclick="if (window.Shiny) Shiny.setInputValue(\'btnOpenPDF\', Math.random(), {priority: \'event\'});">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
@@ -5902,9 +5890,9 @@ app_ui <- fluidPage(
                     </svg>
                     Open PDF in separate tab
                   </a>
-              
+
                   <div class="dropdown-divider"></div>
-              
+
                   <div class="dropdown-header">Editor</div>
 
                     <a class="dropdown-item toggle-sync" data-toggle-id="enableMathPreviewPanel" href="javascript:void(0);">
@@ -5917,7 +5905,7 @@ app_ui <- fluidPage(
                       </svg>
                       Show equation preview
                     </a>
-                    
+
                     <a class="dropdown-item toggle-sync" data-toggle-id="enableStickyScrollPanel" href="javascript:void(0);">
                       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -5932,7 +5920,7 @@ app_ui <- fluidPage(
                       </svg>
                       Enable sticky scroll
                     </a>
-         
+
                     <a class="dropdown-item toggle-sync" data-toggle-id="enableMinimapPanel" href="javascript:void(0);">
                       <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -5944,11 +5932,11 @@ app_ui <- fluidPage(
                       </svg>
                       Enable minimap view
                     </a>
-              
+
                   <div class="dropdown-divider"></div>
-              
+
                   <div class="dropdown-header">PDF</div>
-              
+
                   <a class="dropdown-item"
                      onclick="if (window.Shiny) Shiny.setInputValue(\'btnPresentationMode\', Math.random(), {priority: \'event\'});">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
@@ -5964,7 +5952,7 @@ app_ui <- fluidPage(
                     </svg>
                     Presentation mode
                   </a>
-              
+
                   <a class="dropdown-item"
                      onclick = "pdfZoomIn(); return false;">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
@@ -5977,7 +5965,7 @@ app_ui <- fluidPage(
                     </svg>
                     Zoom in <kbd>⌘+</kbd>
                   </a>
-              
+
                   <a class="dropdown-item"
                      onclick = "pdfZoomOut(); return false;">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
@@ -5989,7 +5977,7 @@ app_ui <- fluidPage(
                     </svg>
                     Zoom out <kbd>⌘-</kbd>
                   </a>
-              
+
                   <a class="dropdown-item"
                      onclick = "pdfFitToWidth(); return false;">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
@@ -6000,7 +5988,7 @@ app_ui <- fluidPage(
                     </svg>
                     Fit to width <kbd>⌘0</kbd>
                   </a>
-              
+
                   <a class="dropdown-item"
                      onclick = "pdfFitToHeight(); return false;">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24"
@@ -6012,12 +6000,12 @@ app_ui <- fluidPage(
                     </svg>
                     Fit to height <kbd>⌘9</kbd>
                   </a>
-              
+
                 </div>
               </div>
-                                          
+
           <div class="nav-item">&nbsp; &nbsp; &nbsp;</div>
-          
+
 
             <div class="navbar-nav flex-row mx-auto">
                 <div style="display: flex; align-items: center; gap: 5px;">
@@ -6071,9 +6059,9 @@ app_ui <- fluidPage(
                       <path d="M11 15v6h1a2 2 0 0 0 2 -2v-2a2 2 0 0 0 -2 -2h-1z" />
                     </svg>
                     Download as PDF</a>
-                    
+
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" onclick="openCopyProjectOverlay()"> 
+                    <a class="dropdown-item" onclick="openCopyProjectOverlay()">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="icon icon-1"
@@ -6111,7 +6099,7 @@ app_ui <- fluidPage(
                   </div>
                 </div>
               </div>
-              
+
 
               <div class="navbar-status-group status-section-context">
                 <span class="px-2">
@@ -6125,16 +6113,16 @@ app_ui <- fluidPage(
                 </div>
               </div>
             </div>
-            
+
             <div class="navbar-nav flex-row order-md-last" style="color: var(--tblr-body-color) !important;">
-            
+
              <div class="nav-divider"></div>
-             
+
               <div class="nav-item">
-              <div id="openHistoryBtn", 
-                class="nav-link d-flex lh-1 p-0" 
-                title="History" 
-                data-bs-toggle="tooltip" 
+              <div id="openHistoryBtn",
+                class="nav-link d-flex lh-1 p-0"
+                title="History"
+                data-bs-toggle="tooltip"
                 data-bs-placement="bottom"
                 onclick="if (window.Shiny) Shiny.setInputValue(\'openHistoryBtn\', Math.random(), {priority: \'event\'});">
                   <svg
@@ -6156,19 +6144,19 @@ app_ui <- fluidPage(
 
             <div class="nav-divider"></div>
             <div class="nav-item dropdown">
-              <a class="nav-link d-flex lh-1 p-0" 
-                 href="javascript:void(0);" 
-                 data-bs-toggle="dropdown" 
+              <a class="nav-link d-flex lh-1 p-0"
+                 href="javascript:void(0);"
+                 data-bs-toggle="dropdown"
                  aria-expanded="false">
                   <span data-bs-toggle="tooltip" data-bs-placement="bottom" title="Layout">
-                      <svg xmlns="http://www.w3.org/2000/svg" 
-                      class="icon icon-1" 
-                      width="24" height="24" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      stroke-width="2" 
-                      stroke-linecap="round" 
+                      <svg xmlns="http://www.w3.org/2000/svg"
+                      class="icon icon-1"
+                      width="24" height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
                       stroke-linejoin="round">
                         <path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" />
                         <path d="M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1" />
@@ -6186,7 +6174,7 @@ app_ui <- fluidPage(
                 </svg>
                 Hide Sidebar
               </a>
-              
+
               <a class="dropdown-item layout-selector" data-layout="editor-only" onclick="toggleMainLayout(\'editor-only\');">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
                   <path d="M7 8l-4 4l4 4" />
@@ -6195,7 +6183,7 @@ app_ui <- fluidPage(
                 </svg>
                 Editor Only
               </a>
-              
+
               <a class="dropdown-item layout-selector" data-layout="pdf-only" onclick="toggleMainLayout(\'pdf-only\');">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
                   <path d="M14 3v4a1 1 0 0 0 1 1h4" />
@@ -6207,7 +6195,7 @@ app_ui <- fluidPage(
                 </svg>
                 PDF Only
               </a>
-              
+
               <a class="dropdown-item layout-selector" data-layout="split" onclick="toggleMainLayout(\'split\');">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" >
                   <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
@@ -6221,23 +6209,23 @@ app_ui <- fluidPage(
           </div>
           <div class="nav-divider"></div>
           <div class="nav-item" style="color: var(--tblr-body-color) !important;">
-            <a href="javascript:void(0);" class="nav-link px-0 hide-theme-dark" title="Enable dark mode" data-bs-toggle="tooltip" data-bs-placement="bottom" 
+            <a href="javascript:void(0);" class="nav-link px-0 hide-theme-dark" title="Enable dark mode" data-bs-toggle="tooltip" data-bs-placement="bottom"
                onclick="var r = document.querySelector(\'input[name=theme][value=dark]\'); if(r) r.click();">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1 text-muted">
                 <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
               </svg>
             </a>
-          
-            <a href="javascript:void(0);" class="nav-link px-0 hide-theme-light" title="Enable light mode" data-bs-toggle="tooltip" data-bs-placement="bottom" 
+
+            <a href="javascript:void(0);" class="nav-link px-0 hide-theme-light" title="Enable light mode" data-bs-toggle="tooltip" data-bs-placement="bottom"
                onclick="var r = document.querySelector(\'input[name=theme][value=light]\'); if(r) r.click();">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1 text-muted">
                 <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
                 <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
               </svg>
             </a>
-          
+
           </div>
-                
+
             </div>
           </div>
         </div>
@@ -6250,7 +6238,6 @@ app_ui <- fluidPage(
           <div id="mainFileSelect" class="shiny-html-output form-select"></div>
         </div>'
           ),
-
           div(
             class = "page-wrapper",
             div(
@@ -6260,7 +6247,7 @@ app_ui <- fluidPage(
                   id = "utilityRail",
                   div(
                     HTML(
-                      '<div class="rail-btn btn-icon active" 
+                      '<div class="rail-btn btn-icon active"
                                   id="railSidebarToggle"
                                   title="Files"
                                   data-bs-toggle="tooltip"
@@ -6284,7 +6271,7 @@ app_ui <- fluidPage(
                                     <path d="M9 17l6 0" />
                                   </svg>
                                 </div>
-                                  
+
                                 <div
                                   class="rail-btn btn-icon"
                                   id="btnToggleFileSearch"
@@ -6308,7 +6295,7 @@ app_ui <- fluidPage(
                                     <line x1="21" y1="21" x2="15" y2="15" />
                                   </svg>
                                 </div>
-                                  
+
                                   <div
                                     class = "rail-btn btn-icon"
                                     id = "railReviewBtn"
@@ -6316,15 +6303,15 @@ app_ui <- fluidPage(
                                     data-bs-toggle = "tooltip"
                                     data-bs-placement = "right"
                                     onclick="handleRailClick(\'review\')">
-                                    <svg xmlns="http://www.w3.org/2000/svg" 
-                                      class="icon icon-1" 
-                                      width="24" 
-                                      height="24" 
-                                      viewBox="0 0 24 24" 
-                                      fill="none" 
-                                      stroke="currentColor" 
-                                      stroke-width="2" 
-                                      stroke-linecap="round" 
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                      class="icon icon-1"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
                                       stroke-linejoin="round">
                                       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                                       <path d="M8 9h8" />
@@ -6332,24 +6319,24 @@ app_ui <- fluidPage(
                                       <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z" />
                                     </svg>
                                   </div>
-                                  
-                                  <div class="rail-btn btn-icon" 
+
+                                  <div class="rail-btn btn-icon"
                                    id="railChatBtn"
                                    title="Team Chat"
-                                   data-bs-toggle="tooltip" 
+                                   data-bs-toggle="tooltip"
                                    data-bs-placement="right"
                                    onclick="handleRailClick(\'chat\')">
                                 <div style="position: relative;">
-                                  <svg 
-                                  xmlns="http://www.w3.org/2000/svg" 
-                                  class="icon icon-1" 
-                                  width="24" 
-                                  height="24" 
-                                  viewBox="0 0 24 24" 
-                                  fill="none" 
-                                  stroke="currentColor" 
-                                  stroke-width="2" 
-                                  stroke-linecap="round" 
+                                  <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  class="icon icon-1"
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  stroke-linecap="round"
                                   stroke-linejoin="round">
                                     <path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10" />
                                     <path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2" />
@@ -6357,22 +6344,22 @@ app_ui <- fluidPage(
                                   <span id="chatUnreadBadge" class="badge bg-red badge-blink" style="position: absolute; top: -5px; right: -5px; width: 8px; height: 8px; padding: 0; display: none;"></span>
                                 </div>
                               </div>
-                              
-                              <div class="rail-btn btn-icon" 
-                                id="railAiBtn" 
+
+                              <div class="rail-btn btn-icon"
+                                id="railAiBtn"
                                 title="AI Assistant"
-                                data-bs-toggle="tooltip" 
+                                data-bs-toggle="tooltip"
                                 data-bs-placement="right"
                                 onclick="handleRailClick(\'ai\')">
-                                <svg xmlns="http://www.w3.org/2000/svg" 
-                                class="icon" 
-                                width="24" 
-                                height="24" 
-                                viewBox="0 0 24 24" 
-                                stroke-width="2" 
-                                stroke="currentColor" 
-                                fill="none" 
-                                stroke-linecap="round" 
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                class="icon"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                                fill="none"
+                                stroke-linecap="round"
                                 stroke-linejoin="round">
                                   <path d="M6 4m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z" />
                                   <path d="M12 2v2" />
@@ -6385,15 +6372,14 @@ app_ui <- fluidPage(
                                   <path d="M14 8v.01" />
                                 </svg>
                             </div>
-                                  
+
                               '
                     )
                   ),
-
                   HTML(
                     '
                               <div>
-                              <a class="rail-btn btn-icon" 
+                              <a class="rail-btn btn-icon"
                                   href="javascript:void(0);"
                                    title="Lock"
                                    data-bs-toggle="tooltip"
@@ -6417,8 +6403,8 @@ app_ui <- fluidPage(
                                   <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
                                 </svg>
                               </a>
-                              
-                                <a class="rail-btn btn-icon" 
+
+                                <a class="rail-btn btn-icon"
                                    href="https://www.latex-project.org/help/links/#question-and-answer-websites"
                                    id="railHelpPageBtn"
                                    title="Help"
@@ -6553,7 +6539,6 @@ app_ui <- fluidPage(
                             "Team Chat",
                             style = "font-size:14px; font-weight:600;"
                           ),
-
                           div(
                             style = "height: 38px; min-height: 38px; display:flex; align-items:center; gap: 8px; padding-bottom: 2px; padding-top: 2px;",
                             # COLOR PICKER DROPDOWN
@@ -6562,7 +6547,7 @@ app_ui <- fluidPage(
                               HTML(
                                 '
                                                   <div class="rail-btn btn-icon"
-                                                       data-bs-toggle="dropdown" 
+                                                       data-bs-toggle="dropdown"
                                                        title="Message Color">
                                                       <svg
                                                           xmlns="http://www.w3.org/2000/svg"
@@ -6868,7 +6853,6 @@ app_ui <- fluidPage(
                       # 1. Header
                       div(
                         class = "pane-header",
-
                         div(
                           HTML(
                             '<span class="avatar avatar-sm rounded-circle me-2 ai-avatar-glow"></span>'
@@ -6878,19 +6862,18 @@ app_ui <- fluidPage(
                             style = "font-size:15px; font-weight:400; letter-spacing: -0.01em; padding-bottom: 2px; padding-top: 2px;"
                           )
                         ),
-
                         div(
                           class = "d-flex align-items-center gap-2",
                           style = "display:flex; align-items:center; gap: 16px; padding-bottom: 2px; padding-top: 2px;",
                           HTML(
                             '
                                         <div class="d-flex align-items-center" style = "display:flex; align-items:center; gap: 16px;">
-                                          
-                                        <div class="rail-btn btn-icon" 
+
+                                        <div class="rail-btn btn-icon"
                                          id="ai_new_chat"
                                          style="pointer-events: auto; cursor: pointer;"
-                                         title="New Chat" 
-                                         data-bs-toggle="tooltip" 
+                                         title="New Chat"
+                                         data-bs-toggle="tooltip"
                                          data-bs-placement="bottom"
                                          aria-label="New Chat"
                                          onclick="Shiny.setInputValue(\'ai_new_chat\', Math.random(), {priority: \'event\'});">
@@ -6899,12 +6882,12 @@ app_ui <- fluidPage(
                                          <path d="M5 12l14 0" />
                                        </svg>
                                     </div>
-                                    
+
                                     <div class="rail-btn btn-icon"
                                          id="ai_toggle_history"
                                          style="pointer-events: auto; cursor: pointer;"
-                                         title="Chat History" 
-                                         data-bs-toggle="tooltip" 
+                                         title="Chat History"
+                                         data-bs-toggle="tooltip"
                                          data-bs-placement="bottom"
                                          aria-label="Chat History"
                                          onclick="Shiny.setInputValue(\'ai_toggle_history\', Math.random(), {priority: \'event\'});">
@@ -6913,14 +6896,14 @@ app_ui <- fluidPage(
                                          <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"></path>
                                        </svg>
                                     </div>
-                                          
+
                                       <div class="rail-btn btn-icon" title="Close AI Pane" data-bs-toggle="tooltip" data-bs-placement="right" onclick="closeSidebar()" style="border:none;background:none;cursor:pointer;">
                                          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                          <path d="M4 4m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
                                          <path d="M9 4l0 16" />
                                          </svg>
                                         </div>
-                                          
+
                                         </div>
                                         '
                           )
@@ -7024,7 +7007,6 @@ app_ui <- fluidPage(
                         )
                       )
                     ),
-
                     div(
                       id = "filesPane",
                       # Files pane header
@@ -7050,7 +7032,6 @@ app_ui <- fluidPage(
                         ),
                         div(
                           style = "display:flex; gap:10px; align-items:center;",
-
                           HTML(
                             '<button class="rail-btn btn-icon"
                                                 type="button"
@@ -7076,7 +7057,7 @@ app_ui <- fluidPage(
                                                     <path d="M9 14l6 0" />
                                                   </svg>
                                               </button>
-                                              <button class="rail-btn btn-icon" 
+                                              <button class="rail-btn btn-icon"
                                                  type="button"
                                                  onclick="openAddFilesOverlay(\'add-folder-tab\')"
                                                  title="New Folder"
@@ -7208,7 +7189,6 @@ app_ui <- fluidPage(
                       )
                     )
                   ),
-
                   div(
                     id = "editorArea",
                     HTML(
@@ -7224,8 +7204,8 @@ app_ui <- fluidPage(
                                     fill="currentColor"
                                   >
                                     <path d="M18 3a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-4.724l-4.762 2.857a1 1 0 0 1 -1.508 -.743l-.006 -.114v-2h-1a4 4 0 0 1 -3.995 -3.8l-.005 -.2v-8a4 4 0 0 1 4 -4zm-4 9h-6a1 1 0 0 0 0 2h6a1 1 0 0 0 0 -2m2 -4h-8a1 1 0 1 0 0 2h8a1 1 0 0 0 0 -2" />
-                                  </svg> 
-                              
+                                  </svg>
+
                                   Add comment
                                 </button>
                               </div>
@@ -7234,7 +7214,6 @@ app_ui <- fluidPage(
                     div(
                       id = "equation-editor",
                       class = "border-bottom",
-
                       div(
                         style = "white-space: nowrap; overflow: hidden;",
                         div(
@@ -7252,7 +7231,6 @@ app_ui <- fluidPage(
                             title = "Dictate",
                             "data-bs-toggle" = "tooltip",
                             "data-bs-placement" = "bottom",
-
                             HTML(
                               '
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -7275,7 +7253,6 @@ app_ui <- fluidPage(
                             "data-bs-html" = "true",
                             title = "<div>Find/Replace</div><div> CTRL/⌘ + F</div>",
                             onclick = "var editor = ace.edit('sourceEditor'); if (editor) { ace.require('ace/ext/searchbox').Search(editor, false);}",
-
                             HTML(
                               '
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -7289,31 +7266,30 @@ app_ui <- fluidPage(
                         )
                       )
                     ),
-
                     HTML(
                       '
                               <div id="filePreviewOverlay">
                                 <div id="filePreviewDialog">
                                   <div id="filePreviewHeader">
                                     <h3 id="filePreviewTitle" class="m-0" style="font-size: 1rem; font-weight: 600;"></h3>
-                                    
-                                    <a id="previewDownloadBtn" 
+
+                                    <a id="previewDownloadBtn"
                                         href="javascript:void(0);"
-                                        class="btn-icon" 
-                                        title="Download file" 
-                                        data-bs-toggle="tooltip" 
-                                        data-bs-placement="bottom"  
+                                        class="btn-icon"
+                                        title="Download file"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="bottom"
                                         style="color: var(--tblr-body-color); cursor: pointer;">
-                                      <svg 
+                                      <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         class="icon icon-1"
-                                        width="20" 
-                                        height="20" 
-                                        viewBox="0 0 24 24" 
-                                        fill="none" 
-                                        stroke="currentColor" 
-                                        stroke-width="2" 
-                                        stroke-linecap="round" 
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
                                         stroke-linejoin="round">
                                           <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
                                           <polyline points="7 11 12 16 17 11"></polyline>
@@ -7326,7 +7302,6 @@ app_ui <- fluidPage(
                               </div>
                               '
                     ),
-
                     div(
                       id = "editorSplit",
                       style = "height: calc(100% - 30px); position: relative;",
@@ -7346,7 +7321,6 @@ app_ui <- fluidPage(
                         useSoftTabs = TRUE,
                         showInvisibles = FALSE
                       ),
-
                       HTML(
                         '
                               <div id="symbolPalette" style="border-top: 4px solid var(--tblr-border-color);">
@@ -7360,15 +7334,15 @@ app_ui <- fluidPage(
                                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sym-math">Math</button></li>
                                     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sym-sets">Sets</button></li>
                                   </ul>
-                                  
+
                                   <div class="nav-item" style="display:flex; gap:10px; align-items:center;">
                                     <input type="text" id="symbolSearch" class="form-control form-control-sm" placeholder="Search symbols..." onkeyup="filterSymbols(this.value)" style="background: var(--tblr-white); color: var(--tblr-black);">
                                     <button type="button" title="Close" data-bs-toggle="tooltip" class="btn-close" onclick="toggleSymbolPalette()"></button>
                                   </div>
                                 </div>
-                                
+
                                 <div class="tab-content" style="flex:1; overflow-y:auto; padding:10px;">
-                                  
+
                                   <div class="tab-pane show active" id="sym-greek">
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\alpha \')" title="\\alpha" data-bs-toggle="tooltip">α</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\beta \')" title="\\beta" data-bs-toggle="tooltip">β</button>
@@ -7411,7 +7385,7 @@ app_ui <- fluidPage(
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\Psi \')" title="\\Psi" data-bs-toggle="tooltip">Ψ</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\Omega \')" title="\\Omega" data-bs-toggle="tooltip">Ω</button>
                                   </div>
-                                  
+
                                   <div class="tab-pane" id="sym-arrows">
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\leftarrow \')" title="\\leftarrow" data-bs-toggle="tooltip">←</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\rightarrow \')" title="\\rightarrow" data-bs-toggle="tooltip">→</button>
@@ -7445,7 +7419,7 @@ app_ui <- fluidPage(
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\hookrightarrow \')" title="\\hookrightarrow" data-bs-toggle="tooltip">↪</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\hookleftarrow \')" title="\\hookleftarrow" data-bs-toggle="tooltip">↩</button>
                                   </div>
-                                  
+
                                   <div class="tab-pane" id="sym-ops">
                                     <button class="symbol-btn operator" onclick="insertSymbol(\'+\')" title="+" data-bs-toggle="tooltip">+</button>
                                     <button class="symbol-btn operator" onclick="insertSymbol(\'-\')" title="-" data-bs-toggle="tooltip">−</button>
@@ -7481,7 +7455,7 @@ app_ui <- fluidPage(
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\iiint \')" title="\\iiint" data-bs-toggle="tooltip">∭</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\oint \')" title="\\oint" data-bs-toggle="tooltip">∮</button>
                                   </div>
-                                  
+
                                   <div class="tab-pane" id="sym-rel">
                                     <button class="symbol-btn relation" onclick="insertSymbol(\'=\')" title="=" data-bs-toggle="tooltip">=</button>
                                     <button class="symbol-btn relation" onclick="insertSymbol(\'\\neq \')" title="\\neq" data-bs-toggle="tooltip">≠</button>
@@ -7509,7 +7483,7 @@ app_ui <- fluidPage(
                                     <button class="symbol-btn relation" onclick="insertSymbol(\'\\models \')" title="\\models" data-bs-toggle="tooltip">⊨</button>
                                     <button class="symbol-btn relation" onclick="insertSymbol(\'\\propto \')" title="\\propto" data-bs-toggle="tooltip">∝</button>
                                   </div>
-                                  
+
                                   <div class="tab-pane" id="sym-misc">
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\infty \')" title="\\infty" data-bs-toggle="tooltip">∞</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\partial \')" title="\\partial" data-bs-toggle="tooltip">∂</button>
@@ -7544,7 +7518,7 @@ app_ui <- fluidPage(
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\%\')" title="\\%" data-bs-toggle="tooltip">%</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\&\')" title="\\&" data-bs-toggle="tooltip">&</button>
                                   </div>
-                                  
+
                                   <div class="tab-pane" id="sym-math">
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\ast \')" title="\\ast" data-bs-toggle="tooltip">∗</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\star \')" title="\\star" data-bs-toggle="tooltip">⋆</button>
@@ -7562,7 +7536,7 @@ app_ui <- fluidPage(
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\heartsuit \')" title="\\heartsuit" data-bs-toggle="tooltip">♡</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\spadesuit \')" title="\\spadesuit" data-bs-toggle="tooltip">♠</button>
                                   </div>
-                                  
+
                                   <div class="tab-pane" id="sym-sets">
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\in \')" title="\\in" data-bs-toggle="tooltip">∈</button>
                                     <button class="symbol-btn" onclick="insertSymbol(\'\\notin \')" title="\\notin" data-bs-toggle="tooltip">∉</button>
@@ -7594,7 +7568,6 @@ app_ui <- fluidPage(
                       ),
                     )
                   ),
-
                   div(
                     id = "pdfPreview",
                     div(
@@ -7608,7 +7581,7 @@ app_ui <- fluidPage(
                                     /* Default: WIDE View */
                                     .header-wide-only { display: flex !important; align-items: center; }
                                     .header-narrow-only { display: none !important; }
-                                    
+
                                     /* Switch to NARROW View when header is smaller than 450px */
                                     @container (max-width: 450px) {
                                       .header-wide-only { display: none !important; }
@@ -7797,9 +7770,9 @@ app_ui <- fluidPage(
                                     </svg>
                                       <span id="errorLogBadge" class="nav-badge-counter"></span>
                                     </div>
-                                      
-                                  <div class="nav-badge-container" 
-                                    title="Label keys" 
+
+                                  <div class="nav-badge-container"
+                                    title="Label keys"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="bottom">
                                   <svg
@@ -7821,8 +7794,8 @@ app_ui <- fluidPage(
                                     </svg>
                                       <span id="labelCount" class="nav-badge-counter"></span>
                                     </div>
-                                      
-                                  <div class="nav-badge-container" 
+
+                                  <div class="nav-badge-container"
                                     title="Citation keys"
                                     data-bs-toggle="tooltip"
                                     data-bs-placement="bottom">
@@ -7856,16 +7829,16 @@ app_ui <- fluidPage(
                           style = "width: 24px; height: 24px; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;",
                           onclick = "pdfDownload()",
                           HTML(
-                            '<svg 
-                                               xmlns="http://www.w3.org/2000/svg" 
-                                               class="icon icon-1" 
-                                               width="24" 
-                                               height="24" 
-                                               viewBox="0 0 24 24" 
-                                               fill="none" 
-                                               stroke="currentColor" 
-                                               stroke-width="2" 
-                                               stroke-linecap="round" 
+                            '<svg
+                                               xmlns="http://www.w3.org/2000/svg"
+                                               class="icon icon-1"
+                                               width="24"
+                                               height="24"
+                                               viewBox="0 0 24 24"
+                                               fill="none"
+                                               stroke="currentColor"
+                                               stroke-width="2"
+                                               stroke-linecap="round"
                                                stroke-linejoin="round">
                                                  <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
                                                  <path d="M7 11l5 5l5 -5" />
@@ -7887,16 +7860,16 @@ app_ui <- fluidPage(
                             class = "text-muted",
                             `data-bs-toggle` = "dropdown",
                             HTML(
-                              '<svg 
-                                                    xmlns="http://www.w3.org/2000/svg" 
-                                                    class="icon icon-1" 
-                                                    width="24" 
-                                                    height="24" 
-                                                    viewBox="0 0 24 24" 
-                                                    stroke-width="2" 
-                                                    stroke="currentColor" 
-                                                    fill="none" 
-                                                    stroke-linecap="round" 
+                              '<svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="icon icon-1"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    stroke-width="2"
+                                                    stroke="currentColor"
+                                                    fill="none"
+                                                    stroke-linecap="round"
                                                     stroke-linejoin="round">
                                                       <circle cx="12" cy="12" r="1" />
                                                       <circle cx="19" cy="12" r="1" />
@@ -7975,16 +7948,16 @@ app_ui <- fluidPage(
                             style = "width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;",
                             onclick = "pdfPreviousPage()",
                             HTML(
-                              '<svg 
-                                                   xmlns="http://www.w3.org/2000/svg" 
-                                                   class="icon icon-1" 
-                                                   width="24" 
-                                                   height="24" 
-                                                   viewBox="0 0 24 24" 
-                                                   fill="none" 
-                                                   stroke="currentColor" 
-                                                   stroke-width="2" 
-                                                   stroke-linecap="round" 
+                              '<svg
+                                                   xmlns="http://www.w3.org/2000/svg"
+                                                   class="icon icon-1"
+                                                   width="24"
+                                                   height="24"
+                                                   viewBox="0 0 24 24"
+                                                   fill="none"
+                                                   stroke="currentColor"
+                                                   stroke-width="2"
+                                                   stroke-linecap="round"
                                                    stroke-linejoin="round">
                                                      <path d="M13 15l-3 -3l3 -3" />
                                                       <path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
@@ -8000,16 +7973,16 @@ app_ui <- fluidPage(
                             style = "width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;",
                             onclick = "pdfNextPage()",
                             HTML(
-                              '<svg 
-                                                   xmlns="http://www.w3.org/2000/svg" 
-                                                   class="icon icon-1" 
-                                                   width="24" 
-                                                   height="24" 
-                                                   viewBox="0 0 24 24" 
-                                                   fill="none" 
-                                                   stroke="currentColor" 
-                                                   stroke-width="2" 
-                                                   stroke-linecap="round" 
+                              '<svg
+                                                   xmlns="http://www.w3.org/2000/svg"
+                                                   class="icon icon-1"
+                                                   width="24"
+                                                   height="24"
+                                                   viewBox="0 0 24 24"
+                                                   fill="none"
+                                                   stroke="currentColor"
+                                                   stroke-width="2"
+                                                   stroke-linecap="round"
                                                    stroke-linejoin="round">
                                                      <path d="M11 9l3 3l-3 3" />
                                                      <path d="M3 3m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" />
@@ -8042,16 +8015,16 @@ app_ui <- fluidPage(
                             style = "width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;",
                             onclick = "pdfZoomOut()",
                             HTML(
-                              '<svg 
-                                                   xmlns="http://www.w3.org/2000/svg" 
-                                                   class="icon icon-1" 
-                                                   width="24" 
-                                                   height="24" 
-                                                   viewBox="0 0 24 24" 
-                                                   fill="none" 
-                                                   stroke="currentColor" 
-                                                   stroke-width="2" 
-                                                   stroke-linecap="round" 
+                              '<svg
+                                                   xmlns="http://www.w3.org/2000/svg"
+                                                   class="icon icon-1"
+                                                   width="24"
+                                                   height="24"
+                                                   viewBox="0 0 24 24"
+                                                   fill="none"
+                                                   stroke="currentColor"
+                                                   stroke-width="2"
+                                                   stroke-linecap="round"
                                                    stroke-linejoin="round">
                                                     <path d="M5 12l14 0" />
                                                </svg>'
@@ -8066,16 +8039,16 @@ app_ui <- fluidPage(
                             style = "width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;",
                             onclick = "pdfZoomIn()",
                             HTML(
-                              '<svg 
-                                                   xmlns="http://www.w3.org/2000/svg" 
-                                                   class="icon icon-1" 
-                                                   width="24" 
-                                                   height="24" 
-                                                   viewBox="0 0 24 24" 
-                                                   fill="none" 
-                                                   stroke="currentColor" 
-                                                   stroke-width="2" 
-                                                   stroke-linecap="round" 
+                              '<svg
+                                                   xmlns="http://www.w3.org/2000/svg"
+                                                   class="icon icon-1"
+                                                   width="24"
+                                                   height="24"
+                                                   viewBox="0 0 24 24"
+                                                   fill="none"
+                                                   stroke="currentColor"
+                                                   stroke-width="2"
+                                                   stroke-linecap="round"
                                                    stroke-linejoin="round">
                                                      <path d="M12 5l0 14" />
                                                      <path d="M5 12l14 0" />
@@ -8093,16 +8066,16 @@ app_ui <- fluidPage(
                           class = "rail-btn btn-icon",
                           style = "width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;",
                           HTML(
-                            '<svg 
-                                               xmlns="http://www.w3.org/2000/svg" 
-                                               class="icon icon-1" 
-                                               width="24" 
-                                               height="24" 
-                                               viewBox="0 0 24 24" 
-                                               fill="none" 
-                                               stroke="currentColor" 
-                                               stroke-width="2" 
-                                               stroke-linecap="round" 
+                            '<svg
+                                               xmlns="http://www.w3.org/2000/svg"
+                                               class="icon icon-1"
+                                               width="24"
+                                               height="24"
+                                               viewBox="0 0 24 24"
+                                               fill="none"
+                                               stroke="currentColor"
+                                               stroke-width="2"
+                                               stroke-linecap="round"
                                                stroke-linejoin="round">
                                                  <path d="M18.421 11.56a6.702 6.702 0 0 0 -.357 -.683l-4.89 -7.26c-.42 -.625 -1.287 -.803 -1.936 -.397a1.376 1.376 0 0 0 -.41 .397l-4.893 7.26c-1.695 2.838 -1.035 6.441 1.567 8.546a7.144 7.144 0 0 0 4.518 1.58" />
                                                  <path d="M19.001 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
@@ -8115,7 +8088,6 @@ app_ui <- fluidPage(
                                            </svg>'
                           )
                         ),
-
                         div(
                           class = "dropdown",
                           div(
@@ -8194,12 +8166,10 @@ app_ui <- fluidPage(
                         )
                       )
                     ),
-
                     div(
                       id = "pdfContainer",
                       div(id = "pdfViewUI", class = "shiny-html-output")
                     ),
-
                     div(
                       id = "dockerConsoleContainer",
                       div(
@@ -8210,15 +8180,15 @@ app_ui <- fluidPage(
                           `data-tab` = "errors",
                           onclick = "switchConsoleTab('errors')",
                           HTML(
-                            '<svg 
-                                               xmlns="http://www.w3.org/2000/svg" 
-                                               width="16" 
-                                               height="16" 
-                                               viewBox="0 0 24 24" 
-                                               fill="none" 
-                                               stroke="currentColor" 
-                                               stroke-width="2" 
-                                               stroke-linecap="round" 
+                            '<svg
+                                               xmlns="http://www.w3.org/2000/svg"
+                                               width="16"
+                                               height="16"
+                                               viewBox="0 0 24 24"
+                                               fill="none"
+                                               stroke="currentColor"
+                                               stroke-width="2"
+                                               stroke-linecap="round"
                                                stroke-linejoin="round">
                                                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                                                  <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -8255,7 +8225,6 @@ app_ui <- fluidPage(
                           ),
                           tags$strong("Console log")
                         ),
-
                         div(
                           style = "margin-left: auto; display: flex; gap: 10px; align-items: center; padding-right: 10px;",
                           HTML(
@@ -8297,21 +8266,20 @@ app_ui <- fluidPage(
                           class = "active",
                           div(
                             class = "error-log-tabs",
-
                             div(
                               class = "error-log-tab tab-all active",
                               `data-filter` = "all",
                               HTML(
-                                '<svg 
-                                                       xmlns="http://www.w3.org/2000/svg" 
-                                                       class="icon icon-1" 
-                                                       width="16" 
-                                                       height="16" 
-                                                       viewBox="0 0 24 24" 
-                                                       fill="none" 
-                                                       stroke="currentColor" 
-                                                       stroke-width="2" 
-                                                       stroke-linecap="round" 
+                                '<svg
+                                                       xmlns="http://www.w3.org/2000/svg"
+                                                       class="icon icon-1"
+                                                       width="16"
+                                                       height="16"
+                                                       viewBox="0 0 24 24"
+                                                       fill="none"
+                                                       stroke="currentColor"
+                                                       stroke-width="2"
+                                                       stroke-linecap="round"
                                                        stroke-linejoin="round">
                                                          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
                                                          <rect x="9" y="3" width="6" height="4" rx="2"/>
@@ -8325,16 +8293,16 @@ app_ui <- fluidPage(
                               class = "error-log-tab tab-errors",
                               `data-filter` = "error",
                               HTML(
-                                '<svg 
-                                                       xmlns="http://www.w3.org/2000/svg" 
-                                                       class="icon icon-1" 
-                                                       width="16" 
-                                                       height="16" 
-                                                       viewBox="0 0 24 24" 
-                                                       fill="none" 
-                                                       stroke="currentColor" 
-                                                       stroke-width="2" 
-                                                       stroke-linecap="round" 
+                                '<svg
+                                                       xmlns="http://www.w3.org/2000/svg"
+                                                       class="icon icon-1"
+                                                       width="16"
+                                                       height="16"
+                                                       viewBox="0 0 24 24"
+                                                       fill="none"
+                                                       stroke="currentColor"
+                                                       stroke-width="2"
+                                                       stroke-linecap="round"
                                                        stroke-linejoin="round">
                                                          <circle cx="12" cy="12" r="10"></circle>
                                                          <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -8348,16 +8316,16 @@ app_ui <- fluidPage(
                               class = "error-log-tab tab-warnings",
                               `data-filter` = "warning",
                               HTML(
-                                '<svg 
-                                                       xmlns="http://www.w3.org/2000/svg" 
-                                                       class="icon icon-1" 
-                                                       width="16" 
-                                                       height="16" 
-                                                       viewBox="0 0 24 24" 
-                                                       fill="none" 
-                                                       stroke="currentColor" 
-                                                       stroke-width="2" 
-                                                       stroke-linecap="round" 
+                                '<svg
+                                                       xmlns="http://www.w3.org/2000/svg"
+                                                       class="icon icon-1"
+                                                       width="16"
+                                                       height="16"
+                                                       viewBox="0 0 24 24"
+                                                       fill="none"
+                                                       stroke="currentColor"
+                                                       stroke-width="2"
+                                                       stroke-linecap="round"
                                                        stroke-linejoin="round">
                                                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                                                          <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -8375,16 +8343,16 @@ app_ui <- fluidPage(
                               class = "error-log-tab tab-info",
                               `data-filter` = "info",
                               HTML(
-                                '<svg 
-                                                       xmlns="http://www.w3.org/2000/svg" 
-                                                       class="icon icon-1" 
-                                                       width="16" 
-                                                       height="16" 
-                                                       viewBox="0 0 24 24" 
-                                                       fill="none" 
-                                                       stroke="currentColor" 
-                                                       stroke-width="2" 
-                                                       stroke-linecap="round" 
+                                '<svg
+                                                       xmlns="http://www.w3.org/2000/svg"
+                                                       class="icon icon-1"
+                                                       width="16"
+                                                       height="16"
+                                                       viewBox="0 0 24 24"
+                                                       fill="none"
+                                                       stroke="currentColor"
+                                                       stroke-width="2"
+                                                       stroke-linecap="round"
                                                        stroke-linejoin="round">
                                                          <circle cx="12" cy="12" r="10"></circle>
                                                          <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -8400,7 +8368,6 @@ app_ui <- fluidPage(
                             id = "errorLogBody",
                             div(
                               class = "error-log-empty",
-
                               div(
                                 class = "empty",
                                 ui_success_illustration(),
@@ -8413,22 +8380,21 @@ app_ui <- fluidPage(
                               )
                             )
                           ),
-
                           HTML(
                             '
                                             <div class="mb-0">
                                                 <a id="bulkDownloadCompiled" href="javascript:void(0);" class="btn btn-sm btn-primary w-100 shiny-download-link" target="_blank">
-                                                  <svg 
-                                                    xmlns="http://www.w3.org/2000/svg" 
-                                                    class="icon icon-1" 
-                                                    width="16" 
-                                                    height="16" 
-                                                    viewBox="0 0 24 24" 
-                                                    fill="none" 
-                                                    stroke="currentColor" 
-                                                    stroke-width="2" 
-                                                    stroke-linecap="round" 
-                                                    stroke-linejoin="round" 
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="icon icon-1"
+                                                    width="16"
+                                                    height="16"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
                                                     class="icon me-2">
                                                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                                                       <polyline points="7 10 12 15 17 10" />
@@ -8440,7 +8406,6 @@ app_ui <- fluidPage(
                                           '
                           )
                         ),
-
                         aceEditor(
                           "dockerConsole",
                           value = "",
@@ -8466,90 +8431,90 @@ app_ui <- fluidPage(
   # =================== CLIENT JS ENHANCEMENTS ===================
   tags$script(HTML(
     "
-  
+
   document.addEventListener('input', function (event) {
         if (event.target.tagName.toLowerCase() !== 'textarea') return;
         event.target.style.height = 'auto';
         event.target.style.height = event.target.scrollHeight + 'px';
       }, false);
-      
+
 //====File loading====//
 
   Shiny.addCustomMessageHandler('cmdSafeLoadFile', function(data) {
     var editor = ace.edit('sourceEditor');
     if (!editor) return;
-    
+
     // 1. Update Content and Mode
     // The -1 parameter ensures the cursor moves to start and doesn't select all
     editor.setValue(data.content, -1);
     editor.getSession().setMode('ace/mode/' + data.mode);
-    
+
     // 2. NUCLEAR FIX: Wipe the Undo History
     // We create a fresh UndoManager. This clears the stack instantly.
     // Since we do this AFTER setValue, the 'file load' itself is gone from history.
     editor.getSession().setUndoManager(new ace.UndoManager());
-    
+
     // 3. Force Shiny to see the new content immediately
     Shiny.setInputValue('sourceEditor', data.content, {priority: 'event'});
   });
-  
-  
-  
+
+
+
   /* =================== CLIPBOARD FUNCTIONS =================== */
 
             // 1. Copy for Equation Input
             window.copyInputLatex = function() {
               var el = document.getElementById('inputLatex');
               if (!el) return;
-              
+
               // Get text
               var text = el.innerText || el.textContent;
-              
+
               // SVGs
               var svgClipboard = '<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"icon icon-1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17.997 4.17a3 3 0 0 1 2.003 2.83v12a3 3 0 0 1 -3 3h-10a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 2.003 -2.83a4 4 0 0 0 3.997 3.83h4a4 4 0 0 0 3.98 -3.597zm-3.997 -2.17a2 2 0 1 1 0 4h-4a2 2 0 1 1 0 -4z\" /></svg>';
               var svgCheck = '<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"icon icon-1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12l5 5l10 -10\" /></svg>';
-                  
+
               navigator.clipboard.writeText(text).then(function() {
                 var btn = document.getElementById('copyLatexBtn');
                 if(!btn) return;
-            
+
                 // Visual Feedback
                 btn.innerHTML = svgCheck;
                 btn.style.color = 'var(--tblr-success)';
-                
+
                 // Revert
-                setTimeout(function(){ 
+                setTimeout(function(){
                   btn.innerHTML = svgClipboard;
-                  btn.style.color = ''; 
+                  btn.style.color = '';
                 }, 1500);
               }).catch(function(err) {
                 console.error('Failed to copy: ', err);
               });
             };
-            
+
             // 2. Copy for Ace Editors (Source & Console)
             window.copyAceContent = function(editorId, btnId) {
               var editor = ace.edit(editorId);
               if (!editor) return;
-              
+
               // Get content from Ace
               var text = editor.getValue();
-              
+
               // SVGs (Slightly smaller width/height for these buttons if desired, or keep same)
               var svgClipboard = '<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"icon icon-1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2\" /><path d=\"M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z\" /></svg>';
               var svgCheck = '<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"icon icon-1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12l5 5l10 -10\" /></svg>';
-                  
+
               navigator.clipboard.writeText(text).then(function() {
                 var btn = document.getElementById(btnId);
                 if(!btn) return;
-                
+
                 // Visual Feedback
                 btn.innerHTML = svgCheck;
                 btn.style.color = 'var(--tblr-success)';
                 btn.style.borderColor = 'var(--tblr-success)';
-                
+
                 // Revert
-                setTimeout(function(){ 
+                setTimeout(function(){
                   btn.innerHTML = svgClipboard;
                   btn.style.color = 'var(--tblr-secondary)';
                   btn.style.borderColor = 'var(--tblr-border-color)';
@@ -8558,7 +8523,7 @@ app_ui <- fluidPage(
                 console.error('Failed to copy: ', err);
               });
             };
-            
+
 
     // Connectivity banners & save tip
     (function(){
@@ -8676,8 +8641,8 @@ window.currentSidebarTab = 'files'; // Shared state
 (function(){
   // Configuration
   var MAIN_SIZES_KEY = 'mudskipper.mainSplitSizes';
-  var defaultSizes = [20, 47.5, 32.5]; 
-  var minSizes = [0, 0, 0]; 
+  var defaultSizes = [20, 47.5, 32.5];
+  var minSizes = [0, 0, 0];
 
   // --- SEARCH LOCK MECHANISM ---
   var searchLock = false;
@@ -8689,34 +8654,34 @@ window.currentSidebarTab = 'files'; // Shared state
   }, true);
 
   // Helpers
-  function readJSON(key, fallback){ 
-    try { var v = JSON.parse(localStorage.getItem(key)); return v || fallback; } 
-    catch(e){ return fallback; } 
+  function readJSON(key, fallback){
+    try { var v = JSON.parse(localStorage.getItem(key)); return v || fallback; }
+    catch(e){ return fallback; }
   }
-  function writeJSON(key, value){ 
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){} 
+  function writeJSON(key, value){
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){}
   }
 
   // --- 1. Custom Gutter Creator ---
   function createGutter(index, direction) {
     var gutter = document.createElement('div');
     gutter.className = 'gutter gutter-horizontal';
-    
+
     var btn = document.createElement('div');
     btn.className = 'gutter-collapse-btn';
-    
+
     var icon = document.createElement('i');
     icon.className = 'fa-solid';
-    
+
     if (index === 1) { // Sidebar Toggle
-        btn.id = 'btn-toggle-sidebar'; 
+        btn.id = 'btn-toggle-sidebar';
         btn.setAttribute('data-action', 'toggle-sidebar');
         btn.setAttribute('data-bs-toggle', 'tooltip');
         btn.setAttribute('data-bs-placement', 'bottom');
         icon.classList.add('fa-chevron-left');
         btn.title = 'Toggle Sidebar';
     } else { // PDF Toggle
-        btn.id = 'btn-toggle-pdf'; 
+        btn.id = 'btn-toggle-pdf';
         btn.setAttribute('data-action', 'toggle-pdf');
         btn.setAttribute('data-bs-toggle', 'tooltip');
         btn.setAttribute('data-bs-placement', 'bottom');
@@ -8732,27 +8697,27 @@ window.currentSidebarTab = 'files'; // Shared state
   // --- 2. Initialize Main Split ---
   function initMainSplit() {
     var savedSizes = readJSON(MAIN_SIZES_KEY, defaultSizes);
-    
+
     mainSplit = Split(['#fileSidebar', '#editorArea', '#pdfPreview'], {
       sizes: savedSizes,
       minSize: minSizes,
       snapOffset: 15,
       gutterSize: 8,
       cursor: 'col-resize',
-      gutter: createGutter, 
+      gutter: createGutter,
       onDragEnd: function (sizes) {
         writeJSON(MAIN_SIZES_KEY, sizes);
         updateUIState(sizes);
         resizeEditors();
       }
     });
-    
+
     updateUIState(savedSizes);
   }
 
   // --- 3. Unified Rail & Pane Handler ---
   window.handleRailClick = function(mode) {
-    
+
     // Search Lock Check
     if (window.currentSidebarTab === 'search' && mode === 'files' && searchLock) {
         return;
@@ -8762,7 +8727,7 @@ window.currentSidebarTab = 'files'; // Shared state
 
     const map = {
         'files':  { btn: 'railSidebarToggle',   pane: 'filesPane' },
-        'search': { btn: 'btnToggleFileSearch', pane: 'filesPane' }, 
+        'search': { btn: 'btnToggleFileSearch', pane: 'filesPane' },
         'review': { btn: 'railReviewBtn',       pane: 'reviewPane' },
         'chat':   { btn: 'railChatBtn',         pane: 'chatPane' },
         'ai':     { btn: 'railAiBtn',           pane: 'aiPane' }
@@ -8772,13 +8737,13 @@ window.currentSidebarTab = 'files'; // Shared state
 
     var sizes = (mainSplit) ? mainSplit.getSizes() : [0,0,0];
     var sidebarWidth = sizes[0];
-    
+
     var btnEl = document.getElementById(target.btn);
     var isAlreadyActive = btnEl && btnEl.classList.contains('active');
 
     // Close if clicking active button (ONLY if not locked by search)
     if (isAlreadyActive && sidebarWidth > 2 && !searchLock) {
-        window.closeSidebar(); 
+        window.closeSidebar();
         return;
     }
 
@@ -8786,26 +8751,26 @@ window.currentSidebarTab = 'files'; // Shared state
 
     // Ensure Sidebar Open (Drift-Free)
     if (sidebarWidth < 2 && mainSplit) {
-        const pdfWidth = sizes[2]; 
+        const pdfWidth = sizes[2];
         const newEditorWidth = 100 - 20 - pdfWidth;
-        
+
         if (newEditorWidth < 0) {
              mainSplit.setSizes([20, 0, 80]);
         } else {
              mainSplit.setSizes([20, newEditorWidth, pdfWidth]);
         }
     }
-    
+
     afterLayoutChange();
   };
 
   function updateSidebarContent(mode) {
     // 1. Hide all sidebar panes
     ['filesPane', 'outlinePane', 'reviewPane', 'chatPane', 'aiPane'].forEach(id => {
-        const el = document.getElementById(id); 
+        const el = document.getElementById(id);
         if(el) el.style.display = 'none';
     });
-    
+
     // 2. Hide Sidebar Gutters (Files ↕ Outline) ONLY
     // FIX: Scope this selector to #fileSidebar so we don't hide the PDF gutter
     var sidebarGutters = document.querySelectorAll('#fileSidebar .gutter-vertical');
@@ -8818,12 +8783,12 @@ window.currentSidebarTab = 'files'; // Shared state
         const el = document.getElementById('reviewPane');
         if(el) el.style.display = 'flex';
         if(window.Shiny) Shiny.setInputValue('activeSidebarTab', 'review', {priority:'event'});
-    } 
+    }
     else if (mode === 'chat') {
         const el = document.getElementById('chatPane');
         if(el) el.style.display = 'flex';
         if(window.Shiny) Shiny.setInputValue('activeSidebarTab', 'chat', {priority:'event'});
-    } 
+    }
     else if (mode === 'ai') {
         const el = document.getElementById('aiPane');
         if(el) el.style.display = 'flex';
@@ -8833,14 +8798,14 @@ window.currentSidebarTab = 'files'; // Shared state
         // Files or Search
         const fPane = document.getElementById('filesPane');
         const oPane = document.getElementById('outlinePane');
-        
+
         if(fPane) fPane.style.display = 'flex';
 
         if (mode === 'search') {
             if(tree) tree.style.display = 'none';
             if(search) search.style.display = 'flex';
             if(oPane) oPane.style.display = 'none';
-            
+
             setTimeout(() => {
                const input = document.getElementById('txtFileSearch');
                if(input) input.focus();
@@ -8850,7 +8815,7 @@ window.currentSidebarTab = 'files'; // Shared state
             if(tree) tree.style.display = 'block';
             if(search) search.style.display = 'none';
             if(oPane) oPane.style.display = 'flex';
-            
+
             // Restore Sidebar Gutters
             sidebarGutters.forEach(g => g.style.display = 'flex');
         }
@@ -8864,11 +8829,11 @@ window.currentSidebarTab = 'files'; // Shared state
 
   // --- 4. Toggle Actions (DRIFT FIXED) ---
   window.toggleSidebar = function() {
-    var sizes = mainSplit.getSizes(); 
-    var sb = sizes[0]; 
-    var pdf = sizes[2]; 
-    
-    if (sb < 1) { 
+    var sizes = mainSplit.getSizes();
+    var sb = sizes[0];
+    var pdf = sizes[2];
+
+    if (sb < 1) {
         // EXPAND
         updateSidebarContent(window.currentSidebarTab);
         var targetSb = 20;
@@ -8885,9 +8850,9 @@ window.currentSidebarTab = 'files'; // Shared state
 
   window.togglePDF = function() {
     var sizes = mainSplit.getSizes();
-    var sb = sizes[0]; 
+    var sb = sizes[0];
     var pdf = sizes[2];
-    
+
     if (pdf < 1) {
         // EXPAND
         var targetPdf = 40;
@@ -8905,12 +8870,12 @@ window.currentSidebarTab = 'files'; // Shared state
   window.toggleMainLayout = function(mode) {
     switch(mode) {
       case 'split': mainSplit.setSizes([0, 50, 50]); break;
-      case 'no-sidebar': 
-        var s=mainSplit.getSizes(); mainSplit.setSizes([0, 100 - s[2], s[2]]); 
+      case 'no-sidebar':
+        var s=mainSplit.getSizes(); mainSplit.setSizes([0, 100 - s[2], s[2]]);
         break;
       case 'editor-only': mainSplit.setSizes([0, 100, 0]); break;
       case 'pdf-only': mainSplit.setSizes([0, 0, 100]); break;
-      case 'reset': 
+      case 'reset':
         mainSplit.setSizes(defaultSizes);
         if(sidebarVSplit) sidebarVSplit.setSizes([50,50]);
         if(previewVSplit) previewVSplit.setSizes([0,100]);
@@ -8930,14 +8895,14 @@ window.currentSidebarTab = 'files'; // Shared state
   function updateUIState(sizes) {
     var sidebarEl = document.getElementById('fileSidebar');
     var editorEl  = document.getElementById('editorArea');
-    
+
     var btnLeftIcon = document.querySelector('#btn-toggle-sidebar i');
     var btnRightIcon = document.querySelector('#btn-toggle-pdf i');
 
-    if (sizes[0] < 1) sidebarEl.classList.add('pane-collapsed'); 
+    if (sizes[0] < 1) sidebarEl.classList.add('pane-collapsed');
     else sidebarEl.classList.remove('pane-collapsed');
 
-    if (sizes[1] < 1) editorEl.classList.add('pane-collapsed'); 
+    if (sizes[1] < 1) editorEl.classList.add('pane-collapsed');
     else editorEl.classList.remove('pane-collapsed');
 
     if (btnLeftIcon) btnLeftIcon.className = (sizes[0] < 1) ? 'fa-solid fa-chevron-right' : 'fa-solid fa-chevron-left';
@@ -8961,10 +8926,10 @@ window.currentSidebarTab = 'files'; // Shared state
   }
 
   function resizeEditors() {
-    setTimeout(function(){ 
-      try { 
+    setTimeout(function(){
+      try {
         var ed = ace.edit('sourceEditor');
-        ed.resize(true); 
+        ed.resize(true);
         ed.renderer.scrollCursorIntoView(ed.getCursorPosition(), 0.5);
       } catch(e){}
       try { ace.edit('dockerConsole').resize(true); } catch(e){}
@@ -8989,7 +8954,7 @@ window.currentSidebarTab = 'files'; // Shared state
       if (target.id === 'closeSidebarBtn' || target.id === 'toggleChatPane') {
           e.preventDefault(); e.stopPropagation();
           var s = mainSplit.getSizes();
-          if (s[0] > 0) toggleSidebar(); 
+          if (s[0] > 0) toggleSidebar();
           return;
       }
   });
@@ -9018,8 +8983,8 @@ window.currentSidebarTab = 'files'; // Shared state
     var PREVIEW_SIZES_KEY     = 'mudskipper.previewSplitSizes';
     var CONSOLE_COLLAPSED_KEY = 'mudskipper.consoleCollapsed';
 
-    var defaultSizes = [100, 0]; 
-    var headerPx = 38; 
+    var defaultSizes = [100, 0];
+    var headerPx = 38;
 
     var init = readJSON(PREVIEW_SIZES_KEY, defaultSizes);
     if (!Array.isArray(init) || init.length!==2) init = defaultSizes;
@@ -9027,8 +8992,8 @@ window.currentSidebarTab = 'files'; // Shared state
     window.previewVSplit = Split(['#pdfContainer', '#dockerConsoleContainer'], {
       direction: 'vertical',
       sizes: init,
-      minSize: [0, headerPx], 
-      gutterSize: 4, 
+      minSize: [0, headerPx],
+      gutterSize: 4,
       cursor: 'row-resize',
       onDragEnd: function(sizes){
         var headerPct = getHeaderPct();
@@ -9039,7 +9004,7 @@ window.currentSidebarTab = 'files'; // Shared state
         } else {
            localStorage.setItem(CONSOLE_COLLAPSED_KEY, '1');
         }
-        
+
         // Check badge visibility after drag
         if(window.checkErrorBadgeVisibility) window.checkErrorBadgeVisibility();
 
@@ -9053,7 +9018,7 @@ window.currentSidebarTab = 'files'; // Shared state
     function getHeaderPct(){
       var host = document.getElementById('pdfPreview');
       var total = (host && host.getBoundingClientRect().height) || 1;
-      return Math.max((headerPx / total) * 100, 2); 
+      return Math.max((headerPx / total) * 100, 2);
     }
 
     function isCollapsed(){
@@ -9078,13 +9043,13 @@ window.currentSidebarTab = 'files'; // Shared state
       } else {
         var last = readJSON(PREVIEW_SIZES_KEY, defaultSizes);
         if (!Array.isArray(last) || last.length!==2 || last[1] <= hp + 2) {
-            last = [60, 40]; 
+            last = [60, 40];
         }
         window.previewVSplit.setSizes(last);
         bot.classList.remove('collapsed');
         localStorage.setItem(CONSOLE_COLLAPSED_KEY, '0');
       }
-      
+
       // Check badge visibility after state change
       if(window.checkErrorBadgeVisibility) window.checkErrorBadgeVisibility();
 
@@ -9105,7 +9070,7 @@ window.currentSidebarTab = 'files'; // Shared state
         setTimeout(function(){ setCollapsedState(true); }, 50);
     } else {
         // Initial check on load
-        setTimeout(function(){ 
+        setTimeout(function(){
             if(window.checkErrorBadgeVisibility) window.checkErrorBadgeVisibility();
         }, 100);
     }
@@ -9113,8 +9078,8 @@ window.currentSidebarTab = 'files'; // Shared state
     if (btn){
       var newBtn = btn.cloneNode(true);
       btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener('click', function(){ 
-          setCollapsedState(!isCollapsed()); 
+      newBtn.addEventListener('click', function(){
+          setCollapsedState(!isCollapsed());
       });
     }
 
@@ -9184,11 +9149,11 @@ window.currentSidebarTab = 'files'; // Shared state
         return s[1] <= headerPct + 1;
       }catch(e){ return false; }
     }
-    
+
     function setCollapsedState(collapsed){
       if (!window.sidebarVSplit) return;
       var headerPct = getHeaderHeight();
-      
+
       if (collapsed){
         // Save current size before collapsing (only if not already at header size)
         var currentSizes = window.sidebarVSplit.getSizes();
@@ -9214,7 +9179,7 @@ window.currentSidebarTab = 'files'; // Shared state
     }
 
     window.addEventListener('beforeunload', function(){
-      try{ 
+      try{
         var sizes = window.sidebarVSplit.getSizes();
         var headerPct = getHeaderHeight();
         // Only save if not at header-only size
@@ -9223,7 +9188,7 @@ window.currentSidebarTab = 'files'; // Shared state
         }
       }catch(e){}
     });
-    
+
     // Expose functions for synchronization
     window.syncOutlinePane = {
       collapse: function() { setCollapsedState(true); },
@@ -9237,14 +9202,14 @@ window.currentSidebarTab = 'files'; // Shared state
 //============ Active layout highlights========//
 
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // Function to update the active state in the UI
     window.updateLayoutActiveState = function(mode) {
       // 1. Remove 'active' from all items with class 'layout-selector'
       document.querySelectorAll('.layout-selector').forEach(function(el) {
         el.classList.remove('active');
       });
-      
+
       // 2. Add 'active' to the item matching the current mode
       document.querySelectorAll('.layout-selector[data-layout=\"' + mode + '\"]').forEach(function(el) {
         el.classList.add('active');
@@ -9269,16 +9234,16 @@ document.addEventListener('DOMContentLoaded', function() {
 //========== Equation preview, sticky scroll and minimap togglers in View navbar and synchronisation with settings overlay=====//
 
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // --- SYNC FUNCTION ---
     function initToggleSync() {
       // The IDs of the settings checkboxes we want to sync
       const toggleIds = ['enableMathPreviewPanel', 'enableStickyScrollPanel', 'enableMinimapPanel'];
-      
+
       toggleIds.forEach(function(id) {
         const checkbox = document.getElementById(id);
         if (!checkbox) return;
-        
+
         // 1. Define update logic: Checkbox State -> Menu Item Class
         const updateMenuState = () => {
           const menuItems = document.querySelectorAll('.toggle-sync[data-toggle-id=\"' + id + '\"]');
@@ -9290,10 +9255,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           });
         };
-        
+
         // 2. Run immediately to set initial state
         updateMenuState();
-        
+
         // 3. Listen for changes on the checkbox (e.g. changed via Settings Overlay)
         checkbox.addEventListener('change', updateMenuState);
       });
@@ -9324,7 +9289,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // =================== ACE ANNOTATIONS & ERROR LOG BRIDGE ===================
 Shiny.addCustomMessageHandler('setAnnotations', function(annotations){
   var safeAnnotations = annotations || [];
-  
+
   // 1. Update Ace Editor Gutter (Visual Red/Yellow dots)
   try {
     var ed = ace.edit('sourceEditor');
@@ -9337,7 +9302,7 @@ Shiny.addCustomMessageHandler('setAnnotations', function(annotations){
   if (window.updateErrorLog) {
     window.updateErrorLog(safeAnnotations);
   }
-  
+
   // 3. Update Navbar Badge (Red counter)
   // Calculate counts manually if updateErrorLog didn't handle it
   var err = 0, warn = 0, info = 0;
@@ -9346,14 +9311,14 @@ Shiny.addCustomMessageHandler('setAnnotations', function(annotations){
     else if(a.type === 'warning') warn++;
     else info++;
   });
-  
+
   var badge = document.getElementById('errorLogBadge');
   if (badge) {
     var total = err + warn + info;
     if (total > 0) {
       badge.textContent = total;
       badge.classList.add('show');
-      
+
       // Color logic: Red if errors, Orange if warnings, Blue if info
       badge.classList.remove('bg-red', 'bg-orange', 'bg-blue');
       if (err > 0) badge.classList.add('bg-red');
@@ -9364,9 +9329,9 @@ Shiny.addCustomMessageHandler('setAnnotations', function(annotations){
     }
   }
 });
-    
-    
-    
+
+
+
   Shiny.addCustomMessageHandler('updateStatus', function(message){
       document.getElementById('statusBar').innerText = message;
     });
@@ -9394,26 +9359,26 @@ Shiny.addCustomMessageHandler('setAnnotations', function(annotations){
     Shiny.addCustomMessageHandler('saveSettingsToLocal', function(settings){
       try{ localStorage.setItem('latexerSettings', JSON.stringify(settings)); }catch(e){}
     });
-    
-    
+
+
 Shiny.addCustomMessageHandler('aceGoTo', function(data){
-  var editor = ace.edit('sourceEditor'); 
+  var editor = ace.edit('sourceEditor');
   if (!editor) return;
-  
+
   // Validate input (default to 0 if missing)
   var line = (data && typeof data.line === 'number') ? data.line : 0;
-  
+
   // 1. Force Resize (Fixes scroll issues if panel size changed)
   editor.resize(true);
-  
+
   // 2. Move Cursor & Focus
   editor.focus();
   editor.moveCursorTo(line, 0);
   editor.clearSelection(); // Prevent selecting text from previous operations
-  
+
   // 3. FORCE SCROLL TO CENTER (Most reliable method)
   editor.centerSelection();
-  
+
 });
 
 
@@ -9422,13 +9387,13 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
         try {
           var s = JSON.parse(localStorage.getItem('latexerSettings') || 'null');
           if (!s) return;
-      
+
           var ed  = ace.edit('sourceEditor');
           ed.setOption('scrollPastEnd', true);
           var con = ace.edit('dockerConsole');
-          
-          
-      
+
+
+
           if (s.editorTheme) {
             ed.setTheme('ace/theme/' + s.editorTheme);
             con.setTheme('ace/theme/' + s.editorTheme);
@@ -9444,7 +9409,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
             var fs = +s.fontSize;
             ed.setFontSize(fs);
             con.setFontSize(fs);
-      
+
             // Reflect Selectize value EXACTLY like theme
             if (window.$ && $('#editorFontSizePanel')[0]?.selectize) {
               $('#editorFontSizePanel')[0].selectize.setValue(String(fs), true);
@@ -9453,17 +9418,17 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
               if (fsSel) { fsSel.value = String(fs); fsSel.dispatchEvent(new Event('change', {bubbles:true})); }
             }
           }
-      
+
           if (typeof s.wordWrap    !== 'undefined') { ed.session.setUseWrapMode(!!s.wordWrap); }
           if (typeof s.lineNumbers !== 'undefined') { ed.setOption('showLineNumbers', !!s.lineNumbers); }
-      
+
           // Always hide print margin
           ed.setShowPrintMargin(false);
           con.setShowPrintMargin(false);
           setTimeout(function(){
             try { ed.setShowPrintMargin(false); con.setShowPrintMargin(false); } catch(e){}
           }, 0);
-      
+
           if (typeof s.autocomplete !== 'undefined') {
             ed.setOptions({ enableLiveAutocompletion: !!s.autocomplete });
           }
@@ -9471,7 +9436,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
             ed.session.setTabSize(+s.tabSize);
             var tsv=document.getElementById('tabSizeVal'); if(tsv) tsv.innerText=String(s.tabSize);
           }
-      
+
           setTimeout(function(){ try{ ed.resize(true); }catch(e){} }, 50);
         } catch(e) {}
       })();
@@ -9516,7 +9481,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
 
         // 1. Sort Annotations: Column asc, then Type priority (Error < Warning < Info)
         var typePriority = { 'error': 1, 'warning': 2, 'info': 3 };
-        
+
         annotations.sort(function(a, b) {
           // Sort by column (position) first
           if (a.column !== b.column) return a.column - b.column;
@@ -9529,7 +9494,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
         // 2. Build Content: Independent Items
         var contentHtml = annotations.map(function(ann, index) {
             var safeText = (ann.text || \"\").replace(/</g, \"&lt;\").replace(/>/g, \"&gt;\");
-            
+
             // Determine color for THIS specific item
             var color = '#4299e1'; // Info (default)
             if (ann.type === 'error') color = '#d63939';
@@ -9551,21 +9516,21 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
           background: var(--tblr-body-bg) !important;
           border: 1px solid var(--tblr-border-color);
           border-radius: var(--tblr-border-radius);
-          padding: 0; 
+          padding: 0;
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           font-size: 12px;
           line-height: 1.4;
           max-width: 400px;
           pointer-events: auto;
           cursor: pointer;
-          white-space: normal; 
+          white-space: normal;
           word-wrap: break-word;
           color: var(--tblr-body-color) !important;
           opacity: 1;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           overflow: hidden;
         `;
-        
+
         customTooltip.innerHTML = contentHtml;
 
         // Position tooltip near cursor
@@ -9574,9 +9539,9 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
 
         // Check if tooltip would go off bottom of screen
         // Approximate height calculation based on items
-        var approxHeight = annotations.length * 24; 
+        var approxHeight = annotations.length * 24;
         if (finalY + approxHeight + 50 > window.innerHeight) {
-          finalY = y - approxHeight - 20; 
+          finalY = y - approxHeight - 20;
         }
 
         customTooltip.style.left = finalX + 'px';
@@ -9597,7 +9562,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
         var session = editor.getSession();
         var annotations = session.getAnnotations();
         if (!annotations) return [];
-        
+
         return annotations.filter(function(a) {
             return a.row === row;
         });
@@ -9617,8 +9582,8 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
         if (!target) return;
 
         // Check if this cell has an annotation marker
-        if (!target.classList.contains('ace_error') && 
-            !target.classList.contains('ace_warning') && 
+        if (!target.classList.contains('ace_error') &&
+            !target.classList.contains('ace_warning') &&
             !target.classList.contains('ace_info')) {
           return;
         }
@@ -9694,7 +9659,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
         }
       });
     })();
-    
+
     // --- Dynamic kebab menu: position + close behavior ---
     (function(){
       function closeAllMenus(){
@@ -9714,7 +9679,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
         menu.style.left = left + 'px';
         menu.style.top  = top + 'px';
       }
-    
+
       // Toggle/open on kebab click
       document.addEventListener('click', function(e){
         const btn = e.target.closest('.kebab-btn');
@@ -9722,7 +9687,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
         const menuId = btn.getAttribute('data-menu-id');
         const menu = document.getElementById(menuId);
         if (!menu) return;
-    
+
         const isOpen = menu.classList.contains('open');
         closeAllMenus();
         if (!isOpen){
@@ -9757,17 +9722,17 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
           closeAllMenus();
         }
       }, true);
-    
+
       // Close on ESC
       document.addEventListener('keydown', function(e){
         if (e.key === 'Escape') closeAllMenus();
       });
-    
+
       // Close on resize/scroll to avoid misplaced menus
       window.addEventListener('resize', closeAllMenus, true);
       window.addEventListener('scroll', closeAllMenus, true);
     })();
-    
+
   document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('.gutter').forEach(function(g){
     g.setAttribute('role','separator');
@@ -9790,7 +9755,7 @@ var previewVSplit;  // new
   var conBot = document.getElementById('dockerConsoleContainer');
   if(!pdfTop || !conBot) return;
 
- 
+
   // ----- Console toggle keeps header visible (36px): compute % dynamically
   function setConsoleCollapsed(collapsed){
     var host = document.getElementById('pdfPreview');
@@ -9931,34 +9896,34 @@ var previewVSplit;  // new
     // Multiple attempts with increasing delays to ensure editor is ready
     function attemptRestore(attempt) {
       if (attempt > 5) return; // Give up after 5 attempts
-      
+
       setTimeout(function() {
         try {
           // 1. Force resize to ensure proper rendering
           editor.resize(true);
-          
+
           // 2. Set the cursor position
           editor.moveCursorTo(r, c);
-          
+
           // 3. Clear any selection
           editor.clearSelection();
-          
+
           // 4. Scroll to the line (multiple methods for reliability)
           editor.scrollToLine(r, true, true, function() {});
-          
+
           // 5. Center the cursor in view
           editor.centerSelection();
-          
+
           // 6. Force focus and ensure cursor is visible
           editor.focus();
           editor.navigateTo(r, c);
-          
+
           // 7. Force a re-render
           editor.renderer.updateFull(true);
-          
+
           // 8. Ensure the cursor is blinking
           editor.textInput.focus();
-          
+
         } catch(e) {
           console.error('Cursor restore attempt ' + attempt + ' failed:', e);
           // Retry with longer delay
@@ -9966,7 +9931,7 @@ var previewVSplit;  // new
         }
       }, 100 * attempt); // Increasing delays: 100ms, 200ms, 300ms, etc.
     }
-    
+
     // Start restoration attempts
     attemptRestore(1);
   });
@@ -9998,7 +9963,7 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
   }
 });
 
- 
+
 // =================== ACE EDITOR PLACEHOLDER ON EMPTY LINES ===================
 (function () {
 
@@ -10088,14 +10053,14 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
     disableCount: 0,
     originalState: true,
     editor: null,
-    
+
     init: function(editor) {
       if (!this.editor) {
         this.editor = editor;
         this.originalState = editor.getOption('enableLiveAutocompletion');
       }
     },
-    
+
     disable: function() {
       if (this.disableCount === 0 && this.editor) {
         // First disable request - capture state and disable
@@ -10104,7 +10069,7 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
       }
       this.disableCount++;
     },
-    
+
     enable: function() {
       this.disableCount = Math.max(0, this.disableCount - 1);
       if (this.disableCount === 0 && this.editor) {
@@ -10112,7 +10077,7 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
         this.editor.setOption('enableLiveAutocompletion', this.originalState);
       }
     },
-    
+
     forceEnable: function() {
       // Emergency restore
       this.disableCount = 0;
@@ -10131,25 +10096,25 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
   var aceEditor = null;
   var selectedIndex = 0;
   var bibDisabledAce = false;  // ADD THIS - tracks if THIS popup disabled ace
-  
+
   // Function to parse .bib file content and extract citation keys
   function parseBibFile(content) {
     if (!content || typeof content !== 'string') return [];
-    
+
     var entries = [];
     // Match @article, @book, @inproceedings, etc. with their keys
     var pattern = /@\\w+\\s*\\{\\s*([^,\\s]+)/g;
     var match;
-    
+
     while ((match = pattern.exec(content)) !== null) {
       if (match[1]) {
         entries.push(match[1].trim());
       }
     }
-    
+
     return entries;
   }
-  
+
 // Function to create and position popup
   function showCitePopup(entries, aceEditor, prefix) {
     if (!currentCitePopup && !bibDisabledAce) {
@@ -10159,67 +10124,67 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
 
     hideCitePopup(true);
     selectedIndex = 0;
-    
+
     if (!entries || entries.length === 0) {
       currentCitePopup = createMessagePopup('No matching entries', aceEditor);
       return;
     }
-    
+
     var searchTerm = prefix.split(',').pop().trim();
     var filtered = searchTerm ? entries.filter(function(e) {
       return e.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
-    }) : entries.slice(0, 200); 
-    
+    }) : entries.slice(0, 200);
+
     if (filtered.length === 0) {
       currentCitePopup = createMessagePopup('No matching entries', aceEditor);
       return;
     }
-    
+
     // --- UPDATED: Create Premium Popup Structure ---
     var popup = document.createElement('div');
     popup.id = 'cite-autocomplete-popup';
     popup.className = 'autocomplete-popup'; // Apply new CSS class
-    
+
     // Add Header
     var header = document.createElement('div');
     header.className = 'autocomplete-header';
     header.textContent = 'Citations';
     popup.appendChild(header);
-    
+
     filtered.forEach(function(entry, idx) {
       var item = document.createElement('div');
       item.textContent = entry;
       // Add 'autocomplete-item' for styling, keep 'cite-popup-item' for logic
-      item.className = 'autocomplete-item cite-popup-item'; 
+      item.className = 'autocomplete-item cite-popup-item';
       item.setAttribute('data-index', idx);
-      
+
       // Default selection styling
       if (idx === 0) item.classList.add('active');
-      
+
       item.onmouseover = function() {
         var items = popup.querySelectorAll('.cite-popup-item');
         items.forEach(function(it) { it.classList.remove('active'); });
         this.classList.add('active');
         selectedIndex = idx;
       };
-      
+
       item.onclick = function(e) {
         e.preventDefault(); e.stopPropagation();
         insertCitation(aceEditor, entry);
         hideCitePopup();
         return false;
       };
-      
+
       item.onmousedown = function(e) { e.preventDefault(); e.stopPropagation(); return false; };
       popup.appendChild(item);
     });
-    
+
     document.body.appendChild(popup);
     currentCitePopup = popup;
     currentCitePopup.filteredEntries = filtered;
     positionPopup(aceEditor, popup);
   }
-  
+
   function createMessagePopup(message, aceEditor) {
     var popup = document.createElement('div');
     popup.id = 'cite-autocomplete-popup';
@@ -10227,21 +10192,21 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
     popup.style.padding = '8px 12px';       // Specific padding for messages
     popup.style.fontStyle = 'italic';
     popup.style.color = 'var(--tblr-secondary)';
-    
+
     popup.textContent = message;
     document.body.appendChild(popup);
     positionPopup(aceEditor, popup);
-    
+
     return popup;
   }
-  
+
   function positionPopup(aceEditor, popup) {
     var cursor = aceEditor.getCursorPosition();
     var coords = aceEditor.renderer.textToScreenCoordinates(cursor.row, cursor.column);
-    
+
     popup.style.left = coords.pageX + 'px';
     popup.style.top = (coords.pageY + 20) + 'px';
-    
+
     // Adjust if off-screen
     setTimeout(function() {
       var rect = popup.getBoundingClientRect();
@@ -10253,7 +10218,7 @@ Shiny.addCustomMessageHandler('updateProjectURL', function(projectId) {
       }
     }, 0);
   }
-  
+
 function hideCitePopup(skipRestore) {
     if (currentCitePopup) {
       currentCitePopup.remove();
@@ -10270,35 +10235,35 @@ function hideCitePopup(skipRestore) {
       bibDisabledAce = false;
     }
   }
-  
+
 function insertCitation(aceEditor, citation) {
     // 1. FIX: Require Range from the ace module system
     var Range = ace.require('ace/range').Range;
-    
+
     var cursor = aceEditor.getCursorPosition();
     var line = aceEditor.session.getLine(cursor.row);
-    
+
     // Find the { before cursor
     var beforeCursor = line.substring(0, cursor.column);
     var bracePos = beforeCursor.lastIndexOf('{');
-    
+
     if (bracePos !== -1) {
       // Get text between { and cursor
       var textInBrace = beforeCursor.substring(bracePos + 1);
-      
+
       // Find position after last comma (if any)
       var lastCommaPos = textInBrace.lastIndexOf(',');
-      
+
       if (lastCommaPos !== -1) {
         // There's a comma, insert after it
         var startPos = bracePos + 1 + lastCommaPos + 1;
         var afterComma = textInBrace.substring(lastCommaPos + 1);
-        
+
         // 2. FIX: Use trimStart() instead of trimLeft()
-        var trimmedAfterComma = afterComma.trimStart(); 
+        var trimmedAfterComma = afterComma.trimStart();
         var spacesToRemove = afterComma.length - trimmedAfterComma.length;
         startPos += spacesToRemove;
-        
+
         // Delete text from startPos to cursor and insert citation
         var range = new Range(cursor.row, startPos, cursor.row, cursor.column);
         aceEditor.session.replace(range, citation);
@@ -10307,7 +10272,7 @@ function insertCitation(aceEditor, citation) {
         var range = new Range(cursor.row, bracePos + 1, cursor.row, cursor.column);
         aceEditor.session.replace(range, citation);
       }
-      
+
       // Move cursor after inserted citation
       var newCursorCol = bracePos + 1 + citation.length;
       if (lastCommaPos !== -1) {
@@ -10317,19 +10282,19 @@ function insertCitation(aceEditor, citation) {
       aceEditor.focus();
     }
   }
-  
+
   // Detect cite commands and show popup
   function handleEditorChange(aceEditor) {
     var cursor = aceEditor.getCursorPosition();
     var line = aceEditor.session.getLine(cursor.row);
     var beforeCursor = line.substring(0, cursor.column);
-    
+
     // Match cite variants followed by {
     var citeMatch = beforeCursor.match(/\\\\cite[a-zA-Z]*\\{([^}]*)$/);
-    
+
     if (citeMatch) {
       var prefix = citeMatch[1]; // Text after {
-      
+
       if (bibEntries.length === 0) {
         // Check if we have bib files
         if (window.Shiny && Shiny.setInputValue) {
@@ -10344,14 +10309,14 @@ function insertCitation(aceEditor, citation) {
       hideCitePopup();
     }
   }
-  
+
   // Handle keyboard navigation
   function handleKeyDown(e, aceEditor) {
     if (!currentCitePopup || !currentCitePopup.filteredEntries) return;
-    
+
     var items = currentCitePopup.querySelectorAll('.cite-popup-item');
     if (!items || items.length === 0) return;
-    
+
     // Arrow Down
     if (e.keyCode === 40) {
       e.preventDefault();
@@ -10360,7 +10325,7 @@ function insertCitation(aceEditor, citation) {
       updateSelection(items);
       return;
     }
-    
+
     // Arrow Up
     if (e.keyCode === 38) {
       e.preventDefault();
@@ -10369,31 +10334,31 @@ function insertCitation(aceEditor, citation) {
       updateSelection(items);
       return;
     }
-    
+
     // Enter
     if (e.keyCode === 13) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       if (currentCitePopup.filteredEntries[selectedIndex]) {
         insertCitation(aceEditor, currentCitePopup.filteredEntries[selectedIndex]);
         hideCitePopup();
       }
       return;
     }
-    
+
     // Tab
     if (e.keyCode === 9) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       if (currentCitePopup.filteredEntries[selectedIndex]) {
         insertCitation(aceEditor, currentCitePopup.filteredEntries[selectedIndex]);
         hideCitePopup();
       }
       return;
     }
-    
+
     // Escape
     if (e.keyCode === 27) {
       e.preventDefault();
@@ -10402,7 +10367,7 @@ function insertCitation(aceEditor, citation) {
       return;
     }
   }
-  
+
 function updateSelection(items) {
     items.forEach(function(item, idx) {
       if (idx === selectedIndex) {
@@ -10413,35 +10378,35 @@ function updateSelection(items) {
       }
     });
   }
-  
+
   // Initialize when editor is ready
   function initCiteAutocomplete() {
     try {
       aceEditor = ace.edit('sourceEditor');
       if (!aceEditor) return false;
-      
+
       // Listen to changes
       aceEditor.on('change', function() {
         handleEditorChange(aceEditor);
       });
-      
+
       aceEditor.selection.on('changeCursor', function() {
         var cursor = aceEditor.getCursorPosition();
         var line = aceEditor.session.getLine(cursor.row);
         var beforeCursor = line.substring(0, cursor.column);
-        
+
         if (!beforeCursor.match(/\\\\cite[a-zA-Z]*\\{[^}]*$/)) {
           hideCitePopup();
         }
       });
-      
+
       // Add global keydown listener
       document.addEventListener('keydown', function(e) {
         if (currentCitePopup && currentCitePopup.filteredEntries) {
           handleKeyDown(e, aceEditor);
         }
       }, true);
-      
+
       // Add Ace keyboard handler
       aceEditor.keyBinding.addKeyboardHandler({
         handleKeyboard: function(data, hash, keyString, keyCode, event) {
@@ -10454,26 +10419,26 @@ function updateSelection(items) {
           return false;
         }
       });
-      
+
       return true;
     } catch(e) {
       console.error('Failed to initialize citation autocomplete:', e);
       return false;
     }
   }
-  
+
   // Expose functions globally
   window.updateBibEntries = function(entries) {
     bibEntries = entries || [];
   };
-  
+
   window.showNoBibMessage = function(message) {
     if (aceEditor && currentCitePopup) {
       hideCitePopup();
       currentCitePopup = createMessagePopup(message, aceEditor);
     }
   };
-  
+
   // Initialize
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -10484,7 +10449,7 @@ function updateSelection(items) {
   }
 })();
 
-    
+
  // =================== LABEL AUTOCOMPLETE ===================
 (function() {
   var labelEntries = [];
@@ -10492,25 +10457,25 @@ function updateSelection(items) {
   var aceLabelEditor = null;
   var selectedLabelIndex = 0;
   var labelDisabledAce = false;  // ADD THIS - tracks if THIS popup disabled ace
-  
+
   // Function to parse .tex file content and extract label keys
   function parseLabelsFromContent(content) {
     if (!content || typeof content !== 'string') return [];
-    
+
     var entries = [];
     // Match \\label{key} patterns
-    var pattern = /\\\\label\\{([^}]+)\\}/g; 
+    var pattern = /\\\\label\\{([^}]+)\\}/g;
     var match;
-    
+
     while ((match = pattern.exec(content)) !== null) {
       if (match[1]) {
         entries.push(match[1].trim());
       }
     }
-    
+
     return entries;
   }
-  
+
 // Function to create and position popup
   function showLabelPopup(entries, aceEditor, prefix) {
     if (!currentLabelPopup && !labelDisabledAce) {
@@ -10520,66 +10485,66 @@ function updateSelection(items) {
 
     hideLabelPopup(true);
     selectedLabelIndex = 0;
-    
+
     if (!entries || entries.length === 0) {
       currentLabelPopup = createLabelMessagePopup('No matching labels', aceEditor);
       return;
     }
-    
+
     var searchTerm = prefix.split(',').pop().trim();
     var filtered = searchTerm ? entries.filter(function(e) {
       return e.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     }) : entries.slice(0, 200);
-    
+
     if (filtered.length === 0) {
       currentLabelPopup = createLabelMessagePopup('No matching labels', aceEditor);
       return;
     }
-    
+
     // --- UPDATED: Create Premium Popup Structure ---
     var popup = document.createElement('div');
     popup.id = 'label-autocomplete-popup';
     popup.className = 'autocomplete-popup'; // Apply new CSS class
-    
+
     // Add Header
     var header = document.createElement('div');
     header.className = 'autocomplete-header';
     header.textContent = 'Labels';
     popup.appendChild(header);
-    
+
     filtered.forEach(function(entry, idx) {
       var item = document.createElement('div');
       item.textContent = entry;
       // Add 'autocomplete-item' for styling, keep 'label-popup-item' for logic
-      item.className = 'autocomplete-item label-popup-item'; 
+      item.className = 'autocomplete-item label-popup-item';
       item.setAttribute('data-index', idx);
-      
+
       if (idx === 0) item.classList.add('active');
-      
+
       item.onmouseover = function() {
         var items = popup.querySelectorAll('.label-popup-item');
         items.forEach(function(it) { it.classList.remove('active'); });
         this.classList.add('active');
         selectedLabelIndex = idx;
       };
-      
+
       item.onclick = function(e) {
         e.preventDefault(); e.stopPropagation();
         insertLabel(aceEditor, entry);
         hideLabelPopup();
         return false;
       };
-      
+
       item.onmousedown = function(e) { e.preventDefault(); e.stopPropagation(); return false; };
       popup.appendChild(item);
     });
-    
+
     document.body.appendChild(popup);
     currentLabelPopup = popup;
-    currentLabelPopup.filteredEntries = filtered; 
+    currentLabelPopup.filteredEntries = filtered;
     positionLabelPopup(aceEditor, popup);
   }
-  
+
   function createLabelMessagePopup(message, aceEditor) {
     var popup = document.createElement('div');
     popup.id = 'label-autocomplete-popup';
@@ -10587,21 +10552,21 @@ function updateSelection(items) {
     popup.style.padding = '8px 12px';
     popup.style.fontStyle = 'italic';
     popup.style.color = 'var(--tblr-secondary)';
-    
+
     popup.textContent = message;
     document.body.appendChild(popup);
     positionLabelPopup(aceEditor, popup);
-    
+
     return popup;
   }
-  
+
   function positionLabelPopup(aceEditor, popup) {
     var cursor = aceEditor.getCursorPosition();
     var coords = aceEditor.renderer.textToScreenCoordinates(cursor.row, cursor.column);
-    
+
     popup.style.left = coords.pageX + 'px';
     popup.style.top = (coords.pageY + 20) + 'px';
-    
+
     // Adjust if off-screen
     setTimeout(function() {
       var rect = popup.getBoundingClientRect();
@@ -10613,7 +10578,7 @@ function updateSelection(items) {
       }
     }, 0);
   }
-  
+
   function hideLabelPopup(skipRestore) {
     if (currentLabelPopup) {
       currentLabelPopup.remove();
@@ -10630,35 +10595,35 @@ function updateSelection(items) {
       labelDisabledAce = false;
     }
   }
-  
+
   function insertLabel(aceEditor, label) {
     // 1. FIX: Require Range from the ace module system
     var Range = ace.require('ace/range').Range;
-    
+
     var cursor = aceEditor.getCursorPosition();
     var line = aceEditor.session.getLine(cursor.row);
-    
+
     // Find the { before cursor
     var beforeCursor = line.substring(0, cursor.column);
     var bracePos = beforeCursor.lastIndexOf('{');
-    
+
     if (bracePos !== -1) {
       // Get text between { and cursor
       var textInBrace = beforeCursor.substring(bracePos + 1);
-      
+
       // Find position after last comma (if any)
       var lastCommaPos = textInBrace.lastIndexOf(',');
-      
+
       if (lastCommaPos !== -1) {
         // There's a comma, insert after it
         var startPos = bracePos + 1 + lastCommaPos + 1;
         var afterComma = textInBrace.substring(lastCommaPos + 1);
-        
+
         // 2. FIX: Use trimStart() instead of trimLeft()
-        var trimmedAfterComma = afterComma.trimStart(); 
+        var trimmedAfterComma = afterComma.trimStart();
         var spacesToRemove = afterComma.length - trimmedAfterComma.length;
         startPos += spacesToRemove;
-        
+
         // Delete text from startPos to cursor and insert label
         var range = new Range(cursor.row, startPos, cursor.row, cursor.column);
         aceEditor.session.replace(range, label);
@@ -10667,7 +10632,7 @@ function updateSelection(items) {
         var range = new Range(cursor.row, bracePos + 1, cursor.row, cursor.column);
         aceEditor.session.replace(range, label);
       }
-      
+
       // Move cursor after inserted label
       var newCursorCol = bracePos + 1 + label.length;
       if (lastCommaPos !== -1) {
@@ -10677,19 +10642,19 @@ function updateSelection(items) {
       aceEditor.focus();
     }
   }
-  
+
   // Detect ref commands and show popup
   function handleLabelEditorChange(aceEditor) {
     var cursor = aceEditor.getCursorPosition();
     var line = aceEditor.session.getLine(cursor.row);
     var beforeCursor = line.substring(0, cursor.column);
-    
+
     // Match ref variants followed by {
     var refMatch = beforeCursor.match(/\\\\(?:ref|eqref|pageref|autoref|cref|Cref)\\{([^}]*)$/);
-    
+
     if (refMatch) {
-      var prefix = refMatch[1]; 
-      
+      var prefix = refMatch[1];
+
       if (labelEntries.length === 0) {
         // Check if we have label data
         if (window.Shiny && Shiny.setInputValue) {
@@ -10704,14 +10669,14 @@ function updateSelection(items) {
       hideLabelPopup();
     }
   }
-  
+
   // Handle keyboard navigation
   function handleLabelKeyDown(e, aceEditor) {
     if (!currentLabelPopup || !currentLabelPopup.filteredEntries) return;
-    
+
     var items = currentLabelPopup.querySelectorAll('.label-popup-item');
     if (!items || items.length === 0) return;
-    
+
     // Arrow Down
     if (e.keyCode === 40) {
       e.preventDefault();
@@ -10720,7 +10685,7 @@ function updateSelection(items) {
       updateLabelSelection(items);
       return;
     }
-    
+
     // Arrow Up
     if (e.keyCode === 38) {
       e.preventDefault();
@@ -10729,31 +10694,31 @@ function updateSelection(items) {
       updateLabelSelection(items);
       return;
     }
-    
+
     // Enter
     if (e.keyCode === 13) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       if (currentLabelPopup.filteredEntries[selectedLabelIndex]) {
         insertLabel(aceEditor, currentLabelPopup.filteredEntries[selectedLabelIndex]);
         hideLabelPopup();
       }
       return;
     }
-    
+
     // Tab
     if (e.keyCode === 9) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       if (currentLabelPopup.filteredEntries[selectedLabelIndex]) {
         insertLabel(aceEditor, currentLabelPopup.filteredEntries[selectedLabelIndex]);
         hideLabelPopup();
       }
       return;
     }
-    
+
     // Escape
     if (e.keyCode === 27) {
       e.preventDefault();
@@ -10762,7 +10727,7 @@ function updateSelection(items) {
       return;
     }
   }
-  
+
 function updateLabelSelection(items) {
     items.forEach(function(item, idx) {
       if (idx === selectedLabelIndex) {
@@ -10773,35 +10738,35 @@ function updateLabelSelection(items) {
       }
     });
   }
-  
+
   // Initialize when editor is ready
   function initLabelAutocomplete() {
     try {
       aceLabelEditor = ace.edit('sourceEditor');
       if (!aceLabelEditor) return false;
-      
+
       // Listen to changes
       aceLabelEditor.on('change', function() {
         handleLabelEditorChange(aceLabelEditor);
       });
-      
+
       aceLabelEditor.selection.on('changeCursor', function() {
         var cursor = aceLabelEditor.getCursorPosition();
         var line = aceLabelEditor.session.getLine(cursor.row);
         var beforeCursor = line.substring(0, cursor.column);
-        
+
         if (!beforeCursor.match(/\\\\(?:ref|eqref|pageref|autoref|cref|Cref)\\{[^}]*$/)) {
           hideLabelPopup();
         }
       });
-      
+
       // Add global keydown listener
       document.addEventListener('keydown', function(e) {
         if (currentLabelPopup && currentLabelPopup.filteredEntries) {
           handleLabelKeyDown(e, aceLabelEditor);
         }
       }, true);
-      
+
       // Add Ace keyboard handler
       aceLabelEditor.keyBinding.addKeyboardHandler({
         handleKeyboard: function(data, hash, keyString, keyCode, event) {
@@ -10814,26 +10779,26 @@ function updateLabelSelection(items) {
           return false;
         }
       });
-      
+
       return true;
     } catch(e) {
       console.error('Failed to initialize label autocomplete:', e);
       return false;
     }
   }
-  
+
   // Expose functions globally
   window.updateLabelEntries = function(entries) {
     labelEntries = entries || [];
   };
-  
+
   window.showNoLabelMessage = function(message) {
     if (aceLabelEditor && currentLabelPopup) {
       hideLabelPopup();
       currentLabelPopup = createLabelMessagePopup(message, aceLabelEditor);
     }
   };
-  
+
   // Initialize
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -10851,7 +10816,7 @@ Shiny.addCustomMessageHandler('updateCitationCount', function(message){
   if(el) {
     // Ensure we have a number, default to 0
     var count = (typeof message === 'number') ? message : 0;
-    
+
     el.innerText = count;
     // Always show the badge
     el.classList.add('show');
@@ -10864,7 +10829,7 @@ Shiny.addCustomMessageHandler('updateLabelCount', function(message){
   if(el) {
     // Ensure we have a number, default to 0
     var count = (typeof message === 'number') ? message : 0;
-    
+
     el.innerText = count;
     // Always show the badge
     el.classList.add('show');
@@ -10874,7 +10839,7 @@ Shiny.addCustomMessageHandler('updateLabelCount', function(message){
 //==================CITATION MANAGER===================//
 
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // --- CITATION MANAGER HELPERS ---
 
     // Map for cleaning Unicode to LaTeX
@@ -10904,7 +10869,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       // 2. Formatting
-      cleanBib = cleanBib.replace(/\\r\\n|\\r|\\n/g, ' '); 
+      cleanBib = cleanBib.replace(/\\r\\n|\\r|\\n/g, ' ');
       cleanBib = cleanBib.replace(/(@[a-zA-Z]+\\s*\\{[^,]+,)/, '$1\\n');
       cleanBib = cleanBib.replace(/,(\\s*)([a-zA-Z0-9_]+)(\\s*)=/g, ',\\n  $2$3=');
       cleanBib = cleanBib.replace(/\\}(\\s*)$/, '\\n}');
@@ -10932,7 +10897,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const btn = document.getElementById('btnSearchCitation');
       const originalText = btn.innerText;
-      
+
       btn.innerHTML = 'Searching <span class=\"animated-dots\"></span>';
       btn.disabled = true;
 
@@ -11019,7 +10984,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const url = `https://api.crossref.org/works?query.bibliographic=${encodeURIComponent(query)}&rows=1&select=DOI`;
       const resp = await fetch(url);
       const data = await resp.json();
-      
+
       if (data.message && data.message.items && data.message.items.length > 0) {
         return data.message.items[0].DOI;
       }
@@ -11034,12 +10999,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   });
 
-    
-    
+
+
 //============================= Alert System=====================//
 window.showTablerAlert = function(type, heading, message, duration) {
   duration = duration || 5000;
-  
+
   const icons = {
     success: '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12l5 5l10 -10\" /></svg>',
     info: '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0\" /><path d=\"M12 9h.01\" /><path d=\"M11 12h1v4h1\" /></svg>',
@@ -11047,11 +11012,11 @@ window.showTablerAlert = function(type, heading, message, duration) {
     danger: '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0\" /><path d=\"M12 8v4\" /><path d=\"M12 16h.01\" /></svg>',
     error: '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0\" /><path d=\"M12 8v4\" /><path d=\"M12 16h.01\" /></svg>'
   };
-  
+
   // Normalize type
   if (type === 'message') type = 'success';
   if (type === 'error') type = 'danger';
-  
+
   // Apply colors ONLY to the text and icons
   const textColors = {
     success: 'text-success',
@@ -11060,14 +11025,14 @@ window.showTablerAlert = function(type, heading, message, duration) {
     danger: 'text-danger'
   };
   const textColorClass = textColors[type] || 'text-info';
-  
+
   const toastDiv = document.createElement('div');
   // Kept 'fade' removed to prevent CSS conflicts. Let Tabler handle default toast background.
   toastDiv.className = 'toast show';
   toastDiv.setAttribute('role', 'alert');
   toastDiv.setAttribute('aria-live', 'assertive');
   toastDiv.setAttribute('aria-atomic', 'true');
-  
+
   // Apply the text color class to the icon and heading only. Standard close button.
   toastDiv.innerHTML = `
     <div class=\"toast-header\">
@@ -11078,11 +11043,11 @@ window.showTablerAlert = function(type, heading, message, duration) {
     </div>
     <div class=\"toast-body\">${message}</div>
   `;
-  
+
   const container = document.getElementById('alertContainer');
   if (container) {
     container.appendChild(toastDiv);
-    
+
     // Centralized remove function to trigger animation
     const removeToast = function() {
       if (!toastDiv.classList.contains('removing')) {
@@ -11097,7 +11062,7 @@ window.showTablerAlert = function(type, heading, message, duration) {
 
     // Auto-dismiss
     let autoDismiss = setTimeout(removeToast, duration);
-    
+
     // Click 'X' button to dismiss manually
     const closeBtn = toastDiv.querySelector('.btn-close');
     closeBtn.addEventListener('click', function(e) {
@@ -11111,7 +11076,7 @@ window.showTablerAlert = function(type, heading, message, duration) {
 Shiny.addCustomMessageHandler('showTablerAlert', function(data) {
   window.showTablerAlert(data.type, data.heading, data.message, data.duration);
 });
-    
+
 
 // Keyboard shortcut to return to projects (Ctrl/Cmd + Shift + P)
 document.addEventListener('keydown', function(e) {
@@ -11121,7 +11086,7 @@ document.addEventListener('keydown', function(e) {
       Shiny.setInputValue('backToHomepage', Math.random(), {priority: 'event'});
     }
   }
-  
+
   // Keyboard shortcut to compile (Ctrl/Cmd + S)
   if ((e.ctrlKey || e.metaKey) && e.key === 's') {
     e.preventDefault();
@@ -11129,21 +11094,21 @@ document.addEventListener('keydown', function(e) {
       Shiny.setInputValue('compile', Math.random(), {priority: 'event'});
     }
   }
-});   
-    
- 
+});
+
+
  $(document).on('change', 'input[name=\"autoCompile\"]', function() {
     Shiny.setInputValue('autoCompile', this.value, {priority: 'event'});
   });
-  
-  
+
+
   // Track cursor position in Ace editor for outline highlighting
 (function() {
   function trackCursorPosition() {
     try {
       var editor = ace.edit('sourceEditor');
       if (!editor) return;
-      
+
       editor.getSession().selection.on('changeCursor', function() {
         var cursorPosition = editor.getCursorPosition();
         if (window.Shiny && Shiny.setInputValue) {
@@ -11157,7 +11122,7 @@ document.addEventListener('keydown', function(e) {
       console.error('Error setting up cursor tracking:', e);
     }
   }
-  
+
   // Initialize when editor is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -11173,7 +11138,7 @@ document.addEventListener('keydown', function(e) {
   Shiny.addCustomMessageHandler('showFilePreview', function(data) {
     var overlay = document.getElementById('filePreviewOverlay');
     var editorSplit = document.getElementById('editorSplit');
-    var visualEditor = document.getElementById('visual-editor-container'); 
+    var visualEditor = document.getElementById('visual-editor-container');
     var toolbar = document.getElementById('equation-editor');
     var title = document.getElementById('filePreviewTitle');
     var body = document.getElementById('filePreviewBody');
@@ -11195,8 +11160,8 @@ document.addEventListener('keydown', function(e) {
     }
 
     // 3. Render Content
-    body.innerHTML = ''; 
-    
+    body.innerHTML = '';
+
     if (data.type === 'image') {
       var img = document.createElement('img');
       img.src = data.url;
@@ -11204,29 +11169,29 @@ document.addEventListener('keydown', function(e) {
       img.style.maxHeight = '100%';
       img.style.objectFit = 'contain';
       body.appendChild(img);
-      
+
     } else if (data.type === 'pdf') {
       var iframe = document.createElement('iframe');
       iframe.src = 'Mudskipper_viewer.html?file=' + encodeURIComponent(data.url);
-      
+
       // Initial styling
       iframe.style.width = '100%';
       iframe.style.border = 'none';
-      iframe.style.background = 'transparent'; 
+      iframe.style.background = 'transparent';
       iframe.allowTransparency = 'true';
 
       // --- INJECT STYLES & AUTO-HEIGHT LOGIC ON LOAD ---
       iframe.onload = function() {
         try {
             var doc = iframe.contentDocument || iframe.contentWindow.document;
-            
+
             // A. Inject CSS
             var style = doc.createElement('style');
             style.textContent = `
                 html, body {
                     background: transparent !important;
                     background-color: transparent !important;
-                    height: auto !important; 
+                    height: auto !important;
                     overflow: visible !important;
                     min-height: 0 !important; /* Prevent sticking */
                 }
@@ -11249,7 +11214,7 @@ document.addEventListener('keydown', function(e) {
             doc.head.appendChild(style);
 
             // B. Resize Observer: Watch #viewerContainer ONLY
-            var viewerDiv = doc.getElementById('viewerContainer'); 
+            var viewerDiv = doc.getElementById('viewerContainer');
             if(viewerDiv) {
                 var resizeObserver = new ResizeObserver(entries => {
                     for (let entry of entries) {
@@ -11268,7 +11233,7 @@ document.addEventListener('keydown', function(e) {
       };
 
       body.appendChild(iframe);
-      
+
     } else {
       var pre = document.createElement('pre');
       pre.textContent = data.content;
@@ -11281,7 +11246,7 @@ document.addEventListener('keydown', function(e) {
     });
 
     var relPath = data.relPath ? data.relPath : data.url.replace(/^project_files\\//, '');
-    
+
     var sidebarItems = document.querySelectorAll('.filetree-item-row');
     sidebarItems.forEach(function(row) {
        if (row.getAttribute('data-path') === relPath) {
@@ -11295,10 +11260,10 @@ Shiny.addCustomMessageHandler('hideFilePreview', function(message) {
   var overlay = document.getElementById('filePreviewOverlay');
   var editorSplit = document.getElementById('editorSplit');
   var toolbar = document.getElementById('equation-editor');
-  
+
   // 1. Swap Views Back
   if (overlay) overlay.style.display = 'none';
-  if (toolbar) toolbar.style.display = 'block'; 
+  if (toolbar) toolbar.style.display = 'block';
   if (editorSplit) {
     editorSplit.style.display = 'block';
     setTimeout(function() {
@@ -11310,7 +11275,7 @@ Shiny.addCustomMessageHandler('hideFilePreview', function(message) {
   // 2. Re-highlight the Code File in Sidebar
   // logic: remove active from all -> find specific path -> add active
   var path = null;
-  
+
   // Handle if message is simple boolean or object
   if (typeof message === 'string') {
     path = message;
@@ -11321,7 +11286,7 @@ Shiny.addCustomMessageHandler('hideFilePreview', function(message) {
   if (path) {
     // Remove highlighting from everything (including the previewed file)
     document.querySelectorAll('.filetree-item-row').forEach(el => el.classList.remove('active'));
-    
+
     // Find the row with the matching data-path attribute
     // We use CSS.escape for safety, though activePath usually is clean
     try {
@@ -11339,7 +11304,7 @@ function openAddFilesOverlay(targetTabId) {
   if (overlay) {
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
-    
+
     // Switch to the requested tab if provided
     if (targetTabId) {
       // Fake an event object or directly call logic
@@ -11349,7 +11314,7 @@ function openAddFilesOverlay(targetTabId) {
                      // Deactivate all
                      navLinks.forEach(l => l.classList.remove('active'));
                      document.querySelectorAll('#addFilesOverlay .tab-pane').forEach(p => p.classList.remove('show', 'active'));
-                     
+
                      // Activate target
                      targetLink.classList.add('active');
                      document.getElementById(targetTabId).classList.add('show', 'active');
@@ -11377,14 +11342,14 @@ function switchAddFilesTab(event, tabId) {
   // Remove active from all nav links in this overlay
   var navLinks = document.querySelectorAll('#addFilesOverlay .settings-nav .nav-link');
   navLinks.forEach(function(link) { link.classList.remove('active'); });
-  
+
   // Add active to clicked
   event.currentTarget.classList.add('active');
-  
+
   // Hide all panes
   var panes = document.querySelectorAll('#addFilesOverlay .tab-pane');
   panes.forEach(function(pane) { pane.classList.remove('show', 'active'); });
-  
+
   // Show target
   var target = document.getElementById(tabId);
   if (target) target.classList.add('show', 'active');
@@ -11405,16 +11370,16 @@ document.addEventListener('keydown', function(e) {
 });
 
 /* =================== NEW FILE / FOLDER HANDLERS =================== */
-  
+
   // New File Button Click
 document.getElementById('createNewFileBtn').addEventListener('click', function() {
   var fullFileName = document.getElementById('newFileNameInput').value.trim();
-  
+
   if (!fullFileName) {
     if(window.showTablerAlert) window.showTablerAlert('warning', 'No file name', 'Please enter a file name', 5000);
     return;
   }
-  
+
   if (window.Shiny && Shiny.setInputValue) {
     // Send just the name; R will handle parsing extension if needed, or we send it as part of name
     Shiny.setInputValue('createNewFileTrigger', {
@@ -11423,7 +11388,7 @@ document.getElementById('createNewFileBtn').addEventListener('click', function()
       nonce: Math.random()
     }, {priority: 'event'});
   }
-  
+
   closeAddFilesOverlay();
   // Reset input
   document.getElementById('newFileNameInput').value = 'name.tex';
@@ -11432,19 +11397,19 @@ document.getElementById('createNewFileBtn').addEventListener('click', function()
 // New Folder Button Click
 document.getElementById('createNewFolderBtn').addEventListener('click', function() {
   var folderName = document.getElementById('newFolderNameInput').value.trim();
-  
+
   if (!folderName) {
     if(window.showTablerAlert) window.showTablerAlert('warning', 'No folder name', 'Please enter a folder name', 5000);
     return;
   }
-  
+
   if (window.Shiny && Shiny.setInputValue) {
     Shiny.setInputValue('createNewFolderTrigger', {
       name: folderName,
       nonce: Math.random()
     }, {priority: 'event'});
   }
-  
+
   closeAddFilesOverlay();
   document.getElementById('newFolderNameInput').value = '';
 });
@@ -11462,7 +11427,7 @@ document.getElementById('newFolderNameInput').addEventListener('keypress', funct
 // Updated Dropzone initialization to work with Overlay instead of Modal events
 (function() {
   if (typeof Dropzone !== 'undefined') Dropzone.autoDiscover = false;
-  
+
   var dropzoneInstance = null;
   var uploadBtnListener = null;
 
@@ -11477,12 +11442,12 @@ document.getElementById('newFolderNameInput').addEventListener('keypress', funct
     '.cgi','.pl','.php','.asp','.aspx','.jsp',
     '.htaccess'
   ];
-  
+
   function initDropzoneOverlay() {
     var el = document.getElementById('dropzone-upload');
     if (!el) return; // Not ready yet
     if (dropzoneInstance) return; // Already inited
-    
+
     try {
       dropzoneInstance = new Dropzone('#dropzone-upload', {
         url: 'javascript:void(0)',
@@ -11491,7 +11456,7 @@ document.getElementById('newFolderNameInput').addEventListener('keypress', funct
         uploadMultiple: false,
         parallelUploads: 1,
         maxFiles: 50,
-        maxFilesize: 100, 
+        maxFilesize: 100,
         addRemoveLinks: true,
         clickable: true,
         acceptedFiles: null,
@@ -11508,16 +11473,16 @@ document.getElementById('newFolderNameInput').addEventListener('keypress', funct
             done();
           }
         },
-        
+
         init: function() {
           var myDropzone = this;
           var uploadBtn = document.getElementById('processUploadBtn');
-          
+
           this.on('addedfile', function(file) {
             file.status = Dropzone.SUCCESS;
             file.previewElement.classList.add('dz-success');
           });
-          
+
           // Upload Button Logic
           if (uploadBtn) {
             uploadBtn.addEventListener('click', function(e) {
@@ -11528,14 +11493,14 @@ document.getElementById('newFolderNameInput').addEventListener('keypress', funct
                 if(window.showTablerAlert) window.showTablerAlert('warning', 'No files', 'Please add files.', 5000);
                 return;
               }
-              
+
               // Process files (Client-side reading)
               var fileData = [];
               var processed = 0;
-              
-              uploadBtn.disabled = true; 
+
+              uploadBtn.disabled = true;
               uploadBtn.innerHTML = 'Uploading <span class=\"animated-dots\"></span>';
-              
+
               files.forEach(function(file) {
                 var reader = new FileReader();
                 reader.onload = function(evt) {
@@ -11547,7 +11512,7 @@ document.getElementById('newFolderNameInput').addEventListener('keypress', funct
                     // Send to Shiny
                     if (window.Shiny && Shiny.setInputValue) {
                       Shiny.setInputValue('dropzoneFiles', { files: fileData, nonce: Math.random() }, {priority:'event'});
-                      
+
                       setTimeout(function() {
                         myDropzone.removeAllFiles();
                         uploadBtn.disabled = false;
@@ -11565,7 +11530,7 @@ document.getElementById('newFolderNameInput').addEventListener('keypress', funct
       });
     } catch(e) { console.error('Dropzone init failed', e); }
   }
-  
+
   // Initialize once DOM is ready
   document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initDropzoneOverlay, 1000);
@@ -11581,13 +11546,13 @@ function openCreateProjectOverlay(targetTabId) {
   if (overlay) {
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
-    
+
     // Clear inputs
     document.getElementById('newProjectName').value = '';
     document.getElementById('newProjectDesc').value = '';
     document.getElementById('uploadProjectName').value = '';
     document.getElementById('uploadProjectDesc').value = '';
-    
+
     // Switch tab
     if (targetTabId) {
       switchCreateProjectTab(null, targetTabId);
@@ -11605,14 +11570,14 @@ function closeCreateProjectOverlay() {
 
 function switchCreateProjectTab(event, tabId) {
   if(event) event.preventDefault();
-  
+
   var navLinks = document.querySelectorAll('#createProjectOverlay .settings-nav .nav-link');
   var panes = document.querySelectorAll('#createProjectOverlay .tab-pane');
-  
+
   // Deactivate all
   navLinks.forEach(l => l.classList.remove('active'));
   panes.forEach(p => p.classList.remove('show', 'active'));
-  
+
   // Activate target
   var targetLink = document.querySelector('#createProjectOverlay .settings-nav .nav-link[href=\"#' + tabId + '\"]');
 var targetPane = document.getElementById(tabId);
@@ -11632,7 +11597,7 @@ if (tabId === 'create-upload-tab') document.getElementById('uploadProjectName').
       document.getElementById('editProjectId').value = id;
       document.getElementById('editProjectName').value = name;
       document.getElementById('editProjectDesc').value = desc;
-      
+
       overlay.classList.add('show');
       document.body.style.overflow = 'hidden';
     }
@@ -11659,18 +11624,18 @@ document.addEventListener('keydown', function(e) {
 });
 
 // --- Button Listeners (Trigger Shiny) ---
-  
+
   // 1. Create Project from Template
 document.getElementById('btnCreateBlank').addEventListener('click', function() {
   var name = document.getElementById('newProjectName').value.trim();
   var desc = document.getElementById('newProjectDesc').value.trim();
   var tmpl = document.getElementById('newProjectTemplate').value;
-  
+
   if (!name) {
     if(window.showTablerAlert) window.showTablerAlert('warning', 'No project name', 'Please enter a project name', 5000);
     return;
   }
-  
+
   if (window.Shiny) {
     Shiny.setInputValue('createProjectTrigger', {
       type: 'blank',
@@ -11688,12 +11653,12 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
   var id = document.getElementById('editProjectId').value;
   var name = document.getElementById('editProjectName').value.trim();
   var desc = document.getElementById('editProjectDesc').value.trim();
-  
+
   if (!name) {
     if(window.showTablerAlert) window.showTablerAlert('warning', 'No project name', 'Project name cannot be empty', 5000);
     return;
   }
-  
+
   if (window.Shiny) {
     Shiny.setInputValue('renameProject', {
       id: id,
@@ -11720,12 +11685,12 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
     '.cgi','.pl','.php','.asp','.aspx','.jsp',
     '.htaccess'
   ];
-  
+
   function initProjectDropzone() {
     var el = document.getElementById('dropzone-project');
     if (!el) return;
     if (projDropzone) return;
-    
+
     try {
       projDropzone = new Dropzone('#dropzone-project', {
         url: 'javascript:void(0)',
@@ -11734,7 +11699,7 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
         uploadMultiple: false,
         parallelUploads: 1,
         maxFiles: 50,
-        maxFilesize: 100, 
+        maxFilesize: 100,
         addRemoveLinks: true,
         clickable: true,
         acceptedFiles: null,
@@ -11751,16 +11716,16 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
             done();
           }
         },
-        
+
         init: function() {
           var myDropzone = this;
           var createBtn = document.getElementById('btnCreateFromUpload');
-          
+
           this.on('addedfile', function(file) {
             file.status = Dropzone.SUCCESS;
             file.previewElement.classList.add('dz-success');
           });
-          
+
           // Create from Upload Logic
           if (createBtn) {
             createBtn.addEventListener('click', function(e) {
@@ -11768,20 +11733,20 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
               var name = document.getElementById('uploadProjectName').value.trim();
               var desc = document.getElementById('uploadProjectDesc').value.trim();
               var files = myDropzone.files;
-              
+
               if (!name) {
                 if(window.showTablerAlert) window.showTablerAlert('warning', 'No project name', 'Please enter a project name', 5000);
                 return;
               }
-              
+
               // We allow creation without files (just acts like blank), but prompt usually implies files
               // Process files if any
               var fileData = [];
               var processed = 0;
-              
-              createBtn.disabled = true; 
+
+              createBtn.disabled = true;
               createBtn.innerHTML = 'Creating <span class=\"animated-dots\"></span>';
-              
+
               if (files.length === 0) {
                 // No files, just send name/desc
                 sendToShiny(fileData);
@@ -11800,7 +11765,7 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
                   reader.readAsDataURL(file);
                 });
               }
-              
+
               function sendToShiny(fData) {
                 if (window.Shiny) {
                   Shiny.setInputValue('createProjectTrigger', {
@@ -11810,7 +11775,7 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
                     files: fData,
                     nonce: Math.random()
                   }, {priority:'event'});
-                  
+
                   setTimeout(function() {
                     myDropzone.removeAllFiles();
                     createBtn.disabled = false;
@@ -11825,7 +11790,7 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
       });
     } catch(e) { console.error('Project Dropzone init failed', e); }
   }
-  
+
   document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initProjectDropzone, 1000);
   });
@@ -11848,16 +11813,16 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
         uploadMultiple: false,
         maxFiles: 1,
         // Update 1: Accept multiple extensions in the file picker
-        acceptedFiles: '.zip,.tar,.tar.gz,.tgz', 
+        acceptedFiles: '.zip,.tar,.tar.gz,.tgz',
         addRemoveLinks: true,
         dictDefaultMessage: 'Drop archive file (.zip, .tar, .tar.gz) here',
-        
+
         // Update 2: Validate against list of extensions
         accept: function(file, done) {
           var validExts = ['.zip', '.tar', '.tar.gz', '.tgz'];
           var fileName = file.name.toLowerCase();
-          var isValid = validExts.some(function(ext) { 
-            return fileName.endsWith(ext); 
+          var isValid = validExts.some(function(ext) {
+            return fileName.endsWith(ext);
           });
 
           if (!isValid) {
@@ -11866,11 +11831,11 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
             done();
           }
         },
-        
+
         init: function() {
           var myDropzone = this;
           var importBtn = document.getElementById('btnImportZip');
-          
+
           this.on('addedfile', function(file) {
             if (file.previewElement) file.previewElement.classList.add('dz-success');
           });
@@ -11878,24 +11843,24 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
           if (importBtn) {
             importBtn.addEventListener('click', function(e) {
               e.preventDefault();
-              
+
               var files = myDropzone.files;
-              
+
               if (files.length === 0) {
                  if(window.showTablerAlert) window.showTablerAlert('warning', 'No files', 'Please drop an archive file first.', 5000);
                  return;
               }
-              
+
               var file = files[0];
               var customName = document.getElementById('importZipName').value.trim();
-              
+
               importBtn.disabled = true;
               importBtn.innerHTML = 'Importing<span class=\"animated-dots\"></span>';
-              
+
               var reader = new FileReader();
               reader.onload = function(evt) {
                  var base64Content = evt.target.result.split(',')[1];
-                 
+
                  if (window.Shiny) {
                    Shiny.setInputValue('importZipTrigger', {
                      filename: file.name,
@@ -11904,7 +11869,7 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
                      size: file.size,
                      nonce: Math.random()
                    }, {priority: 'event'});
-                   
+
                    setTimeout(function() {
                      myDropzone.removeAllFiles();
                      document.getElementById('importZipName').value = '';
@@ -11914,13 +11879,13 @@ document.getElementById('btnSaveProjectEdit').addEventListener('click', function
                    }, 500);
                  }
               };
-              
+
               reader.onerror = function() {
                  importBtn.disabled = false;
                  importBtn.innerHTML = 'Import Project';
                  alert('Error reading file');
               };
-              
+
               reader.readAsDataURL(file);
             });
           }
@@ -11941,7 +11906,7 @@ function openEditProfileOverlay() {
   if (overlay) {
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
-    
+
     // Trigger R to update the input values with current server-side data
     if (window.Shiny) {
       Shiny.setInputValue('editProfileBtn', Date.now(), {priority:'event'});
@@ -11961,10 +11926,10 @@ function switchEditProfileTab(event, tabId) {
   event.preventDefault();
   var navLinks = document.querySelectorAll('#editProfileOverlay .settings-nav .nav-link');
   var panes = document.querySelectorAll('#editProfileOverlay .tab-pane');
-  
+
   navLinks.forEach(l => l.classList.remove('active'));
   panes.forEach(p => p.classList.remove('show', 'active'));
-  
+
   event.currentTarget.classList.add('active');
   document.getElementById(tabId).classList.add('show', 'active');
 }
@@ -11980,9 +11945,9 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
   var email = document.getElementById('editProfileEmail').value;
   var institution = document.getElementById('editProfileInstitution').value;
   var bio = document.getElementById('editProfileBio').value;
-  
+
   // Note: Profile pic is handled via the Dropzone queue in the init function below
-  
+
   if (window.Shiny) {
     Shiny.setInputValue('saveProfileChanges', {
       username: username,
@@ -11992,7 +11957,7 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
       nonce: Math.random()
     }, {priority: 'event'});
   }
-  
+
   closeEditProfileOverlay();
 });
 
@@ -12017,10 +11982,10 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
         maxFilesize: 2, // 2MB limit
         acceptedFiles: 'image/jpeg,image/png,image/gif,image/webp',
         addRemoveLinks: true,
-        
+
         init: function() {
           var myDropzone = this;
-          
+
           this.on('addedfile', function(file) {
             // Replace previous file if exists (ensure only 1)
             if (this.files.length > 1) {
@@ -12028,7 +11993,7 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
             }
             file.status = Dropzone.SUCCESS;
             file.previewElement.classList.add('dz-success');
-            
+
             // Read and send immediately when added
             var reader = new FileReader();
             reader.onload = function(evt) {
@@ -12044,7 +12009,7 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
             };
             reader.readAsDataURL(file);
           });
-          
+
           this.on('removedfile', function(file) {
              // Optional: Clear on server if removed
           });
@@ -12064,23 +12029,23 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
   function initCloseSidebarBtn() {
     var closeBtn = document.getElementById('closeSidebarBtn');
     var toggleBtn = document.getElementById('railSidebarToggle');
-    
+
     if (!closeBtn || !toggleBtn) {
       return false;
     }
-    
+
     closeBtn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       // Trigger the main toggle
       toggleBtn.click();
-      
+
     });
-    
+
     return true;
   }
-  
+
   // Try to initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -12097,14 +12062,14 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
     var toggleBtn = document.getElementById('toggleFilesPane');
     var chevron = document.getElementById('filesPaneChevron');
     var paneBody = document.getElementById('filesPaneBody');
-    
+
     if (!toggleBtn || !chevron || !paneBody) {
       return false;
     }
-    
+
     // Load saved state from localStorage
     var isCollapsed = localStorage.getItem('mudskipper.filesPaneCollapsed') === 'true';
-    
+
     // Apply initial state
     if (isCollapsed) {
       paneBody.classList.add('collapsed');
@@ -12116,20 +12081,20 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
         }
       }, 150);
     }
-    
+
     // Toggle handler
     toggleBtn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       var willCollapse = !paneBody.classList.contains('collapsed');
-      
+
       if (willCollapse) {
         // Files pane is collapsing
         paneBody.classList.add('collapsed');
         chevron.classList.add('rotated');
         localStorage.setItem('mudskipper.filesPaneCollapsed', 'true');
-        
+
         // Synchronize: collapse outline pane header to top
         setTimeout(function() {
           if (window.sidebarVSplit) {
@@ -12142,20 +12107,20 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
                 var headerPx = filesHeader.offsetHeight;
                 var totalPx = filesPane.parentElement.offsetHeight;
                 var headerPct = Math.max((headerPx / totalPx) * 100, 8);
-                
+
                 // Set outline pane to fill remaining space
                 window.sidebarVSplit.setSizes([headerPct, 100 - headerPct]);
               }
             }
           }
         }, 50);
-        
+
       } else {
         // Files pane is expanding
         paneBody.classList.remove('collapsed');
         chevron.classList.remove('rotated');
         localStorage.setItem('mudskipper.filesPaneCollapsed', 'false');
-        
+
         // Synchronize: restore outline pane to saved position
         setTimeout(function() {
           if (window.sidebarVSplit) {
@@ -12167,10 +12132,10 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
         }, 50);
       }
     });
-    
+
     return true;
   }
-  
+
   // Try to initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -12187,33 +12152,33 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
     var toggleBtn = document.getElementById('toggleOutlinePane');
     var chevron = document.getElementById('outlinePaneChevron');
     var paneBody = document.getElementById('outlinePaneBody');
-    
+
     if (!toggleBtn || !chevron || !paneBody) {
       return false;
     }
-    
+
     // Load saved state from localStorage
     var isCollapsed = localStorage.getItem('mudskipper.outlinePaneCollapsed') === 'true';
-    
+
     // Apply initial state
     if (isCollapsed) {
       paneBody.classList.add('collapsed');
       chevron.classList.add('rotated');
     }
-    
+
     // Toggle handler
     toggleBtn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       var willCollapse = !paneBody.classList.contains('collapsed');
-      
+
       if (willCollapse) {
         // Outline body is collapsing
         paneBody.classList.add('collapsed');
         chevron.classList.add('rotated');
         localStorage.setItem('mudskipper.outlinePaneCollapsed', 'true');
-        
+
         // Synchronize Split.js - move outline header to bottom
         setTimeout(function() {
           if (window.sidebarVSplit) {
@@ -12224,19 +12189,19 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
                 var headerPx = header.offsetHeight;
                 var totalPx = outlinePane.parentElement.offsetHeight;
                 var headerPct = Math.max((headerPx / totalPx) * 100, 8);
-                
+
                 window.sidebarVSplit.setSizes([100 - headerPct, headerPct]);
               }
             }
           }
         }, 50);
-        
+
       } else {
         // Outline body is expanding
         paneBody.classList.remove('collapsed');
         chevron.classList.remove('rotated');
         localStorage.setItem('mudskipper.outlinePaneCollapsed', 'false');
-        
+
         // Synchronize Split.js - restore to saved position
         setTimeout(function() {
           if (window.sidebarVSplit) {
@@ -12248,10 +12213,10 @@ document.getElementById('saveProfileChangesBtn').addEventListener('click', funct
         }, 50);
       }
     });
-    
+
     return true;
   }
-  
+
   // Try to initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
@@ -12292,18 +12257,18 @@ window.switchConsoleTab = function(tab) {
   document.querySelectorAll('.console-tab').forEach(function(t) {
     t.classList.remove('active');
   });
-  
+
   // Only add active class if the tab exists
   var targetTab = document.querySelector('.console-tab[data-tab=\"' + tab + '\"]');
   if (targetTab) targetTab.classList.add('active');
-  
+
   // Show/hide content - hide all first
   var errConsole = document.getElementById('errorLogConsole');
   var dockConsole = document.getElementById('dockerConsole');
-  
+
   if (errConsole) errConsole.classList.remove('active');
   if (dockConsole) dockConsole.classList.remove('active');
-  
+
   // Show the selected tab
   if (tab === 'errors' && errConsole) {
     errConsole.classList.add('active');
@@ -12319,12 +12284,12 @@ window.switchConsoleTab = function(tab) {
 (function() {
   var currentFilter = 'all'; // CHANGED: Default is now 'all'
   var allAnnotations = [];
-  
+
   // Toggle error log console
   window.toggleErrorLog = function() {
     // 1. Always switch to errors tab
     window.switchConsoleTab('errors');
-    
+
     // 2. Ensure the pane is expanded
     if (window.consolePane) {
       if (window.consolePane.isCollapsed()) {
@@ -12332,26 +12297,26 @@ window.switchConsoleTab = function(tab) {
       }
     }
   };
-  
+
   // Update badge on rail button
   function updateErrorBadge(errorCount, warningCount, infoCount) {
     var badge = document.getElementById('errorLogBadge');
     if (!badge) return;
-    
+
     var total = errorCount + warningCount + infoCount;
-    
+
     if (total === 0) {
       badge.classList.remove('show');
       return;
     }
-    
+
     badge.textContent = total;
     badge.classList.add('show');
-    
+
     badge.classList.remove('text-red-fg', 'bg-red-lt');
     badge.classList.remove('text-orange-fg', 'bg-orange-lt');
     badge.classList.remove('text-blue-fg', 'bg-blue-lt');
-    
+
     if (errorCount > 0) {
       badge.classList.add('text-red-fg', 'bg-red');
     } else if (warningCount > 0) {
@@ -12360,73 +12325,73 @@ window.switchConsoleTab = function(tab) {
       badge.classList.add('text-blue-fg', 'bg-blue');
     }
   }
-  
+
   // Update error log display
   window.updateErrorLog = function(annotations) {
     allAnnotations = annotations || [];
-    
+
     // SORTING LOGIC: Errors (1) -> Warnings (2) -> Info (3), then by line number
     allAnnotations.sort(function(a, b) {
       var priority = { 'error': 1, 'warning': 2, 'info': 3 };
       var pA = priority[a.type] || 4;
       var pB = priority[b.type] || 4;
-      
+
       if (pA !== pB) {
         return pA - pB;
       }
       return a.row - b.row;
     });
-    
+
     // Count by type
     var errorCount = 0;
     var warningCount = 0;
     var infoCount = 0;
-    
+
     allAnnotations.forEach(function(ann) {
       if (ann.type === 'error') errorCount++;
       else if (ann.type === 'warning') warningCount++;
       else infoCount++;
     });
-    
+
     var totalCount = errorCount + warningCount + infoCount;
-    
+
     // Update counts in tabs
     var elAll = document.getElementById('allCount');
     if(elAll) elAll.textContent = totalCount;
-    
+
     document.getElementById('errorCount').textContent = errorCount;
     document.getElementById('warningCount').textContent = warningCount;
     document.getElementById('infoCount').textContent = infoCount;
-    
+
     // Update badge
     updateErrorBadge(errorCount, warningCount, infoCount);
-    
+
     // Render filtered items
     renderErrorLog(currentFilter);
   };
-  
+
   function renderErrorLog(filter) {
     var body = document.getElementById('errorLogBody');
     if (!body) return;
-    
+
     // Filter logic
     var filtered = allAnnotations.filter(function(ann) {
       return filter === 'all' || ann.type === filter;
     });
-    
+
     if (filtered.length === 0) {
       // Determine message based on filter
       var msg = 'No problems detected';
       if (filter !== 'all') {
         msg = 'No ' + filter.charAt(0).toUpperCase() + filter.slice(1) + 's detected';
       }
-      
+
       body.innerHTML = '<div class=\"error-log-empty\">' +
       '<p>' + msg + '</p>' +
         '</div>';
       return;
     }
-    
+
     var html = '';
     filtered.forEach(function(ann) {
       var icon = '';
@@ -12437,7 +12402,7 @@ window.switchConsoleTab = function(tab) {
       } else {
         icon = '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><line x1=\"12\" y1=\"16\" x2=\"12\" y2=\"12\"></line><line x1=\"12\" y1=\"8\" x2=\"12.01\" y2=\"8\"></line></svg>';
       }
-      
+
       html += '<div class=\"error-log-item ' + ann.type + '\" data-line=\"' + ann.row + '\">' +
         '<div class=\"error-log-item-header\">' +
         '<div class=\"error-log-type\">' + icon + ' ' + ann.type.charAt(0).toUpperCase() + ann.type.slice(1) + '</div>' +
@@ -12446,9 +12411,9 @@ window.switchConsoleTab = function(tab) {
         '<div class=\"error-log-message\">' + ann.text + '</div>' +
         '</div>';
     });
-    
+
     body.innerHTML = html;
-    
+
     // Add click handlers
     body.querySelectorAll('.error-log-item').forEach(function(item) {
       item.addEventListener('click', function() {
@@ -12459,23 +12424,23 @@ window.switchConsoleTab = function(tab) {
       });
     });
   }
-  
+
   // Tab switching within error log
   document.addEventListener('click', function(e) {
     var tab = e.target.closest('.error-log-tab');
     if (!tab) return;
-    
+
     // Update active tab
     document.querySelectorAll('.error-log-tab').forEach(function(t) {
       t.classList.remove('active');
     });
     tab.classList.add('active');
-    
+
     // Update filter and render
     currentFilter = tab.getAttribute('data-filter');
     renderErrorLog(currentFilter);
   });
-  
+
   window.updateErrorLog([]);
 
 })();
@@ -12485,22 +12450,22 @@ window.switchConsoleTab = function(tab) {
 
 function switchSettingsTab(event, tabId) {
   event.preventDefault();
-  
+
   // Remove active from all nav links
   var navLinks = document.querySelectorAll('.settings-nav .nav-link');
   navLinks.forEach(function(link) {
     link.classList.remove('active');
   });
-  
+
   // Add active to clicked link
   event.currentTarget.classList.add('active');
-  
+
   // Hide all tab panes
   var panes = document.querySelectorAll('.settings-content .tab-pane');
   panes.forEach(function(pane) {
     pane.classList.remove('show', 'active');
   });
-  
+
   // Show target pane
   var targetPane = document.getElementById(tabId);
   if (targetPane) {
@@ -12513,7 +12478,7 @@ function openSettingsOverlay() {
   if (overlay) {
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
-    
+
     // Initialize form with current settings
     setTimeout(initializeSettingsForm, 100);
   }
@@ -12530,15 +12495,15 @@ function closeSettingsOverlay() {
 function initializeSettingsForm() {
   var form = document.getElementById('settingsOverlayForm');
   if (!form) return;
-  
+
   var themeConfig = {
-    'theme': 'light',
-    'theme-base': 'slate',
+    'theme': 'dark',
+    'theme-base': 'zinc',
     'theme-font': 'sans-serif',
-    'theme-primary': 'blue',
+    'theme-primary': 'green',
     'theme-radius': '1',
   };
-  
+
   for (var key in themeConfig) {
     var value = window.localStorage['tabler-' + key] || themeConfig[key];
     if (value) {
@@ -12577,44 +12542,44 @@ document.addEventListener('keydown', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
   var form = document.getElementById('settingsOverlayForm');
   if (!form) return;
-  
+
   var url = new URL(window.location);
-  
+
   form.addEventListener('change', function(event) {
     var target = event.target;
     var name = target.name;
     var value = target.value;
-    
+
     document.documentElement.setAttribute('data-bs-' + name, value);
     window.localStorage.setItem('tabler-' + name, value);
     url.searchParams.set(name, value);
     window.history.pushState({}, '', url);
   });
-  
+
   // Reset button
   var resetBtn = document.getElementById('reset-settings-overlay');
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
       var themeConfig = {
-        'theme': 'light',
-        'theme-base': 'slate',
+        'theme': 'dark',
+        'theme-base': 'zinc',
         'theme-font': 'sans-serif',
-        'theme-primary': 'blue',
+        'theme-primary': 'green',
         'theme-radius': '1',
       };
-      
+
       for (var key in themeConfig) {
         var value = themeConfig[key];
-        document.documentElement.removeAttribute('data-bs-' + key);
+        document.documentElement.setAttribute('data-bs-' + key, value);
         window.localStorage.removeItem('tabler-' + key);
         url.searchParams.delete(key);
       }
-      
+
       initializeSettingsForm();
       window.history.pushState({}, '', url);
     });
   }
-  
+
   // Save button
   var saveBtn = document.getElementById('save-settings-overlay');
   if (saveBtn) {
@@ -12625,37 +12590,37 @@ document.addEventListener('DOMContentLoaded', function() {
       params.push('theme-font=' + form.querySelector('[name=\\'theme-font\\']:checked').value);
       params.push('theme-base=' + form.querySelector('[name=\\'theme-base\\']:checked').value);
       params.push('theme-radius=' + form.querySelector('[name=\\'theme-radius\\']:checked').value);
-      
+
       window.location.href = window.location.pathname + '?' + params.join('&');
     });
   }
-  
+
   // Initialize form when opened
   setTimeout(initializeSettingsForm, 200);
 });
-       
+
 function openPresentationMode() {
   // We use the custom HTML viewer we generated in app.R
   // It handles PDF.js rendering and slides logic
-  
+
   var pdfUrl = '/compiled/output.pdf?t=' + Date.now();
   var viewerUrl = 'presentation.html?file=' + encodeURIComponent(pdfUrl);
-  
+
   // Open in new window
   var presentationWindow = window.open(
     viewerUrl,
     'MudskipperPresentation',
     'width=' + screen.width + ',height=' + screen.height + ',menubar=no,toolbar=no,location=no,status=no'
   );
-  
+
   if (presentationWindow) {
     if (window.showTablerAlert) {
-      window.showTablerAlert('info', 'Presentation mode', 
+      window.showTablerAlert('info', 'Presentation mode',
         'Click anywhere in the new window to enter fullscreen.', 5000);
     }
   } else {
     if (window.showTablerAlert) {
-      window.showTablerAlert('warning', 'Popup blocked', 
+      window.showTablerAlert('warning', 'Popup blocked',
         'Please allow popups for this site to use presentation mode.', 5000);
     }
   }
@@ -12664,7 +12629,7 @@ function openPresentationMode() {
 
 Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
     var path = data.path;
-    
+
     // Robust selector handling for special characters
     var row = document.querySelector('.filetree-item-row[data-path=\"' + CSS.escape(path) + '\"]');
     if (!row) return;
@@ -12678,7 +12643,7 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
     // Remove icons/badges (any child elements), leaving only text nodes
     Array.from(clone.children).forEach(function(child) { child.remove(); });
     var currentName = clone.textContent.trim();
-    
+
     // Fallback: If text extraction fails, assume it's the basename of the path
     if (!currentName) {
        var parts = path.split(/[\\\\/]/);
@@ -12686,7 +12651,7 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
     }
 
     var originalHTML = labelSpan.innerHTML;
-    
+
     // Disable dragging
     row.setAttribute('draggable', 'false');
 
@@ -12695,12 +12660,12 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
     input.type = 'text';
     input.value = currentName;
     input.className = 'rename-input';
-    
+
     // Swap content
     labelSpan.innerHTML = '';
     labelSpan.appendChild(input);
     input.focus();
-    
+
     // Intelligent selection (exclude extension)
     var dotIndex = currentName.lastIndexOf('.');
     if (dotIndex > 0) {
@@ -12714,9 +12679,9 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
     function save() {
       if (isSaving) return;
       isSaving = true;
-      
+
       var newName = input.value.trim();
-      
+
       // If empty or unchanged, just cancel
       if (newName === '' || newName === currentName) {
          cancel();
@@ -12728,7 +12693,7 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
         newName: newName,
         nonce: Math.random()
       }, {priority: 'event'});
-      
+
       // Temporary visual feedback (R will refresh the tree shortly)
       labelSpan.innerHTML = originalHTML;
     }
@@ -12742,7 +12707,7 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
     // Bind Events
     input.addEventListener('click', function(e) { e.stopPropagation(); });
     input.addEventListener('dblclick', function(e) { e.stopPropagation(); });
-    
+
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -12755,11 +12720,11 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
     });
 
     input.addEventListener('blur', function() {
-      setTimeout(save, 100); 
+      setTimeout(save, 100);
     });
   });
-  
-  
+
+
   // Files spinner toggle
 Shiny.addCustomMessageHandler('toggleFilesSpinner', function(show) {
   var spinner = document.getElementById('filesSpinner');
@@ -12812,10 +12777,10 @@ Shiny.addCustomMessageHandler('toggleEditorSpinner', function(show) {
       if (container) {
         // Toggle class and get the new boolean state
         var isNowInverted = container.classList.toggle('inverted');
-        
+
         // Save to LocalStorage
         localStorage.setItem(PDF_INVERT_KEY, isNowInverted);
-        
+
         // Force browser repaint (fix for PDF plugin rendering issues)
         var oldDisplay = container.style.display;
         container.style.display = 'none';
@@ -12842,10 +12807,10 @@ Shiny.addCustomMessageHandler('toggleEditorSpinner', function(show) {
   window.pdfZoomOut = function() {
     var win = getPdfWindow(); if(win && win.zoomOut) win.zoomOut();
   };
-  
+
   // FIXED: Explicit Zoom Setter for Dropdown (50%, 75%...)
   window.pdfSetZoom = function(scaleFactor) {
-    var win = getPdfWindow(); 
+    var win = getPdfWindow();
     if(win && win.setZoom) {
         // scaleFactor comes in as float (e.g. 1.5)
         win.setZoom(parseFloat(scaleFactor));
@@ -12858,24 +12823,24 @@ Shiny.addCustomMessageHandler('toggleEditorSpinner', function(show) {
   window.pdfFitToHeight = function() {
     var win = getPdfWindow(); if(win && win.fitHeight) win.fitHeight();
   };
-  
+
   // --- 2. Navigation Handlers ---
   window.pdfNextPage = function() {
-    var win = getPdfWindow(); 
+    var win = getPdfWindow();
     var input = document.getElementById('pdfPageInput');
-    var cur = parseInt(input.value) || 1; 
+    var cur = parseInt(input.value) || 1;
     var totalEl = document.getElementById('pdfTotalPages');
     var total = totalEl ? parseInt(totalEl.innerText) : 1;
-    
+
     if(cur < total) {
        // Optimistically update UI
        input.value = cur + 1;
        if(win && win.goToPage) win.goToPage(cur + 1);
     }
   };
-  
+
   window.pdfPreviousPage = function() {
-    var win = getPdfWindow(); 
+    var win = getPdfWindow();
     var input = document.getElementById('pdfPageInput');
     var cur = parseInt(input.value) || 1;
     if(cur > 1) {
@@ -12883,9 +12848,9 @@ Shiny.addCustomMessageHandler('toggleEditorSpinner', function(show) {
        if(win && win.goToPage) win.goToPage(cur - 1);
     }
   };
-  
+
   window.pdfGoToPage = function(pageNum) {
-    var win = getPdfWindow(); 
+    var win = getPdfWindow();
     if(win && win.goToPage) win.goToPage(pageNum);
   };
 
@@ -12893,7 +12858,7 @@ window.pdfDownload = function() {
     // 1. Determine where the URL is coming from
     var src = \"\";
     var iframe = document.getElementById('pdfIframe');
-    
+
     if (iframe) {
         // Context: Main Window (we need to look at the iframe's source)
         src = iframe.getAttribute('src');
@@ -12910,15 +12875,15 @@ window.pdfDownload = function() {
     // 2. Extract the 'file' parameter using Regex
     // (This safely finds '?file=...' or '&file=...' in the string)
     var match = src.match(/[?&]file=([^&]+)/);
-    
+
     if (match && match[1]) {
         var path = decodeURIComponent(match[1]);
-        
+
         // 3. Trigger Download
         var link = document.createElement('a');
         // Ensure we handle existing query params correctly when adding the timestamp
         var separator = path.includes('?') ? '&' : '?';
-        link.href = path + separator + 'download_t=' + Date.now(); 
+        link.href = path + separator + 'download_t=' + Date.now();
         link.download = 'document.pdf';
         document.body.appendChild(link);
         link.click();
@@ -12938,7 +12903,7 @@ window.pdfDownload = function() {
       var inputEl = document.getElementById('pdfPageInput');
       if (totalEl) totalEl.innerText = data.pages;
       if (inputEl) inputEl.max = data.pages;
-    } 
+    }
     else if (data.type === 'pageChange') {
       var inputEl = document.getElementById('pdfPageInput');
       // Only update if user is not focussed on input to avoid typing conflicts
@@ -12956,7 +12921,7 @@ window.pdfDownload = function() {
 
 // =================== FILE SEARCH LOGIC ===================
 (function() {
-  
+
   // Debounce Input
   var searchTimeout;
   document.addEventListener('input', function(e) {
@@ -12988,24 +12953,24 @@ window.closeReviewPane = function() {
     editor.selection.on('changeSelection', function() {
       if (!editor.selection.isEmpty()) {
         var range = editor.selection.getRange();
-        
+
         // 1. Get screen coordinates of the END of the selection
         var screenPos = editor.renderer.textToScreenCoordinates(range.end.row, range.end.column);
         var lineHeight = editor.renderer.lineHeight || 20;
-        
+
         // 2. Default: Place immediately at the bottom of the line
         // Use 'fixed' to align perfectly with screen coordinates regardless of parents
         tooltip.style.position = 'fixed';
         var top = screenPos.pageY + lineHeight;
         var left = screenPos.pageX;
-        
+
         // 3. Boundary Check: Highlighting near bottom of screen?
         // Assume tooltip height is approx 35px. If it goes off-screen, flip to top.
         if (top + 35 > window.innerHeight) {
            // Position ABOVE the line (Top of line - Tooltip Height)
            top = screenPos.pageY - 35;
         }
-        
+
         // Apply
         tooltip.style.top = top + 'px';
         tooltip.style.left = left + 'px';
@@ -13014,12 +12979,12 @@ window.closeReviewPane = function() {
         tooltip.style.display = 'none';
       }
     });
-    
+
     // Hide tooltip on scroll/type
     editor.session.on('change', function() { tooltip.style.display = 'none'; });
     editor.session.on('changeScrollTop', function() { tooltip.style.display = 'none'; });
   }
-  
+
   // Wait for Ace
   var checkAce = setInterval(function() {
     if (window.ace && ace.edit('sourceEditor')) {
@@ -13034,9 +12999,9 @@ window.triggerAddComment = function() {
   var editor = ace.edit('sourceEditor');
   var range = editor.getSelectionRange();
   var text = editor.session.getTextRange(range);
-  
+
   if (!text.trim()) return;
-  
+
   // Send to Shiny
   Shiny.setInputValue('addCommentTrigger', {
     text: text,
@@ -13046,7 +13011,7 @@ window.triggerAddComment = function() {
     endCol: range.end.column,
     nonce: Math.random()
   }, {priority: 'event'});
-  
+
   // Hide tooltip
   document.getElementById('ace-comment-tooltip').style.display = 'none';
 };
@@ -13059,7 +13024,7 @@ Shiny.addCustomMessageHandler('renderCommentMarkers', function(comments) {
   if(!editor) return;
   var session = editor.getSession();
   var Range = ace.require('ace/range').Range;
-  
+
   // Clear old markers first (Fix for persistence issue)
   if (window.commentMarkers && window.commentMarkers.length > 0) {
     window.commentMarkers.forEach(function(id) {
@@ -13067,9 +13032,9 @@ Shiny.addCustomMessageHandler('renderCommentMarkers', function(comments) {
     });
   }
   window.commentMarkers = [];
-  
+
   if (!comments || comments.length === 0) return;
-  
+
   comments.forEach(function(c) {
     if (!c.resolved) {
       var range = new Range(c.startRow, c.startCol, c.endRow, c.endCol);
@@ -13084,11 +13049,11 @@ window.toggleReplyBox = function(id) {
   var box = document.getElementById('reply-box-' + id);
   if(box) box.classList.toggle('show');
 };
-    
+
 /* =================== PREMIUM REVIEW SYSTEM LOGIC (PRODUCTION READY) =================== */
 (function() {
   // Registry: { id: { startAnchor, endAnchor, markerId, resolved, originalCoords... } }
-  window.activeCommentAnchors = {}; 
+  window.activeCommentAnchors = {};
   var syncQueue = {}; // Queue for changes waiting to be sent to R
   var syncTimer = null;
   var isRendering = false; // Semaphore to prevent loops
@@ -13105,7 +13070,7 @@ window.toggleReplyBox = function(id) {
 
     var editor = ace.edit('sourceEditor');
     if(!editor || !editor.getSession()) return;
-    
+
     var session = editor.getSession();
     var doc = session.getDocument();
     isRendering = true; // Block sync while rendering from R
@@ -13128,7 +13093,7 @@ window.toggleReplyBox = function(id) {
 
       if (window.activeCommentAnchors[c.id]) {
         // --- EXISTING: Validate Position ---
-        // If R sends different coordinates than our live anchors, 
+        // If R sends different coordinates than our live anchors,
         // it means we reloaded the file. We must trust R's saved state on file load.
         if (forceRefresh) {
            updateLocalAnchorFromData(c, doc, session);
@@ -13258,23 +13223,23 @@ function updateLocalAnchorFromData(c, doc, session) {
 function flushSyncQueue() {
 
   // --- ADDITION: Block sync if switching files ---
-  if (window.isSwitchingFile) return; 
-  
+  if (window.isSwitchingFile) return;
+
   // --- NEW FIX: SAFETY GUARD FOR EMPTY EDITOR ---
   // If the editor is empty, it means we are in the middle of a load/reload.
   // Do NOT sync coordinates now, or all anchors will collapse to (0,0).
   var editor = ace.edit('sourceEditor');
   if (!editor || editor.getSession().getValue().length < 1) {
       // Clear queue to prevent delayed bad syncs
-      syncQueue = {}; 
+      syncQueue = {};
       return;
   }
   // ---------------------------------------------
-  
+
   if (Object.keys(syncQueue).length === 0) return;
 
   // SyncQueue values are {id, startRow...}
-  var updates = Object.values(syncQueue); 
+  var updates = Object.values(syncQueue);
 
   if (window.Shiny) {
     // Send as JSON string
@@ -13298,7 +13263,7 @@ function flushSyncQueue() {
     var editor = ace.edit('sourceEditor');
     if (!editor) return;
     var cursor = editor.getCursorPosition();
-    
+
     var foundId = null;
     var minLen = Infinity; // For nested comments, pick smallest range
 
@@ -13343,7 +13308,7 @@ function flushSyncQueue() {
           clearInterval(initCheckTimer);
           editor.selection.on('changeCursor', function() {
             clearTimeout(cursorTimeout);
-            cursorTimeout = setTimeout(highlightActiveComment, 200); 
+            cursorTimeout = setTimeout(highlightActiveComment, 200);
           });
           // Also trigger request for markers on load
           if(window.Shiny) Shiny.setInputValue('aceEditorReady', Math.random(), {priority: 'event'});
@@ -13356,34 +13321,34 @@ function flushSyncQueue() {
     if (!obj) return;
 
     var editor = ace.edit('sourceEditor');
-    
+
     // 1. Force resize to handle split pane visibility changes
     editor.resize(true);
 
     // 2. Center the target line
     var sRow = obj.startAnchor.row;
-    
+
     // Center selection vertically
     editor.scrollToLine(sRow, true, true, function() {});
-    
+
     // 3. Set Selection
     editor.selection.setRange({
       start: {row: sRow, column: obj.startAnchor.column},
       end:   {row: obj.endAnchor.row,   column: obj.endAnchor.column}
     });
-    
+
     editor.focus();
     highlightActiveComment();
   };
 
 })();
-       
+
 // =================== AUTO-GROW TEXTAREAS ===================
 document.addEventListener('input', function(e) {
   if (e.target.classList.contains('reply-textarea')) {
     // 1. Reset height to 'auto' to allow shrinking when text is deleted
     e.target.style.height = 'auto';
-    
+
     // 2. Set height to scrollHeight (content height)
     // We compare with min-height (38px) to ensure it doesn't collapse too far
     var newHeight = Math.max(38, e.target.scrollHeight);
@@ -13419,9 +13384,9 @@ Shiny.addCustomMessageHandler('requestLiveCommentCoordinates', function(_) {
 Shiny.addCustomMessageHandler('clearLocalAnchors', function(msg) {
   var editor = ace.edit('sourceEditor');
   if (!editor || !editor.getSession()) return;
-  
+
   var session = editor.getSession();
-  
+
   // 1. Destroy our managed anchor registry
   if (window.activeCommentAnchors) {
     Object.keys(window.activeCommentAnchors).forEach(function(id) {
@@ -13433,7 +13398,7 @@ Shiny.addCustomMessageHandler('clearLocalAnchors', function(msg) {
     });
   }
   window.activeCommentAnchors = {};
-  
+
   // 2. NUCLEAR OPTION: Iterate all markers and remove any that look like comments
   // This catches any 'ghost' markers that might have slipped through
   var markers = session.getMarkers();
@@ -13460,11 +13425,11 @@ Shiny.addCustomMessageHandler('clearLocalAnchors', function(msg) {
     var editor = ace.edit(\"sourceEditor\");
     if (editor) {
       clearInterval(initTimer);
-      
+
       editor.on(\"dblclick\", function(e) {
         // 1. Get cursor position (0-indexed)
         var pos = editor.getCursorPosition();
-        
+
         // 2. Get active file path (requires existing currentFile logic)
         // We use a safe fallback if the reactive variable isn't immediately available in JS scope
         var filePath = null;
@@ -13503,7 +13468,7 @@ Shiny.addCustomMessageHandler('syncPdfView', function(data) {
         var spellWorker;
         var spellCheckTimer;
         var suggestionBox;
-        
+
         // MAPPING: LibreOffice GitHub
 const SPELLCHECK_BASE = \"dictionaries/\";
 
@@ -13514,10 +13479,10 @@ const DICTIONARIES = {
   \"en_US\": { name: \"English (US)\", aff: SPELLCHECK_BASE + \"en/index.aff\", dic: SPELLCHECK_BASE + \"en/index.dic\" },
   \"en_ZA\": { name: \"English (South Africa)\", aff: SPELLCHECK_BASE + \"en-ZA/index.aff\", dic: SPELLCHECK_BASE + \"en-ZA/index.dic\" }
 };
-  
+
 const OTHER_DICTIONARIES = {
   \"fr_FR\": { name: \"French (France)\", aff: SPELLCHECK_BASE + \"fr/index.aff\", dic: SPELLCHECK_BASE + \"fr/index.dic\" },
-  
+
   \"es_ES\": { name: \"Spanish (Spain)\", aff: SPELLCHECK_BASE + \"es/index.aff\", dic: SPELLCHECK_BASE + \"es/index.dic\" },
   \"es_AR\": { name: \"Spanish (Argentina)\", aff: SPELLCHECK_BASE + \"es-AR/index.aff\", dic: SPELLCHECK_BASE + \"es-AR/index.dic\" },
   \"es_BO\": { name: \"Spanish (Bolivia)\", aff: SPELLCHECK_BASE + \"es-BO/index.aff\", dic: SPELLCHECK_BASE + \"es-BO/index.dic\" },
@@ -13589,11 +13554,11 @@ const OTHER_LANGUAGE_STOPWORDS = {
 function detectDocumentLanguage() {
     var editor = ace.edit(\"sourceEditor\");
     if (!editor) return null;
-    
+
     // Grab the first 100 lines to guess the language quickly
     var text = editor.getSession().getLines(0, 100).join(\" \").toLowerCase();
     var words = text.match(/[\\p{L}\']+/gu) || [];
-    
+
     if (words.length === 0) return null;
 
     var scores = {};
@@ -13604,23 +13569,23 @@ function detectDocumentLanguage() {
             scores[lang] += words.filter(w => w === word).length;
         });
     }
-    
+
     // Find the language with the highest score
-    var detectedLang = Object.keys(scores).reduce(function(a, b) { 
-        return scores[a] > scores[b] ? a : b; 
+    var detectedLang = Object.keys(scores).reduce(function(a, b) {
+        return scores[a] > scores[b] ? a : b;
     });
-    
-    // Safety Net: If the highest score is less than 3 matches, 
+
+    // Safety Net: If the highest score is less than 3 matches,
     // it's too risky to guess. Return null.
-    if (scores[detectedLang] < 3) return null; 
-    
+    if (scores[detectedLang] < 3) return null;
+
     return detectedLang;
 }
 
 function updateLanguageDropdown() {
     var detectedBase = detectDocumentLanguage();
     var select = document.getElementById(\"editorSpellLangPanel\");
-    
+
     if (!select) return;
 
     // If we couldn't confidently detect a language, enable everything and abort.
@@ -13637,10 +13602,10 @@ function updateLanguageDropdown() {
     // Loop through the dropdown and hide non-matching languages
     for (var i = 0; i < select.options.length; i++) {
         var opt = select.options[i];
-        
+
         // Match base language (e.g., \"en\" matches \"en_US\", \"en_GB\", \"en\")
         // We replace \"_\" with \"-\" in case your values use hyphens instead
-        var optValueBase = opt.value.split(\"_\")[0].split(\"-\")[0]; 
+        var optValueBase = opt.value.split(\"_\")[0].split(\"-\")[0];
 
         if (optValueBase === detectedBase) {
             opt.disabled = false;
@@ -13651,7 +13616,7 @@ function updateLanguageDropdown() {
             opt.style.display = \"none\"; // Hide it
         }
     }
-    
+
     // If the currently selected option is now disabled, auto-switch to the first valid one
     if (select.options[select.selectedIndex].disabled && validOptionsExist) {
         for (var j = 0; j < select.options.length; j++) {
@@ -13678,11 +13643,11 @@ function updateLanguageDropdown() {
                opt.textContent = DICTIONARIES[key].name;
                select.appendChild(opt);
             }
-            
+
             // Restore saved setting
             var savedLang = localStorage.getItem('mudskipper_spell_lang') || 'en_GB';
             if(DICTIONARIES[savedLang]) select.value = savedLang;
-            
+
             // Listen for changes
             select.addEventListener('change', function() {
                var newLang = this.value;
@@ -13701,7 +13666,7 @@ function updateLanguageDropdown() {
           });
 
           spellWorker = new Worker('spellcheck_worker.js');
-          
+
           // Load the initial language
           var initLang = localStorage.getItem('mudskipper_spell_lang') || 'en_GB';
           changeLanguage(initLang);
@@ -13717,14 +13682,14 @@ function updateLanguageDropdown() {
             }
           };
         }
-        
+
         function changeLanguage(langKey) {
             if (!spellWorker) return;
             var conf = DICTIONARIES[langKey];
             if (!conf) return;
-            
+
             localStorage.setItem('mudskipper_spell_lang', langKey);
-            
+
             spellWorker.postMessage({
                 command: \"load_dictionary\",
                 lang: langKey,
@@ -13732,7 +13697,7 @@ function updateLanguageDropdown() {
                 dic: conf.dic
             });
         }
-        
+
         // Trigger check function (Global reference)
         window.triggerSpellCheck = function() {
            var editor = ace.edit('sourceEditor');
@@ -13748,7 +13713,7 @@ function updateLanguageDropdown() {
           if (!editor) return;
           var session = editor.getSession();
           var Range = ace.require('ace/range').Range;
-          
+
           var markers = session.getMarkers();
           Object.keys(markers).forEach(function(key) {
             if (markers[key].clazz === 'misspelled') {
@@ -13800,7 +13765,7 @@ function updateLanguageDropdown() {
             editor.on('change', function() {
                 clearTimeout(langDetectTimer);
                 langDetectTimer = setTimeout(updateLanguageDropdown, 2000);
-                
+
                 // Keep your existing spellcheck trigger as well
                 suggestionBox.style.display = 'none';
                 clearTimeout(spellCheckTimer);
@@ -13826,10 +13791,10 @@ function updateLanguageDropdown() {
             });
             suggestionBox.innerHTML = html;
           }
-          
+
           suggestionBox.style.display = 'block';
           suggestionBox.style.left = coords.x + 'px';
-          
+
           var boxHeight = suggestionBox.offsetHeight;
           var windowHeight = window.innerHeight;
           var lineHeight = 20;
@@ -13860,7 +13825,7 @@ function updateLanguageDropdown() {
 
         // Initialize
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function() { 
+          document.addEventListener('DOMContentLoaded', function() {
              setTimeout(initWorker, 1000);
              setTimeout(function() {
                  var editor = ace.edit('sourceEditor');
@@ -13898,7 +13863,7 @@ var isUserAtBottom = true;
 function checkScroll() {
     var el = document.getElementById('chatContent');
     if(!el) return;
-    
+
     // Logic: If user was at bottom, scroll to new bottom.
     if(isUserAtBottom) {
         scrollToBottom();
@@ -13915,7 +13880,7 @@ $('#chatContent').on('scroll', function() {
     var el = this;
     var threshold = 50; // pixels from bottom
     var position = el.scrollTop + el.clientHeight;
-    
+
     if (position >= el.scrollHeight - threshold) {
         // User is at bottom
         isUserAtBottom = true;
@@ -13937,25 +13902,25 @@ function insertEmoji(emoji) {
     var input = document.getElementById('chatInputMsg');
     var startPos = input.selectionStart;
     var endPos = input.selectionEnd;
-    
+
     // Insert text
     input.value = input.value.substring(0, startPos)
         + emoji
         + input.value.substring(endPos, input.value.length);
-        
+
     // Reset cursor
     input.selectionStart = startPos + emoji.length;
     input.selectionEnd = startPos + emoji.length;
-    
+
     // Focus and trigger input event for Shiny
     input.focus();
-    $(input).trigger('change'); 
-    
+    $(input).trigger('change');
+
     toggleEmojiPicker(); // Auto close
 }
 
 // Close emoji picker if clicking outside
-$(document).click(function(event) { 
+$(document).click(function(event) {
     if(!$(event.target).closest('#emojiPicker, .btn-icon').length) {
         $('#emojiPicker').hide();
     }
@@ -14025,7 +13990,7 @@ $(document).click(function(event) {
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             pointer-events: none; max-width: 300px;
         }
-        
+
         .history-message-pane {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -14092,12 +14057,12 @@ window.HistoryManager = {
 
     processHistory: function(data) {
         if (!this.editor) return;
-        
+
         // --- FIX 1: STORE THE ID SO THE BUTTON WORKS ---
         this.currentVersionId = data.meta.id;
 
         const session = this.editor.getSession();
-        
+
         // Cleanup Markers
         const markers = session.getMarkers();
         for (let m in markers) {
@@ -14126,8 +14091,8 @@ window.HistoryManager = {
         // Non-Diff Mode
         if (!data.diffMode) {
             this.editor.setValue(\"\", -1);
-            $('#historyEditorContainer .ace_scroller').css('opacity', '0.1'); 
-            
+            $('#historyEditorContainer .ace_scroller').css('opacity', '0.1');
+
             if($('#historyMsg').length === 0) {
                  $('#historyEditorContainer').append(`<div id=\"historyMsg\" class=\"history-message-pane\"><h4>${data.content}</h4></div>`);
             } else {
@@ -14169,7 +14134,7 @@ window.HistoryManager = {
             } else {
                 const startPos = doc.indexToPosition(visualCursor);
                 const endPos = doc.indexToPosition(visualCursor + len);
-                
+
                 for(let r = startPos.row; r <= endPos.row; r++) {
                     if (type === 1) rowsAdded.add(r);
                     if (type === -1) rowsDeleted.add(r);
@@ -14177,14 +14142,14 @@ window.HistoryManager = {
 
                 const range = new Range(startPos.row, startPos.column, endPos.row, endPos.column);
 
-                if (type === 1) { 
+                if (type === 1) {
                     session.addMarker(range, \"diff-marker-added\", \"text\");
                     this.tracker.push({ range: range, type: 'added', ...meta });
-                } else { 
+                } else {
                     session.addMarker(range, \"diff-marker-deleted\", \"text\");
                     this.tracker.push({ range: range, type: 'deleted', ...meta });
                 }
-                
+
                 visualCursor += len;
                 changesCount++;
             }
@@ -14203,7 +14168,7 @@ window.HistoryManager = {
         });
 
         $('#historyChangeCount').text(`${changesCount} changes`);
-        
+
         if (this.tracker.length > 0) {
             this.editor.scrollToLine(this.tracker[0].range.start.row, true, true, function() {});
         }
@@ -14213,9 +14178,9 @@ window.HistoryManager = {
         this.editor.on(\"mousemove\", (e) => {
             const pos = e.getDocumentPosition();
             const tooltip = $('#historyTooltip');
-            
-            const match = this.tracker.find(t => 
-                pos.row >= t.range.start.row && 
+
+            const match = this.tracker.find(t =>
+                pos.row >= t.range.start.row &&
                 pos.row <= t.range.end.row &&
                 (pos.row !== t.range.start.row || pos.column >= t.range.start.column) &&
                 (pos.row !== t.range.end.row || pos.column <= t.range.end.column)
@@ -14224,7 +14189,7 @@ window.HistoryManager = {
             if (match) {
                 const color = match.type === 'added' ? '#28a745' : '#dc3545';
                 const label = match.type === 'added' ? 'Added Text' : 'Deleted Text';
-                
+
                 tooltip.html(`<strong style='color:${color}'>${label}</strong> by ${match.user || 'User'}<br><span style='opacity:0.8'>${match.date}</span>`);
                 tooltip.css({
                     display: 'block',
@@ -14235,7 +14200,7 @@ window.HistoryManager = {
                 tooltip.hide();
             }
         });
-        
+
         this.editor.container.addEventListener('mouseleave', () => {
             $('#historyTooltip').hide();
         });
@@ -14261,7 +14226,7 @@ function restoreCurrentViewerVersion() {
 }
 
 
-//======================================================// 
+//======================================================//
 //========Initialize the LaTeX word counter worker======//
 
 var latexWordCounterWorker;
@@ -14274,20 +14239,20 @@ function initializeLatexWordCounter() {
     try {
         // Create worker
         latexWordCounterWorker = new Worker(\"latex_wordcounter.js\");
-        
+
         // Handle worker messages (Receives full stats object)
         latexWordCounterWorker.onmessage = function(e) {
             const stats = e.data;
             currentStats = stats; // Store for overlay populating
             updateWordCounterDisplay(stats);
         };
-        
+
         // Error handling
         latexWordCounterWorker.onerror = function(error) {
             console.error(\"Word count worker error:\", error);
             updateWordCounterDisplay(\"Error\");
         };
-        
+
         return true;
     } catch (e) {
         console.error(\"Failed to initialize word counter worker:\", e);
@@ -14299,15 +14264,15 @@ function initializeLatexWordCounter() {
 function updateWordCountWithWorker() {
     const editor = ace.edit(\"sourceEditor\");
     if (!editor || !latexWordCounterWorker) return;
-    
+
     const text = editor.getSession().getValue();
-    
+
     // Skip if text hasn't changed
     if (text === lastProcessedTextForCounter) return;
-    
+
     // Update last processed text
     lastProcessedTextForCounter = text;
-    
+
     // Debounce rapid changes
     clearTimeout(wordCountDebounceTimer);
     wordCountDebounceTimer = setTimeout(function() {
@@ -14324,7 +14289,7 @@ function updateWordCounterDisplay(stats) {
         if (stats && typeof stats.total !== 'undefined') {
             // Display total words
             el.innerText = stats.total.words.toLocaleString() + \" words\";
-            
+
             // Make navbar clickable to open overlay
             el.onclick = openWordCountOverlay;
             el.style.cursor = \"pointer\";
@@ -14342,26 +14307,26 @@ function updateWordCounterDisplay(stats) {
     if (stats && stats.total) {
         setText(\"wc-total-words\", stats.total.words);
         setText(\"wc-total-chars\", stats.total.chars);
-        
+
         setText(\"wc-main-words\", stats.main.words);
         setText(\"wc-main-chars\", stats.main.chars);
-        
+
         setText(\"wc-headers-words\", stats.headers.words);
         setText(\"wc-headers-chars\", stats.headers.chars);
         setText(\"wc-headers-count\", \"(\" + stats.headers.count + \")\");
-        
+
         setText(\"wc-abstract-words\", stats.abstract.words);
         setText(\"wc-abstract-chars\", stats.abstract.chars);
-        
+
         setText(\"wc-captions-words\", stats.captions.words);
         setText(\"wc-captions-chars\", stats.captions.chars);
-        
+
         setText(\"wc-footnotes-words\", stats.footnotes.words);
         setText(\"wc-footnotes-chars\", stats.footnotes.chars);
-        
+
         setText(\"wc-other-words\", stats.other.words);
         setText(\"wc-other-chars\", stats.other.chars);
-        
+
         setText(\"wc-math-inline\", stats.math.inline);
         setText(\"wc-math-display\", stats.math.display);
     }
@@ -14392,7 +14357,7 @@ function closeWordCountOverlay() {
 function setupWordCounterSystem() {
     // Try to initialize worker
     const workerReady = initializeLatexWordCounter();
-    
+
     if (!workerReady) {
         // Fallback if worker fails to initialize
         console.warn(\"Word counter worker not available, using fallback method\");
@@ -14405,7 +14370,7 @@ function setupWordCounterSystem() {
         });
         return;
     }
-    
+
     // Setup editor change handler (Worker mode)
     const editor = ace.edit(\"sourceEditor\");
     if (editor) {
@@ -14413,7 +14378,7 @@ function setupWordCounterSystem() {
         // Initial count
         updateWordCountWithWorker();
     }
-    
+
     // Setup MutationObserver for dynamic content changes
     const targetNode = document.getElementById(\"editor-container\");
     if (targetNode && MutationObserver) {
@@ -14426,13 +14391,13 @@ function setupWordCounterSystem() {
 function fallbackWordCount() {
     const editor = ace.edit(\"sourceEditor\");
     if (!editor) return;
-    
+
     const text = editor.getSession().getValue();
     if (!text || text.trim().length === 0) {
         updateWordCounterDisplay(0);
         return;
     }
-    
+
     try {
         // Basic word count as fallback
         const words = text.trim().match(/\\S+/g) || [];
@@ -14497,8 +14462,8 @@ window.toggleDictation = function() {
 
   // 3. START LOGIC
   var recognition = new webkitSpeechRecognition();
-  recognition.continuous = true;       
-  recognition.interimResults = false; 
+  recognition.continuous = true;
+  recognition.interimResults = false;
   recognition.lang = \"en-US\";
 
   // Mark as starting so user can't double-click instantly
@@ -14507,7 +14472,7 @@ window.toggleDictation = function() {
   recognition.onstart = function() {
     window.MudskipperDictation.status = 'recording';
     setDictationActiveUI(btn);
-    
+
     // Auto-stop after 5 minutes (300,000 ms)
     window.MudskipperDictation.timeout = setTimeout(function() {
       if (window.MudskipperDictation.recognition) {
@@ -14527,7 +14492,7 @@ window.toggleDictation = function() {
   recognition.onresult = function(event) {
     var editor = ace.edit(\"sourceEditor\");
     var finalString = \"\";
-    
+
     // Accumulate text first (don't touch DOM in loop)
     for (var i = event.resultIndex; i < event.results.length; ++i) {
       if (event.results[i].isFinal) {
@@ -14562,7 +14527,7 @@ function setDictationActiveUI(btn) {
        <path d=\"M8 21l8 0\" />
        <path d=\"M12 17l0 4\" />
     </svg>`;
-    
+
   btn.innerHTML = iconActive;
   btn.classList.add(\"text-red\");
 }
@@ -14576,7 +14541,7 @@ function resetDictationUI(btn) {
       <path d=\"M8 21l8 0\" />
       <path d=\"M12 17l0 4\" />
     </svg>`;
-    
+
   btn.innerHTML = iconDefault;
   btn.classList.remove(\"text-red\");
 }
@@ -14589,7 +14554,7 @@ function openCopyProjectOverlay() {
         var overlay = document.getElementById('copyProjectOverlay');
         var nameInput = document.getElementById('copyProjectNameInput');
         var currentNameEl = document.getElementById('activeProjectName');
-        
+
         if(overlay && nameInput && currentNameEl) {
           var currentName = currentNameEl.innerText.trim();
           nameInput.value = currentName + \" (Copy)\";
@@ -14597,12 +14562,12 @@ function openCopyProjectOverlay() {
           setTimeout(() => nameInput.focus(), 100);
         }
       }
-      
+
       function closeCopyProjectOverlay() {
         var overlay = document.getElementById('copyProjectOverlay');
         if(overlay) overlay.classList.remove('show');
       }
-      
+
       // Bind the Copy Button to Shiny
       $(document).on('click', '#btnCopyProjectConfirm', function() {
         var name = document.getElementById('copyProjectNameInput').value;
@@ -14625,30 +14590,30 @@ function openCopyProjectOverlay() {
     function insertLatex(type) {
       var editor = getAceEditor();
       if (!editor) return;
-      
+
       var text = \"\";
       switch(type) {
-        case \"inline\": 
-          text = \"\\\\( ${1} \\\\)\"; 
+        case \"inline\":
+          text = \"\\\\( ${1} \\\\)\";
           break;
-        case \"display\": 
-          text = \"\\n\\\\[ ${1}\\\\]\"; 
+        case \"display\":
+          text = \"\\n\\\\[ ${1}\\\\]\";
           break;
-        case \"table\": 
+        case \"table\":
           // Uses \\\\ to ensure backslashes survive into JS
-          text = \"\\\\begin{table}[h]\\n\\t\\\\centering\\n\\t\\\\begin{tabular}{ccc}\\n\\t\\t & & \\n\\t\\t & & \\n\\t\\t & & \\n\\t\\\\end{tabular}\\n\\t\\\\caption{${1:Caption}}\\n\\t\\\\label{tab:${2:placeholder}}\\n\\\\end{table}\"; 
+          text = \"\\\\begin{table}[h]\\n\\t\\\\centering\\n\\t\\\\begin{tabular}{ccc}\\n\\t\\t & & \\n\\t\\t & & \\n\\t\\t & & \\n\\t\\\\end{tabular}\\n\\t\\\\caption{${1:Caption}}\\n\\t\\\\label{tab:${2:placeholder}}\\n\\\\end{table}\";
           break;
-        case \"cite\": 
-          text = \"\\\\cite{${1}}\"; 
+        case \"cite\":
+          text = \"\\\\cite{${1}}\";
           break;
-        case \"link\": 
-          text = \"\\\\href{${1:url}}{${2:text}}\"; 
+        case \"link\":
+          text = \"\\\\href{${1:url}}{${2:text}}\";
           break;
-        case \"ref\": 
-          text = \"\\\\ref{${1}}\"; 
+        case \"ref\":
+          text = \"\\\\ref{${1}}\";
           break;
       }
-      
+
       if (text) {
         // Check if snippet manager is available, else insert plain text
         if (editor.insertSnippet) {
@@ -14684,15 +14649,15 @@ function openCopyProjectOverlay() {
     }
 
     // Global listener to handle symbol clicks safely
-    // Updated to look for 'data-bs-original-title' because Bootstrap tooltips 
+    // Updated to look for 'data-bs-original-title' because Bootstrap tooltips
     // remove the standard 'title' attribute.
     document.addEventListener(\"click\", function(e) {
       if (e.target && e.target.closest(\".symbol-btn\")) {
         var btn = e.target.closest(\".symbol-btn\");
-        
+
         // Priority: 1. Bootstrap stored title, 2. Standard title, 3. Button text
         var rawTitle = btn.getAttribute(\"data-bs-original-title\") || btn.getAttribute(\"title\");
-        
+
         if (rawTitle) {
            // Append a space as per your original logic
            insertSymbolToEditor(rawTitle + \" \");
@@ -14729,23 +14694,23 @@ function openCopyProjectOverlay() {
       }
     }
 
-    // Dummy function to satisfy the inline onclick generated by R 
+    // Dummy function to satisfy the inline onclick generated by R
     // (The actual work is done by the event listener above)
-    function insertSymbol(arg) {} 
+    function insertSymbol(arg) {}
 
     // Search function updated to read Bootstrap tooltip titles
     function filterSymbols(query) {
       var q = query.toLowerCase();
-      
+
       // Handle the active tab context or search all (based on your preference).
       // Here we search all buttons to ensure results aren't hidden by inactive tabs.
       var btns = document.querySelectorAll(\".symbol-btn\");
-      
+
       btns.forEach(function(btn) {
         // Retrieve title from Bootstrap's storage or native attribute
         var title = btn.getAttribute(\"data-bs-original-title\") || btn.getAttribute(\"title\") || \"\";
         var text = btn.innerText || \"\";
-        
+
         if (title.toLowerCase().includes(q) || text.toLowerCase().includes(q)) {
           btn.style.display = \"inline-flex\"; // Ensure layout doesn't break
         } else {
@@ -14763,16 +14728,16 @@ function openCopyProjectOverlay() {
              e.preventDefault();
              // 1. Deactivate all tabs
              tabButtons.forEach(function(b) { b.classList.remove(\"active\"); });
-             document.querySelectorAll(\".tab-pane\").forEach(function(p) { 
-                p.classList.remove(\"show\", \"active\"); 
+             document.querySelectorAll(\".tab-pane\").forEach(function(p) {
+                p.classList.remove(\"show\", \"active\");
              });
-             
+
              // 2. Activate clicked tab
              this.classList.add(\"active\");
              var targetId = this.getAttribute(\"data-bs-target\");
              var targetPane = document.querySelector(targetId);
              if(targetPane) targetPane.classList.add(\"show\", \"active\");
-             
+
              // 3. Reset Search visibility in the new tab if needed
              var searchInput = document.getElementById(\"symbolSearch\");
              if (searchInput && searchInput.value) {
@@ -14788,7 +14753,7 @@ function openCopyProjectOverlay() {
 function initFigureOverlay() {
   // Ensure Dropzone is properly initialized when needed
   document.addEventListener('click', function(e) {
-    if (e.target.closest('.nav-item') && 
+    if (e.target.closest('.nav-item') &&
         e.target.closest('.nav-item').querySelector('[onclick*=\"openFigureOverlay\"]')) {
       setTimeout(initFigureDropzone, 300);
     }
@@ -14798,11 +14763,11 @@ function initFigureOverlay() {
 // Tab Switcher (Clean implementation)
 function switchFigureTab(event, tabId) {
   if (event) event.preventDefault();
-  
+
   // Update Nav Links
   var navLinks = document.querySelectorAll('#figureOverlay .settings-nav .nav-link');
   navLinks.forEach(function(l) { l.classList.remove('active'); });
-  
+
   var clicked = document.querySelector('#figureOverlay .nav-link[href=\"#' + tabId + '\"]');
 if (clicked) clicked.classList.add('active');
 
@@ -14825,11 +14790,11 @@ function openFigureOverlay(tabId) {
   if (overlay) {
     overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
-    
+
     // Default to first tab
     tabId = tabId || 'fig-upload-tab';
     switchFigureTab(null, tabId);
-    
+
     // Trigger server to populate lists
     if (window.Shiny) {
       Shiny.setInputValue(\"figureOverlayOpened\", Math.random(), {priority: \"event\"});
@@ -14873,13 +14838,13 @@ function initFigureDropzone() {
     acceptedFiles: 'image/*,application/pdf',
     init: function() {
       var myDropzone = this;
-      
+
       this.on(\"addedfile\", function(file) {
         // 1. Remove previous files if any (enforce maxFiles: 1 visually)
         if (this.files.length > 1) {
           this.removeFile(this.files[0]);
         }
-        
+
         // 2. Auto-fill filename input
         var nameInput = document.getElementById('fig_upload_name');
         if(nameInput) {
@@ -14930,7 +14895,7 @@ window.openFigureOverlay = function(tabId) {
     debounceTimer: null,
     lastRenderedEquation: null,
     isEnabled: false,
-    
+
     // Store bound function references for cleaner removal
     _onCursorChange: null,
     _onScroll: null,
@@ -14973,11 +14938,11 @@ window.openFigureOverlay = function(tabId) {
 
     enable: function() {
       if (this.isEnabled || !this.editor) return;
-      
+
       this.editor.selection.on('changeCursor', this._onCursorChange);
       this.editor.session.on('changeScrollTop', this._onScroll);
       this.editor.on('blur', this._onBlur);
-      
+
       this.isEnabled = true;
     },
 
@@ -14987,7 +14952,7 @@ window.openFigureOverlay = function(tabId) {
       this.editor.selection.off('changeCursor', this._onCursorChange);
       this.editor.session.off('changeScrollTop', this._onScroll);
       this.editor.off('blur', this._onBlur);
-      
+
       this.hidePopup();
       this.isEnabled = false;
     },
@@ -15027,9 +14992,9 @@ window.openFigureOverlay = function(tabId) {
       if (mathData) {
         var equationKey = mathData.tex + '|' + mathData.isDisplay;
         if (equationKey === this.lastRenderedEquation) return;
-        
+
         var cleanTex = this.cleanLatexForPreview(mathData.tex);
-        
+
         try {
           // Ensure KaTeX is loaded
           if (typeof katex !== 'undefined') {
@@ -15040,7 +15005,7 @@ window.openFigureOverlay = function(tabId) {
               strict: false,
               trust: false
             });
-            
+
             this.lastRenderedEquation = equationKey;
             this.updatePopupPosition(pos.row, pos.column, mathData.isDisplay);
             this.mathPopup.classList.add('visible');
@@ -15064,7 +15029,7 @@ window.openFigureOverlay = function(tabId) {
           return { tex: match[0].slice(2, -2), isDisplay: false };
         }
       }
-      
+
       var dollarRegex = /(?<!\\\\)(?<!\\$)\\$(?!\\$)([^\\$]+?)\\$/g;
       while ((match = dollarRegex.exec(line)) !== null) {
         var start = match.index;
@@ -15080,7 +15045,7 @@ window.openFigureOverlay = function(tabId) {
       var totalLines = doc.getLength();
       var maxLookUp = 100;
       var maxLookDown = 100;
-      
+
       var startRow = -1, endRow = -1;
       var startCol = -1, endCol = -1;
       var blockType = null;
@@ -15097,17 +15062,17 @@ window.openFigureOverlay = function(tabId) {
         }
         var bracketIdx = line.indexOf('\\\\]');
         if (bracketIdx !== -1) { /* Skip if end bracket found first */ }
-        
+
         var startBracketIdx = line.indexOf('\\\\[');
         if (startBracketIdx !== -1) {
            startRow = r; startCol = startBracketIdx; blockType = 'bracket'; break;
         }
-        
+
         var dollarIdx = line.indexOf('$$');
         if (dollarIdx !== -1) {
            startRow = r; startCol = dollarIdx; blockType = 'dollar'; break;
         }
-        
+
         // Break if we hit a definite end delimiter before a start
         if (r < currentRow) {
            if (line.match(/\\\\end\\{/) || line.indexOf('\\\\]') !== -1) return null;
@@ -15168,15 +15133,15 @@ window.openFigureOverlay = function(tabId) {
       var coords = this.editor.renderer.textToScreenCoordinates(row, col);
       var lineHeight = this.editor.renderer.lineHeight;
       var offset = isDisplay ? 20 : 10;
-      
+
       this.mathPopup.style.left = (coords.pageX + 10) + 'px';
       this.mathPopup.style.top = (coords.pageY + lineHeight + offset) + 'px';
       this.mathPopup.style.display = 'block'; // Measure
-      
+
       var rect = this.mathPopup.getBoundingClientRect();
       var viewportWidth = window.innerWidth;
       var viewportHeight = window.innerHeight;
-      
+
       if (rect.right > viewportWidth - 20) {
         this.mathPopup.style.left = Math.max(20, viewportWidth - rect.width - 20) + 'px';
       }
@@ -15187,7 +15152,7 @@ window.openFigureOverlay = function(tabId) {
   };
 
   // --- INITIALIZATION & BINDING ---
-  
+
   if (typeof $ !== 'undefined') {
     $(document).ready(function() {
       // Initialize Controller
@@ -15219,16 +15184,16 @@ window.openFigureOverlay = function(tabId) {
   $(document).on('change', 'input[name=\"compileMode\"]', function() {
     Shiny.setInputValue('compileMode', this.value, {priority: 'event'});
   });
-  
+
   $(document).on('change', 'input[name=\"syntaxCheck\"]', function() {
     Shiny.setInputValue('syntaxCheck', this.value, {priority: 'event'});
   });
-  
+
   $(document).on('change', 'input[name=\"errorHandling\"]', function() {
     Shiny.setInputValue('errorHandling', this.value, {priority: 'event'});
   });
-  
-  
+
+
 //================ LOCK functionality: 1. Idle Timer ====================//
 var idleTimer;
 // Load saved preference or default to never (0)
@@ -15236,12 +15201,12 @@ var lockDuration = parseInt(localStorage.getItem('mudskipper_lock_duration')) ||
 
 function resetIdleTimer() {
   clearTimeout(idleTimer);
-  
+
   // If 0, autolock is disabled
   if (lockDuration > 0) {
     idleTimer = setTimeout(function() {
       if(window.Shiny) Shiny.setInputValue('app_idle_lock', Math.random(), {priority: 'event'});
-    }, lockDuration); 
+    }, lockDuration);
   }
 }
 
@@ -15256,7 +15221,7 @@ document.addEventListener(\"DOMContentLoaded\", function() {
   if (lockPanel) {
     // 1. Sync dropdown with saved value
     lockPanel.value = lockDuration.toString();
-    
+
     // 2. Listen for changes
     lockPanel.addEventListener('change', function() {
       lockDuration = parseInt(this.value);
@@ -15269,17 +15234,17 @@ document.addEventListener(\"DOMContentLoaded\", function() {
 // --- 2. Startup: Check for Lock Cookie (YOUR EXISTING LOGIC) ---
 $(document).ready(function() {
   resetIdleTimer();
-  
+
   // Check if 'app_locked_user' cookie exists
   var match = document.cookie.match(new RegExp('(^| )app_locked_user=([^;]+)'));
   if (match) {
     var email = decodeURIComponent(match[2]);
-    
+
     // Force UI to Locked State immediately
     $('#auth_wrapper').hide();
     $('#main_app_wrapper').hide();
     $('#lock_wrapper').show();
-    
+
     // Tell R to restore the locked user state
     var checkShiny = setInterval(function() {
       if (window.Shiny && window.Shiny.setInputValue) {
@@ -15308,7 +15273,7 @@ $(document).ready(function() {
   const CONFIG = {
     maxStickyLines: 8,
     zIndex: 5,
-    highlightClass: 'ace_sticky_ghost_highlight' 
+    highlightClass: 'ace_sticky_ghost_highlight'
   };
 
   class StickyScroll {
@@ -15317,32 +15282,32 @@ $(document).ready(function() {
       this.editor = null;
       this.stickyWrapper = null;
       this.isEnabled = false;
-      
+
       this.previousStack = '';
-      this.ticking = false; 
+      this.ticking = false;
       this.scopeRanges = new Map();
-      this.activeMarkerId = null; 
-      
+      this.activeMarkerId = null;
+
       // Bindings for safe cleanup and session swapping
       this.onScroll = this.onScroll.bind(this);
-      this.onFoldChange = () => this.update(true); 
+      this.onFoldChange = () => this.update(true);
       this.onSessionChange = this.onSessionChange.bind(this);
       this.onResize = () => this.update(true);
       this.onThemeLoad = () => this.update(true);
-      
+
       this.debouncedUpdate = this.debounce(() => this.update(true), 100).bind(this);
-      
+
       // CRITICAL FIX: Clear cache synchronously on text change to prevent out-of-bounds errors
       this.onContentChange = () => {
         this.scopeRanges.clear();
         this.debouncedUpdate();
       };
-      
+
       this.syncHorizontal = this.syncHorizontal.bind(this);
       this.update = this.update.bind(this);
 
-      this.Range = ace.require('ace/range').Range; 
-      
+      this.Range = ace.require('ace/range').Range;
+
       this.init();
     }
 
@@ -15393,7 +15358,7 @@ $(document).ready(function() {
           z-index: 5;
         }
         .ace_sticky_layer {
-          overflow: hidden; 
+          overflow: hidden;
           will-change: height;
         }
         .ace_sticky_fold_icon {
@@ -15406,7 +15371,7 @@ $(document).ready(function() {
           background-position: center;
           background-size: contain;
           background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"6 9 12 15 18 9\"></polyline></svg>');
-          filter: invert(0.5); 
+          filter: invert(0.5);
           cursor: pointer;
           transition: transform 0.1s;
           pointer-events: auto;
@@ -15466,14 +15431,14 @@ createWrapper() {
 
 
     /* --- ACTIVE SESSION MANAGER --- */
-    
+
     attachListeners() {
       // Editor-level listeners
       this.editor.on('changeSession', this.onSessionChange);
       this.editor.on('change', this.onContentChange);
       this.editor.renderer.on('themeLoaded', this.onThemeLoad);
       window.addEventListener('resize', this.onResize);
-      
+
       // Session-level listeners
       this.attachSessionListeners(this.editor.session);
     }
@@ -15483,14 +15448,14 @@ createWrapper() {
       this.editor.off('change', this.onContentChange);
       this.editor.renderer.off('themeLoaded', this.onThemeLoad);
       window.removeEventListener('resize', this.onResize);
-      
+
       this.detachSessionListeners(this.editor.session);
     }
 
     attachSessionListeners(session) {
       if (!session) return;
       session.on('changeScrollTop', this.onScroll);
-      session.on('changeFold', this.onFoldChange); 
+      session.on('changeFold', this.onFoldChange);
       session.on('changeScrollLeft', this.syncHorizontal);
     }
 
@@ -15534,16 +15499,16 @@ createWrapper() {
     traceScopes(startRow) {
       const session = this.editor.session;
       const collectedRows = [];
-      const limit = Math.max(0, startRow - 5000); 
-      
+      const limit = Math.max(0, startRow - 5000);
+
       // ANTI-FREEZE: strict 12ms time budget per frame to ensure 60fps scrolling
       const startTime = performance.now();
-      
+
       for (let r = startRow; r >= limit; r--) {
           if (performance.now() - startTime > 12) {
               break; // Gracefully yield to prevent browser lockup
           }
-          
+
           if (session.getFoldWidget(r) === 'start') {
               const range = this.getFoldRange(r);
               // Mathematics perfectly confirm an ancestor if its end row wraps the start row
@@ -15570,7 +15535,7 @@ createWrapper() {
       let searchEndRow = session.screenToDocumentRow(topScreenRow + maxLines + 2, 0);
       searchEndRow = Math.min(searchEndRow, session.getLength() - 1);
 
-      const buffer = lineHeight / 2; 
+      const buffer = lineHeight / 2;
 
       for (let r = topDocRow + 1; r <= searchEndRow; r++) {
          if (session.getFoldWidget(r) === 'start') {
@@ -15582,10 +15547,10 @@ createWrapper() {
                 const rowPixelTop = session.documentToScreenRow(r, 0) * lineHeight;
                 const slotPixelTop = scrollTop + (targetSlotIndex * lineHeight);
 
-                if (rowPixelTop <= slotPixelTop + buffer) { 
+                if (rowPixelTop <= slotPixelTop + buffer) {
                    dockingStack.push(r);
                 } else {
-                   break; 
+                   break;
                 }
              }
          }
@@ -15596,13 +15561,13 @@ createWrapper() {
 
     update(forceRebuild = false) {
       if (!this.isEnabled || !this.editor) return;
-      
+
       const rows = this.scanForStickyRows();
       const rowString = rows.join(',');
 
       if (forceRebuild || this.previousStack !== rowString) {
           this.previousStack = rowString;
-          
+
           if (rows.length === 0) {
             if (this.stickyWrapper) {
                 this.stickyWrapper.innerHTML = '';
@@ -15619,14 +15584,14 @@ createWrapper() {
       if (rows.length > 0 && this.stickyWrapper) {
           const lineHeight = this.editor.renderer.lineHeight;
           const offset = this.computePhysicsOffset(rows);
-          
+
           const stackHeight = (rows.length * lineHeight) + offset;
           this.stickyWrapper.style.height = `${stackHeight}px`;
-          
+
           Array.from(this.stickyWrapper.children).forEach(child => {
               child.style.transform = 'none';
           });
-          
+
           if (offset < 0 && this.stickyWrapper.lastElementChild) {
               this.stickyWrapper.lastElementChild.style.transform = `translateY(${offset}px)`;
           }
@@ -15637,23 +15602,23 @@ createWrapper() {
       if (rows.length === 0) return 0;
       const lastRow = rows[rows.length - 1];
       const range = this.getFoldRange(lastRow);
-      
+
       if (range && range.end.row) {
         const renderer = this.editor.renderer;
         const session = this.editor.session;
         const scrollTop = session.getScrollTop();
         const lineHeight = renderer.lineHeight;
-        
+
         const screenEndRow = session.documentToScreenRow(range.end.row, 0);
         const endRowPixelTop = (screenEndRow * lineHeight) - scrollTop;
-        
+
         const lastSlotTop = (rows.length - 1) * lineHeight;
         const lastSlotBottom = rows.length * lineHeight;
-        
+
         const buffer = lineHeight / 2;
         const triggerBottom = lastSlotBottom + buffer;
         const triggerTop = lastSlotTop + buffer;
-        
+
         if (endRowPixelTop <= triggerBottom && endRowPixelTop > triggerTop) {
            return endRowPixelTop - triggerBottom;
         }
@@ -15708,14 +15673,14 @@ createWrapper() {
       };
       const colors = this.getColors();
       const fragment = document.createDocumentFragment();
-      
+
       rows.forEach((rowNum, index) => {
         const rowEl = this.createStickyLine(rowNum, config, colors);
         rowEl.style.position = 'relative';
-        rowEl.style.zIndex = 100 - index; 
+        rowEl.style.zIndex = 100 - index;
         fragment.appendChild(rowEl);
       });
-      
+
       this.stickyWrapper.innerHTML = '';
       this.stickyWrapper.appendChild(fragment);
       this.stickyWrapper.style.right = `${renderer.scrollBarV.width}px`;
@@ -15746,7 +15711,7 @@ createWrapper() {
 
     createStickyLine(rowNum, config, colors) {
       const rowEl = document.createElement('div');
-      rowEl.className = 'ace_sticky_row'; 
+      rowEl.className = 'ace_sticky_row';
       Object.assign(rowEl.style, {
         display: 'flex',
         height: `${config.lineHeight}px`,
@@ -15777,15 +15742,15 @@ createWrapper() {
       if (foldMode === 'start') {
         const icon = document.createElement('span');
         icon.className = 'ace_sticky_fold_icon';
-        
+
         const activeFold = this.findFoldAtRow(rowNum);
         if (activeFold) {
-          icon.classList.add('closed'); 
+          icon.classList.add('closed');
         }
 
         icon.onclick = (e) => {
            e.stopPropagation();
-           this.toggleFold(rowNum, activeFold); 
+           this.toggleFold(rowNum, activeFold);
         };
         gutter.appendChild(icon);
       }
@@ -15805,7 +15770,7 @@ createWrapper() {
       content.setAttribute('title', lineText.trim());
 
       const code = document.createElement('div');
-      code.className = 'ace_line'; 
+      code.className = 'ace_line';
       Object.assign(code.style, {
         position: 'absolute',
         top: '0',
@@ -15822,7 +15787,7 @@ createWrapper() {
          const safeVal = t.value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
          return `<span class=\"ace_${t.type.replace(/\\./g, ' ace_')}\">${safeVal}</span>`;
       }).join('');
-      
+
       code.innerHTML = html;
       content.appendChild(code);
       rowEl.appendChild(gutter);
@@ -15832,7 +15797,7 @@ createWrapper() {
         e.preventDefault(); e.stopPropagation();
         this.jumpTo(rowNum);
       };
-      
+
       rowEl.onmouseenter = () => {
         rowEl.style.filter = 'brightness(95%)';
         this.addGhostHighlight(rowNum);
@@ -15889,7 +15854,7 @@ createWrapper() {
   }
 
   window.enableStickyScroll = (id) => new StickyScroll(id);
-  
+
   if (typeof $ !== 'undefined') {
     $(document).ready(() => {
       const initCheck = setInterval(() => {
@@ -15938,15 +15903,15 @@ createWrapper() {
       this.mainEditorId = mainEditorId;
       this.mainEditor = null;
       this.miniEditor = null;
-      
+
       this.minimapWrapper = null;
       this.slider = null;
-      this.glassPane = null; 
-      
+      this.glassPane = null;
+
       this.isDragging = false;
       this.isEnabled = false;
       this.originalEditorWidth = '';
-      
+
       this.syncScroll = this.syncScroll.bind(this);
       this.syncDocument = this.syncDocument.bind(this);
       this.syncMarkers = this.syncMarkers.bind(this);
@@ -15955,7 +15920,7 @@ createWrapper() {
       this.onDragEnd = this.onDragEnd.bind(this);
       this.onThemeChange = this.onThemeChange.bind(this);
       this.onWheel = this.onWheel.bind(this);
-      
+
       this.init();
     }
 
@@ -15967,7 +15932,7 @@ createWrapper() {
             if (editor && editor.renderer && editor.session) {
               clearInterval(waitForAce);
               this.mainEditor = editor;
-              this.enable(); 
+              this.enable();
             }
         }
       }, 100);
@@ -15975,16 +15940,16 @@ createWrapper() {
 
     enable() {
       if (this.isEnabled || !this.mainEditor) return;
-      
+
       // 1. Hide native scrollbar to prevent conflicts
       this.mainEditor.setOption('vScrollBarAlwaysVisible', false);
       this.mainEditor.container.classList.add('minimap-active');
-      
+
       this.buildDOM();
       this.setupMiniEditor();
       this.attachListeners();
       this.isEnabled = true;
-      
+
       // 2. Force Ace to recalculate dimensions
       setTimeout(() => {
           this.mainEditor.resize(true);
@@ -15997,7 +15962,7 @@ createWrapper() {
     disable() {
       if (!this.isEnabled) return;
       this.detachListeners();
-      
+
       if (this.minimapWrapper) {
         this.minimapWrapper.remove();
         this.minimapWrapper = null;
@@ -16006,7 +15971,7 @@ createWrapper() {
         this.miniEditor.destroy();
         this.miniEditor = null;
       }
-      
+
       // Restore main editor original width and scrollbar
       if (this.mainEditor && this.mainEditor.container) {
           this.mainEditor.container.style.width = this.originalEditorWidth || '100%';
@@ -16014,7 +15979,7 @@ createWrapper() {
           this.mainEditor.renderer.setScrollMargin(0, 0, 0, 0);
           this.mainEditor.resize(true);
       }
-      
+
       this.isEnabled = false;
     }
 
@@ -16022,7 +15987,7 @@ createWrapper() {
       if (document.getElementById('ace_minimap_styles')) return;
       var style = document.createElement('style');
       style.id = 'ace_minimap_styles';
-      style.innerHTML = 
+      style.innerHTML =
         \".ace_minimap_wrapper {\\n\" +
         \"  position: absolute;\\n\" +
         \"  top: 0;\\n\" +
@@ -16084,27 +16049,27 @@ createWrapper() {
     buildDOM() {
       var container = this.mainEditor.container;
       var parent = container.parentElement;
-      
+
       this.minimapWrapper = document.createElement('div');
       this.minimapWrapper.className = 'ace_minimap_wrapper';
-      
+
       var editorDiv = document.createElement('div');
       editorDiv.className = 'ace_minimap_editor';
-      
+
       this.glassPane = document.createElement('div');
       this.glassPane.className = 'ace_minimap_glass';
-      
+
       this.slider = document.createElement('div');
       this.slider.className = 'ace_minimap_slider';
-      
+
       this.glassPane.appendChild(this.slider);
       this.minimapWrapper.appendChild(editorDiv);
       this.minimapWrapper.appendChild(this.glassPane);
-      
+
       // Place Minimap OUTSIDE the editor in the parent container
       parent.style.position = 'relative';
       parent.appendChild(this.minimapWrapper);
-      
+
       // Shrink the main editor to make physical room (prevents text overlap)
       this.originalEditorWidth = container.style.width;
       container.style.width = 'calc(100% - ' + CONFIG.minimapWidth + 'px)';
@@ -16113,7 +16078,7 @@ createWrapper() {
     setupMiniEditor() {
       var editorDiv = this.minimapWrapper.querySelector('.ace_minimap_editor');
       this.miniEditor = ace.edit(editorDiv);
-      
+
       this.miniEditor.setOptions({
         fontSize: CONFIG.fontSize,
         showGutter: false,
@@ -16126,22 +16091,22 @@ createWrapper() {
         hScrollBarAlwaysVisible: false,
         vScrollBarAlwaysVisible: false
       });
-      
+
       this.miniEditor.renderer.scrollBarV.element.style.display = 'none';
       this.miniEditor.renderer.scrollBarH.element.style.display = 'none';
       this.miniEditor.renderer.$cursorLayer.element.style.display = 'none';
-      
+
       this.syncDocument();
       this.onThemeChange();
     }
 
     attachListeners() {
       var mainSession = this.mainEditor.getSession();
-      
+
       mainSession.on('changeScrollTop', this.syncScroll);
       this.mainEditor.on('changeSession', this.syncDocument);
       this.mainEditor.renderer.on('themeLoaded', this.onThemeChange);
-      
+
       // Sync wrap limits dynamically
       this._wrapHandler = () => {
           if (this.miniEditor) {
@@ -16152,19 +16117,19 @@ createWrapper() {
       };
       mainSession.on('changeWrapLimit', this._wrapHandler);
       mainSession.on('changeWrapMode', this.syncDocument);
-      
+
       // Marker Sync Listeners
       this._syncMarkersHandler = () => this.syncMarkers();
       mainSession.on('changeAnnotation', this._syncMarkersHandler);
       mainSession.on('changeBackMarker', this._syncMarkersHandler);
       mainSession.on('changeFrontMarker', this._syncMarkersHandler);
-      
+
       this._resizeHandler = () => {
           if(this.miniEditor) this.miniEditor.resize(true);
           this.syncScroll();
       };
       window.addEventListener('resize', this._resizeHandler);
-      
+
       this.slider.addEventListener('mousedown', this.onDragStart);
       this.glassPane.addEventListener('mousedown', (e) => {
         if (e.target === this.slider) return;
@@ -16186,11 +16151,11 @@ createWrapper() {
       this.mainEditor.off('changeSession', this.syncDocument);
       this.mainEditor.renderer.off('themeLoaded', this.onThemeChange);
       window.removeEventListener('resize', this._resizeHandler);
-      
+
       this.slider.removeEventListener('mousedown', this.onDragStart);
       this.glassPane.removeEventListener('wheel', this.onWheel);
     }
-    
+
     onWheel(e) {
         e.preventDefault();
         var session = this.mainEditor.getSession();
@@ -16200,31 +16165,31 @@ createWrapper() {
     syncDocument() {
       var mainSession = this.mainEditor.getSession();
       var miniSession = new ace.EditSession(mainSession.getDocument(), mainSession.getMode());
-      
+
       // Force wrap syncing: makes the minimap break lines exactly where the main editor does
       miniSession.setUseWrapMode(mainSession.getUseWrapMode());
       var wrapLimit = mainSession.getWrapLimit();
       miniSession.setWrapLimitRange(wrapLimit, wrapLimit);
-      
+
       this.miniEditor.setSession(miniSession);
       this.syncScroll();
       this.syncMarkers();
     }
-    
+
     syncMarkers() {
       if (!this.miniEditor || !this.mainEditor) return;
       var mainSession = this.mainEditor.getSession();
       var miniSession = this.miniEditor.getSession();
-      
+
       miniSession.setAnnotations(mainSession.getAnnotations());
-      
+
       var mainMarkers = mainSession.getMarkers();
       var miniMarkers = miniSession.getMarkers();
-      
+
       for (var m1 in miniMarkers) {
           miniSession.removeMarker(miniMarkers[m1].id);
       }
-      
+
       for (var m2 in mainMarkers) {
           var marker = mainMarkers[m2];
           if (marker.clazz !== 'ace_active-line') {
@@ -16247,34 +16212,34 @@ createWrapper() {
 
     syncScroll() {
       if (this.isDragging || !this.miniEditor) return;
-      
+
       var mainSession = this.mainEditor.getSession();
       var mainRenderer = this.mainEditor.renderer;
       var miniSession = this.miniEditor.getSession();
       var miniRenderer = this.miniEditor.renderer;
-      
+
       var mainTop = mainSession.getScrollTop();
       var mainHeight = mainRenderer.$size.scrollerHeight || this.mainEditor.container.clientHeight;
       var mainMax = Math.max(0, mainSession.getScreenLength() * mainRenderer.lineHeight - mainHeight);
-      
+
       var scrollRatio = mainMax > 0 ? mainTop / mainMax : 0;
-      
+
       var miniHeight = this.minimapWrapper.clientHeight;
       var miniMax = Math.max(0, miniSession.getScreenLength() * miniRenderer.lineHeight - miniHeight);
-      
+
       var miniScrollTop = scrollRatio * miniMax;
       miniSession.setScrollTop(miniScrollTop);
-      
+
       var visibleRatio = mainMax > 0 ? mainHeight / (mainSession.getScreenLength() * mainRenderer.lineHeight) : 1;
       visibleRatio = Math.max(0.05, Math.min(1, visibleRatio));
-      
+
       var sliderHeightPixels = visibleRatio * miniHeight;
       var safeSliderHeight = Math.max(20, sliderHeightPixels);
       this.slider.style.height = safeSliderHeight + \"px\";
-      
+
       var sliderTopMax = miniHeight - safeSliderHeight;
       var sliderTop = scrollRatio * sliderTopMax;
-      
+
       this.slider.style.transform = \"translateY(\" + sliderTop + \"px)\";
     }
 
@@ -16290,9 +16255,9 @@ createWrapper() {
       e.preventDefault();
       this.isDragging = true;
       this.slider.classList.add('dragging');
-      
+
       this.startY = e.clientY;
-      
+
       var transform = window.getComputedStyle(this.slider).transform;
       var matrixValues = transform.match(/matrix.*\\((.+)\\)/);
       this.startTop = 0;
@@ -16302,7 +16267,7 @@ createWrapper() {
               this.startTop = parseFloat(values[5]);
           }
       }
-      
+
       document.addEventListener('mousemove', this.onDragMove);
       document.addEventListener('mouseup', this.onDragEnd);
     }
@@ -16326,18 +16291,18 @@ createWrapper() {
       var maxSliderTop = this.minimapWrapper.clientHeight - this.slider.offsetHeight;
       var safeTop = Math.max(0, Math.min(sliderTop, maxSliderTop));
       var scrollRatio = maxSliderTop > 0 ? safeTop / maxSliderTop : 0;
-      
+
       var mainSession = this.mainEditor.getSession();
       var mainRenderer = this.mainEditor.renderer;
       var mainMax = Math.max(0, mainSession.getScreenLength() * mainRenderer.lineHeight - mainRenderer.$size.scrollerHeight);
-      
+
       mainSession.setScrollTop(scrollRatio * mainMax);
-      
+
       var miniSession = this.miniEditor.getSession();
       var miniHeight = this.minimapWrapper.clientHeight;
       var miniMax = Math.max(0, miniSession.getScreenLength() * this.miniEditor.renderer.lineHeight - miniHeight);
       miniSession.setScrollTop(scrollRatio * miniMax);
-      
+
       this.slider.style.transform = \"translateY(\" + safeTop + \"px)\";
     }
   }
@@ -16350,13 +16315,13 @@ createWrapper() {
       }
       return window.minimapInstance;
   };
-  
+
   window.disableMinimap = () => {
       if(window.minimapInstance) {
           window.minimapInstance.disable();
       }
   };
-  
+
   if (typeof $ !== 'undefined') {
     $(document).ready(() => {
       window.enableMinimap();
@@ -16373,7 +16338,7 @@ createWrapper() {
 //========================Table Overlay================//
 
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // --- STATE & INIT ---
     window.openTableOverlay = function() {
       document.getElementById('tableOverlay').classList.add('show');
@@ -16403,7 +16368,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- CELL SETUP & EVENTS (The Magic) ---
     function setupCell(cell) {
       cell.contentEditable = true;
-      
+
       // 1. Mouse Move: Detect Border Proximity
       cell.addEventListener('mousemove', function(e) {
         const rect = cell.getBoundingClientRect();
@@ -16415,7 +16380,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Reset classes
         cell.classList.remove('hover-top', 'hover-bottom', 'hover-left', 'hover-right');
-        
+
         // Check edges
         if (y < th) cell.classList.add('hover-top');
         else if (y > h - th) cell.classList.add('hover-bottom');
@@ -16432,7 +16397,7 @@ document.addEventListener('DOMContentLoaded', function() {
       cell.addEventListener('mousedown', function(e) {
         // If we are hovering a border, toggle it and preventing typing focus
         if (cell.classList.contains('hover-top')) {
-            e.preventDefault(); toggleBorder(cell, 'b-top'); 
+            e.preventDefault(); toggleBorder(cell, 'b-top');
         } else if (cell.classList.contains('hover-bottom')) {
             e.preventDefault(); toggleBorder(cell, 'b-bottom');
         } else if (cell.classList.contains('hover-left')) {
@@ -16450,7 +16415,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         cell.classList.add(cls);
       }
-      
+
       // SYNC NEIGHBORS (Optional but good for visuals)
       // e.g., Toggling Right of Cell [0,0] should ideally affect Left of Cell [0,1]
       // For simplicity in this version, we treat cells independently to allow precise control
@@ -16495,13 +16460,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (rows.length === 0) return;
 
         let latex = '\\\\begin{table}[h]\\n  \\\\centering\\n  \\\\begin{tabular}{';
-        
+
         // 1. Column Spec (Scan first row for vertical borders)
         // Default to 'c'. If cell has 'b-left' or 'b-right', we might need multicolumns.
         // For simplicity: We use standard 'c' columns and use \\multicolumn for borders.
         let colCount = rows[0].cells.length;
         let colSpec = '';
-        for(let i=0; i<colCount; i++) colSpec += 'c'; 
+        for(let i=0; i<colCount; i++) colSpec += 'c';
         latex += colSpec + '}\\n';
 
         // 2. Iterate Rows
@@ -16516,7 +16481,7 @@ document.addEventListener('DOMContentLoaded', function() {
           let currentStart = -1;
           for (let c = 0; c < cells.length; c++) {
              if (cells[c].classList.contains('b-top')) {
-                 if (currentStart === -1) currentStart = c + 1; 
+                 if (currentStart === -1) currentStart = c + 1;
              } else {
                  if (currentStart !== -1) {
                      clineSegments.push(currentStart + '-' + c);
@@ -16525,29 +16490,29 @@ document.addEventListener('DOMContentLoaded', function() {
              }
           }
           if (currentStart !== -1) clineSegments.push(currentStart + '-' + cells.length);
-          
+
           clineSegments.forEach(seg => { latex += '    \\\\cline{' + seg + '}\\n'; });
 
           // Cell Content
           for (let c = 0; c < cells.length; c++) {
              let cell = cells[c];
              let content = parseCellContent(cell); // Handle Bold/Color
-             
+
              // Vertical Borders (Left/Right)
              // We use \\multicolumn{1}{|c|}{...} if borders exist
              let hasL = cell.classList.contains('b-left');
              let hasR = cell.classList.contains('b-right');
-             
+
              if (hasL || hasR) {
                  let spec = (hasL ? '|' : '') + 'c' + (hasR ? '|' : '');
                  content = '\\\\multicolumn{1}{' + spec + '}{' + content + '}';
              }
-             
+
              cellLatex.push(content);
           }
-          
+
           latex += '    ' + cellLatex.join(' & ') + ' \\\\\\\\';
-          
+
           // Bottom Borders (Last Row only usually, but we check per row for completeness)
           // Actually, standard LaTeX is \\hline or \\cline AFTER the row.
           // So we check 'b-bottom' here.
@@ -16555,7 +16520,7 @@ document.addEventListener('DOMContentLoaded', function() {
           let bStart = -1;
           for (let c = 0; c < cells.length; c++) {
              if (cells[c].classList.contains('b-bottom')) {
-                 if (bStart === -1) bStart = c + 1; 
+                 if (bStart === -1) bStart = c + 1;
              } else {
                  if (bStart !== -1) {
                      blineSegments.push(bStart + '-' + c);
@@ -16564,12 +16529,12 @@ document.addEventListener('DOMContentLoaded', function() {
              }
           }
           if (bStart !== -1) blineSegments.push(bStart + '-' + cells.length);
-          
+
           if (blineSegments.length > 0) {
               latex += '\\n    ';
               blineSegments.forEach(seg => { latex += '\\\\cline{' + seg + '}'; });
           }
-          
+
           latex += '\\n';
         }
 
@@ -16578,7 +16543,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Insert
         var editor = ace.edit('sourceEditor');
         if (editor) { editor.insert(latex); editor.focus(); }
-        
+
         closeTableOverlay();
 
       } catch (e) {
@@ -16592,7 +16557,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Clone to not mess up UI
         let div = document.createElement('div');
         div.innerHTML = cell.innerHTML;
-        
+
         let text = div.innerText.trim();
         // Check computed style or tags
         // Simple Tag parsing
@@ -16609,14 +16574,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove #
             text = '\\\\textcolor[HTML]{' + hex.replace('#','') + '}{' + text + '}';
         }
-        
+
         // Escape chars
         return text.replace(/([%&$#_])/g, '\\\\$1');
     }
 
   });
-  
-  
+
+
 
 //================AI Assistant Beautify=============//
 
@@ -16641,21 +16606,21 @@ function beautifyChat() {
           showTablerAlert('warning', 'KaTeX rendering failed:', e);
         }
       }
-      
+
       // B. Highlight Code & Add Copy Buttons
       var codeBlocks = document.querySelectorAll('.ai-message-card pre code');
-      
+
       codeBlocks.forEach(function(block) {
         try {
           // 1. Highlight if hljs is available
           if (typeof hljs !== 'undefined' && !block.classList.contains('hljs')) {
             hljs.highlightElement(block);
           }
-          
+
           // 2. Add Copy Button (if not already there)
           var preElement = block.parentNode;
           if (preElement.querySelector('.code-copy-btn')) return;
-          
+
           // Detect language from class
           var language = 'code';
           var classes = block.className.split(' ');
@@ -16668,29 +16633,29 @@ function beautifyChat() {
               language = cls;
             }
           }
-          
+
           // Create header with language label and copy button
           var header = document.createElement('div');
           header.className = 'code-header';
-          
+
           var langLabel = document.createElement('span');
           langLabel.className = 'code-language';
           langLabel.textContent = language;
-          
+
           var copyBtn = document.createElement('button');
           copyBtn.className = 'code-copy-btn';
           copyBtn.innerHTML = '<i class=\"fa-regular fa-copy\"></i>';
           copyBtn.title = 'Copy to clipboard';
-          
+
           copyBtn.addEventListener('click', function() {
             var code = block.innerText;
-            
+
             // Fallback for older browsers
             if (navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(code).then(function() {
                 copyBtn.innerHTML = '<i class=\"fa-solid fa-check\"></i>';
                 copyBtn.classList.add('copied');
-                setTimeout(function() { 
+                setTimeout(function() {
                   copyBtn.innerHTML = '<i class=\"fa-regular fa-copy\"></i>';
                   copyBtn.classList.remove('copied');
                 }, 2000);
@@ -16702,19 +16667,19 @@ function beautifyChat() {
               fallbackCopy(code, copyBtn);
             }
           });
-          
+
           header.appendChild(langLabel);
           header.appendChild(copyBtn);
-          
+
           // Insert header before code block
           preElement.insertBefore(header, preElement.firstChild);
           preElement.classList.add('code-block-enhanced');
-          
+
         } catch(e) {
           showTablerAlert('warning', 'Code block enhancement failed:', e);
         }
       });
-      
+
       // C. Scroll to bottom smoothly
       var container = document.getElementById('chat-scroll-container');
       if (container) {
@@ -16728,7 +16693,7 @@ function beautifyChat() {
           container.scrollTop = container.scrollHeight;
         }
       }
-      
+
     } catch(e) {
       showTablerAlert('error', 'beautifyChat error:', e);
     }
@@ -16743,25 +16708,25 @@ function fallbackCopy(text, button) {
   textArea.style.left = '-999999px';
   document.body.appendChild(textArea);
   textArea.select();
-  
+
   try {
     document.execCommand('copy');
     button.innerHTML = '<i class=\"fa-solid fa-check\"></i>';
     button.classList.add('copied');
-    setTimeout(function() { 
+    setTimeout(function() {
       button.innerHTML = '<i class=\"fa-regular fa-copy\"></i>';
       button.classList.remove('copied');
     }, 2000);
   } catch(err) {
     showTablerAlert('error','Copy failed. Please copy manually.');
   }
-  
+
   document.body.removeChild(textArea);
 }
 
 //=====================Editor font family===============//
 document.addEventListener(\"DOMContentLoaded\", function() {
-  
+
   const fontPanel = document.getElementById('editorFontFamilyPanel');
   const editorId = \"sourceEditor\"; // Your Ace editor ID
   const storageKey = \"mudskipper_font_family\"; // Key to save preference
@@ -16779,7 +16744,7 @@ document.addEventListener(\"DOMContentLoaded\", function() {
   if (savedFont && fontPanel) {
     fontPanel.value = savedFont;
     // Wait slightly for Ace to initialize if running immediately on load
-    setTimeout(() => applyFont(savedFont), 500); 
+    setTimeout(() => applyFont(savedFont), 500);
   }
 
   // 3. Listen for Changes
@@ -16790,7 +16755,7 @@ document.addEventListener(\"DOMContentLoaded\", function() {
       localStorage.setItem(storageKey, selectedFont);
     });
   }
-  
+
   // 4. Fallback: Re-apply if Shiny re-initializes the editor
   $(document).on('shiny:value', function(event) {
     if (event.name === editorId) {

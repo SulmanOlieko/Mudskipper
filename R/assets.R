@@ -158,8 +158,8 @@ if (!file.exists(manifest_path)) {
   "short_name": "Mudskipper",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#002b36",
-  "theme_color": "#002b36",
+  "background_color": "#18181b",
+  "theme_color": "#2fb344",
   "icons": [
     {
       "src": "mudskipper_logo.svg",
