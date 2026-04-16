@@ -5,19 +5,7 @@ app_ui <- fluidPage(
     id = "app-content",
     HTML(
       '
-    <!-- Banners -->
-      <div id="connectivityBanner" class="banner hidden">
-      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-      Your internet connectivity is slow or down. Retrying sync in
-    <span id="retryCountdown">10</span>
-      seconds… Changes you make offline are saved and will be synced when you get online.
-    </div>
-
-      <div id="onlineBanner" class="banner hidden">
-      <i class="fa-solid fa-signal"></i>
-      You are back online!
-      </div>
-
+    <!-- Alert System Container -->
       <div id="alertContainer"
         class="alert-container"
         style="position: fixed; top: 80px; right: 20px; z-index: 1060; width: 400px; max-width: 90vw;">
@@ -2401,33 +2389,7 @@ app_ui <- fluidPage(
   text-align: center;
 
 }
-#connectivityBanner{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom: -1px;
-  z-index:1052;
-  background:var(--tblr-orange);
-  color:var(--tblr-white);
-  border: none;
-  padding:1px 1px;
-  border-radius: 0px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-#onlineBanner{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom: -1px;
-  z-index:1052;
-  background:var(--tblr-green);
-  color:var(--tblr-white);
-  border: none;
-  padding:1px 1px;
-  border-radius: 0px;
-  align-items: center;
+
   justify-content: center;
   text-align: center;
 }
@@ -7803,52 +7765,6 @@ app_ui <- fluidPage(
                                       <span id="errorLogBadge" class="nav-badge-counter"></span>
                                     </div>
 
-                                  <div class="nav-badge-container"
-                                    title="Label keys"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="bottom">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="icon icon-1"
-                                    style="font-size: 1.2rem;"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    >
-                                      <path d="M3 8v4.172a2 2 0 0 0 .586 1.414l5.71 5.71a2.41 2.41 0 0 0 3.408 0l3.592 -3.592a2.41 2.41 0 0 0 0 -3.408l-5.71 -5.71a2 2 0 0 0 -1.414 -.586h-4.172a2 2 0 0 0 -2 2z" />
-                                      <path d="M18 19l1.592 -1.592a4.82 4.82 0 0 0 0 -6.816l-4.592 -4.592" />
-                                      <path d="M7 10h-.01" />
-                                    </svg>
-                                      <span id="labelCount" class="nav-badge-counter"></span>
-                                    </div>
-
-                                  <div class="nav-badge-container"
-                                    title="Citation keys"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="bottom">
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="icon icon-1"
-                                    style="font-size: 1.2rem;"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    >
-                                      <path d="M10 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.667 -1.333 4.333 -4 5" />
-                                      <path d="M19 11h-4a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1h3a1 1 0 0 1 1 1v6c0 2.667 -1.333 4.333 -4 5" />
-                                    </svg>
-                                      <span id="citationCount" class="nav-badge-counter"></span>
-                                    </div>
                                   '
                         ),
                         # Download Button (Left Side)
@@ -8558,32 +8474,81 @@ app_ui <- fluidPage(
 
 
     // Connectivity banners & save tip
+    // Connectivity alerts & monitoring
     (function(){
-      var connectivityTimer; var baseCountdown = 10; var currentCountdown = baseCountdown;
+      var connectivityTimer; 
+      var baseCountdown = 10; 
+      var currentCountdown = baseCountdown;
+      var currentWarningToast = null;
+
+      function updateWarningContent() {
+        if (!currentWarningToast) return;
+        var body = currentWarningToast.querySelector('.toast-body');
+        if (body) {
+          body.innerHTML = 'Your internet connectivity is slow or down. Retrying sync in <b>' + currentCountdown + '</b> seconds... Changes you make offline are saved and will be synced when you get online.';
+        }
+      }
+
       function startConnectivityTimer() {
         if (connectivityTimer) return;
-        var banner = document.getElementById('connectivityBanner');
-        banner.classList.remove('hidden');
+        
+        // Show initial Tabler alert
+        if (window.showTablerAlert) {
+          // We manually manage this one to handle updates
+          window.showTablerAlert('warning', 'Connectivity Issue', 'Your internet connectivity is slow or down. Retrying sync in <b>' + baseCountdown + '</b> seconds... Changes you make offline are saved and will be synced when you get online.', 999999);
+          
+          // Find the toast we just created (it should be the last one in alertContainer)
+          var container = document.getElementById('alertContainer');
+          if (container) {
+            currentWarningToast = container.lastElementChild;
+            if (currentWarningToast) {
+              currentWarningToast.id = 'connectivityWarningToast';
+              // Remove the close button to make it truly modal/persistent if desired, 
+              // or just let them close it but it will come back if we are still offline.
+            }
+          }
+        }
+
         currentCountdown = baseCountdown;
-        document.getElementById('retryCountdown').innerText = currentCountdown;
         connectivityTimer = setInterval(function() {
-          currentCountdown--; if (currentCountdown <= 0) { baseCountdown += 5; currentCountdown = baseCountdown; }
-          document.getElementById('retryCountdown').innerText = currentCountdown;
+          currentCountdown--; 
+          if (currentCountdown <= 0) { 
+            baseCountdown += 5; 
+            currentCountdown = baseCountdown; 
+          }
+          updateWarningContent();
         }, 1000);
       }
+
       function stopConnectivityTimer() {
-        if (connectivityTimer) { clearInterval(connectivityTimer); connectivityTimer = null; }
-        baseCountdown = 10; currentCountdown = baseCountdown;
-        document.getElementById('retryCountdown').innerText = '';
+        if (connectivityTimer) { 
+          clearInterval(connectivityTimer); 
+          connectivityTimer = null; 
+        }
+        baseCountdown = 10; 
+        currentCountdown = baseCountdown;
+
+        // Remove the warning toast if it exists
+        if (currentWarningToast && currentWarningToast.parentNode) {
+          // If the showTablerAlert has a standardized way to remove, use it, 
+          // otherwise manual removal.
+          if (currentWarningToast.querySelector('.btn-close')) {
+            currentWarningToast.querySelector('.btn-close').click();
+          } else {
+            currentWarningToast.parentNode.removeChild(currentWarningToast);
+          }
+        }
+        currentWarningToast = null;
       }
+
       window.addEventListener('offline', startConnectivityTimer);
       window.addEventListener('online', function() {
         stopConnectivityTimer();
-        document.getElementById('connectivityBanner').classList.add('hidden');
-        var online = document.getElementById('onlineBanner');
-        online.classList.remove('hidden');
-        setTimeout(function(){ online.classList.add('hidden'); }, 2500);
+        if (window.showTablerAlert) {
+          window.showTablerAlert('success', 'Back Online', 'You are back online!', 3000);
+        }
       });
+      
       if (!navigator.onLine) { startConnectivityTimer(); }
     })();
 
@@ -9364,9 +9329,7 @@ Shiny.addCustomMessageHandler('setAnnotations', function(annotations){
 
 
 
-  Shiny.addCustomMessageHandler('updateStatus', function(message){
-      document.getElementById('statusBar').innerText = message;
-    });
+  // updateStatus handler is registered in www/status_bar.js to avoid conflicts.
     Shiny.addCustomMessageHandler('scrollDockerConsole', function(message){
       var editor = ace.edit('dockerConsole');
       if (editor) {
@@ -10842,31 +10805,8 @@ function updateLabelSelection(items) {
 })();
 
 
-// Updated Handler for Bibtex keys (Always shows count, even if 0)
-Shiny.addCustomMessageHandler('updateCitationCount', function(message){
-  var el = document.getElementById('citationCount');
-  if(el) {
-    // Ensure we have a number, default to 0
-    var count = (typeof message === 'number') ? message : 0;
-
-    el.innerText = count;
-    // Always show the badge
-    el.classList.add('show');
-  }
-});
-
-// Updated Handler for Label keys (Always shows count, even if 0)
-Shiny.addCustomMessageHandler('updateLabelCount', function(message){
-  var el = document.getElementById('labelCount');
-  if(el) {
-    // Ensure we have a number, default to 0
-    var count = (typeof message === 'number') ? message : 0;
-
-    el.innerText = count;
-    // Always show the badge
-    el.classList.add('show');
-  }
-});
+// updateCitationCount and updateLabelCount handlers are now registered
+// exclusively in www/status_bar.js to display counts in the status bar.
 
 //==================CITATION MANAGER===================//
 
@@ -16814,12 +16754,129 @@ document.addEventListener(\"DOMContentLoaded\", function() {
 
 
 
-//===Status updates via raw html===//
-Shiny.addCustomMessageHandler('updateStatus', function(message) {
-    // Make sure this uses .innerHTML, NOT .innerText or .textContent
-    document.getElementById('statusBar').innerHTML = message;
-});
+// NOTE: updateStatus handler is now registered in www/status_bar.js
+// to avoid Shiny duplicate-handler warnings. The status bar JS
+// forwards the message to #statusBar AND to the bottom status bar.
 
   "
-  ))
+  )),
+  # ---- VS Code-style Status Bar: CSS injected inside fluidPage ----
+  tags$style(HTML("
+/* ============================================================
+   Mudskipper Status Bar  —  Tabler-native colour scheme
+   26px fixed bottom bar, visible only on the editor page
+============================================================ */
+
+/* Bar container */
+#mudskipper-status-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 26px;
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  background: var(--tblr-card-cap-bg,
+    color-mix(in srgb, var(--tblr-body-bg, #f8fafc) 75%, #000 25%));
+  color: var(--tblr-body-color);
+  border-top: 1px solid var(--tblr-border-color);
+  font-family: var(--tblr-font-sans-serif, 'Inter', sans-serif);
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1;
+  user-select: none;
+  overflow: hidden;
+}
+[data-bs-theme=dark] #mudskipper-status-bar {
+  background: var(--tblr-card-cap-bg,
+    color-mix(in srgb, var(--tblr-body-bg, #1a1a2e) 82%, #000 18%));
+}
+
+/* Sections */
+.msb-section { display: flex; align-items: stretch; overflow: hidden; }
+.msb-left    { justify-content: flex-start; flex-shrink: 0; }
+.msb-center  { justify-content: center; flex: 1; }
+.msb-right   { justify-content: flex-end; flex-shrink: 0; }
+
+/* Separator */
+.msb-sep {
+  width: 1px;
+  background: var(--tblr-border-color);
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+
+/* Chip */
+.msb-chip {
+  display: flex; align-items: center;
+  gap: 5px; padding: 0 9px;
+  height: 100%; white-space: nowrap;
+  cursor: default;
+  transition: background 0.12s ease;
+  color: var(--tblr-body-color);
+}
+.msb-chip svg   { flex-shrink: 0; opacity: 0.5; }
+.msb-chip span  { overflow: hidden; text-overflow: ellipsis; }
+
+/* ONLY the compile chip uses primary colour */
+.msb-chip-primary {
+  background: var(--tblr-primary) !important;
+  color: #fff !important;
+  padding: 0 12px;
+  font-weight: 500;
+}
+.msb-chip-primary svg   { opacity: 0.88; color: #fff; }
+.msb-chip-primary:hover { background: color-mix(in srgb, var(--tblr-primary) 82%, #000 18%) !important; }
+.msb-chip-primary.msb-compiling { animation: msb-pulse 1s ease-in-out infinite; }
+@keyframes msb-pulse { 0%,100%{opacity:1} 50%{opacity:.68} }
+
+/* Clickable chips (non-primary) */
+.msb-clickable { cursor: pointer; }
+.msb-clickable:not(.msb-chip-primary):hover {
+  background: color-mix(in srgb, var(--tblr-primary) 8%, transparent);
+}
+
+/* Auto-compile dot */
+.msb-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%; flex-shrink: 0;
+  transition: background 0.3s;
+}
+.msb-dot-on  { background: var(--tblr-success, #2fb344); box-shadow: 0 0 4px var(--tblr-success, #2fb344); }
+.msb-dot-off { background: var(--tblr-border-color); }
+
+/* Save indicator */
+.msb-saving     { color: var(--tblr-warning, #f59f00) !important; }
+.msb-saving svg { opacity: 0.95; color: var(--tblr-warning, #f59f00) !important; }
+
+/* Annotation severity */
+.msb-has-errors,   .msb-has-errors   svg { color: var(--tblr-danger,  #d63939) !important; opacity: 1; }
+.msb-has-warnings, .msb-has-warnings svg { color: var(--tblr-warning, #f59f00) !important; opacity: 1; }
+.msb-has-infos,    .msb-has-infos    svg { color: var(--tblr-info,    #17a2b8) !important; opacity: 1; }
+
+/* Spell errors */
+.msb-has-errors.msb-spell-chip { color: var(--tblr-danger, #d63939) !important; }
+
+/* Clock */
+.msb-chip-clock { font-variant-numeric: tabular-nums; letter-spacing: 0.03em; }
+
+/* Compile-option chips: highlight when non-default setting is active */
+.msb-opt-active {
+  color: var(--tblr-primary) !important;
+}
+.msb-opt-active svg { color: var(--tblr-primary) !important; opacity: 1; }
+
+/* Stop-on-error: soft orange warning tint */
+.msb-opt-warn {
+  color: var(--tblr-warning, #f59f00) !important;
+}
+.msb-opt-warn svg { color: var(--tblr-warning, #f59f00) !important; opacity: 1; }
+
+/* Pad body so bar does not overlap content */
+body { padding-bottom: 26px !important; }
+  ")),
+
+  tags$script(src = "status_bar.js")
 )
+
+
+
