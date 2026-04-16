@@ -763,6 +763,28 @@
     }
   }
 
+  ensureFileHistoryExists <- function(projId, filePath) {
+    req(projId, filePath)
+    manifest <- loadHistoryManifest(projId, filePath)
+    if (length(manifest) == 0) {
+      projDir <- getActiveProjectDir()
+      fullPath <- file.path(projDir, filePath)
+      
+      # Check if file is editable (don't read binary files)
+      isEditable <- tolower(tools::file_ext(filePath)) %in% c("tex", "bib", "bst", "cls", "sty", "txt", "md", "rnw", "r", "rprofile", "rds", "rdata")
+      # Note: rdata and rds are binary but we usually shouldn't try to read them as text history
+      
+      if (file.exists(fullPath) && isEditable) {
+        content <- tryCatch({
+          paste(readLines(fullPath, warn = FALSE), collapse = "\n")
+        }, error = function(e) "")
+        if (nzchar(content)) {
+          saveHistorySnapshot(projId, filePath, content)
+        }
+      }
+    }
+  }
+
   # 4. Get Snapshot Content
   getHistorySnapshotContent <- function(projId, filePath, snapId) {
     histDir <- getHistoryDir(projId, filePath)
@@ -822,141 +844,26 @@
   # 1. Render History Sidebar
   observeEvent(input$openHistoryBtn, {
     req(activeProjectId(), currentFile())
+    projId <- activeProjectId()
+    filePath <- currentFile()
 
-    manifest <- loadHistoryManifest(activeProjectId(), currentFile())
+    # Set history active file to current editor file
+    historyActiveFile(filePath)
 
-    output$historySidebarContent <- renderUI({
-      if (length(manifest) == 0) {
-        return(div(
-          class = "text-muted text-center p-3",
-          "No history recorded yet."
-        ))
-      }
+    # Auto-init if needed (only for editable files)
+    isEditable <- isTRUE(input$fileClick$isEditable) # fileClick is usually the last click
+    # Alternative: check extension
+    editableExts <- c("tex", "bib", "bst", "cls", "sty", "txt", "md", "rnw", "r", "rprofile")
+    isEditable <- tolower(tools::file_ext(filePath)) %in% editableExts
 
-      # Sort: Newest first
-      manifest <- manifest[order(
-        sapply(manifest, function(x) x$timestamp),
-        decreasing = TRUE
-      )]
-
-      # Generate Cards
-      card_list <- lapply(seq_along(manifest), function(i) {
-        entry <- manifest[[i]]
-        date_str <- format(
-          as.POSIXct(entry$timestamp, origin = "1970-01-01"),
-          "%b %d · %I:%M %p"
-        )
-
-        # Tag Logic
-        eType <- if (!is.null(entry$type)) entry$type else "edit"
-        tag_class <- switch(
-          eType,
-          "add" = "tag-added",
-          "delete" = "tag-deleted",
-          "edit" = "tag-edited",
-          "text-secondary"
-        )
-        tag_label <- toupper(eType)
-
-        active_class <- if (i == 1) " active" else ""
-
-        # UI Card
-        div(
-          class = paste0("history-card", active_class),
-          id = paste0("card-", entry$id),
-          onclick = sprintf("loadHistoryItem('%s')", entry$id),
-
-          div(
-            class = "d-flex justify-content-between align-items-start",
-            span(class = paste("history-tag", tag_class), tag_label),
-            # Kebab Dropdown (Fixed Positioning)
-            div(
-              class = "dropdown",
-              style = "position: relative;", # <--- Keeps menu near button
-              onclick = "event.stopPropagation();",
-
-              tags$a(
-                href = "javascript:void(0);",
-                class = "text-muted",
-                `data-bs-toggle` = "dropdown",
-                `data-bs-display` = "static", # <--- Prevents flying away
-                icon("ellipsis-vertical")
-              ),
-
-              div(
-                class = "dropdown-menu dropdown-menu-end",
-                # Restore Action
-                tags$a(
-                  class = "dropdown-item",
-                  href = "javascript:void(0);",
-                  onclick = sprintf("restoreVersion('%s')", entry$id),
-                  HTML(
-                    '<svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="icon icon-1"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M12 8l0 4l2 2"></path>
-                                        <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"></path>
-                                      </svg>'
-                  ),
-                  " Restore this version"
-                ),
-
-                # Download Action (Triggers hidden handler)
-                tags$a(
-                  class = "dropdown-item",
-                  href = "javascript:void(0);",
-                  onclick = sprintf(
-                    "Shiny.setInputValue('history_dl_id', '%s', {priority: 'event'}); document.getElementById('history_dl_btn').click();",
-                    entry$id
-                  ),
-                  HTML(
-                    '<svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        class="icon icon-1"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                      >
-                                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                                        <path d="M7 11l5 5l5 -5" />
-                                        <path d="M12 4l0 12" />
-                                      </svg>
-                                      '
-                  ),
-                  " Download this version"
-                )
-              )
-            )
-          ),
-
-          div(
-            class = "mt-2",
-            div(
-              style = "font-weight: 600; font-size: 0.9rem;",
-              if (nzchar(entry$user)) entry$user else "Unknown User"
-            ),
-            div(class = "text-muted small", date_str)
-          )
-        )
-      })
-      div(card_list)
-    })
+    if (isEditable) {
+      ensureFileHistoryExists(projId, filePath)
+    }
 
     session$sendCustomMessage("toggleHistoryView", TRUE)
 
+    # Initial load of the latest version if exists
+    manifest <- loadHistoryManifest(projId, filePath)
     if (length(manifest) > 0) {
       latestId <- manifest[[1]]$id
       shinyjs::delay(200, {
@@ -965,18 +872,259 @@
     }
   })
 
+  # 1.a Render History Sidebar (Versions)
+  output$historySidebarContent <- renderUI({
+    # Start Spinner
+    session$sendCustomMessage("toggleHistoryVersionsSpinner", TRUE)
+
+    req(activeProjectId(), historyActiveFile())
+    manifest <- loadHistoryManifest(activeProjectId(), historyActiveFile())
+
+    if (length(manifest) == 0) {
+      # Stop Spinner
+      session$onFlushed(function() {
+        session$sendCustomMessage("toggleHistoryVersionsSpinner", FALSE)
+      }, once = TRUE)
+
+      return(div(
+        class = "text-muted text-center p-3",
+        "No history recorded yet."
+      ))
+    }
+
+    # Sort: Newest first
+    manifest <- manifest[order(
+      sapply(manifest, function(x) x$timestamp),
+      decreasing = TRUE
+    )]
+
+    # Generate Cards
+    card_list <- lapply(seq_along(manifest), function(i) {
+      entry <- manifest[[i]]
+      date_str <- format(
+        as.POSIXct(entry$timestamp, origin = "1970-01-01"),
+        "%b %d · %I:%M %p"
+      )
+
+      # Tag Logic
+      eType <- if (!is.null(entry$type)) entry$type else "edit"
+      tag_class <- switch(
+        eType,
+        "add" = "tag-added",
+        "delete" = "tag-deleted",
+        "edit" = "tag-edited",
+        "text-secondary"
+      )
+      tag_label <- toupper(eType)
+
+      active_class <- if (i == 1) " active" else ""
+
+      # UI Card
+      div(
+        class = paste0("history-card", active_class),
+        id = paste0("card-", entry$id),
+        onclick = sprintf("loadHistoryItem('%s')", entry$id),
+
+        div(
+          class = "d-flex justify-content-between align-items-start",
+          span(class = paste("history-tag", tag_class), tag_label),
+          # Kebab Dropdown (Fixed Positioning)
+          div(
+            class = "dropdown",
+            style = "position: relative;", # <--- Keeps menu near button
+            onclick = "event.stopPropagation();",
+
+            tags$a(
+              href = "javascript:void(0);",
+              class = "text-muted",
+              `data-bs-toggle` = "dropdown",
+              `data-bs-display` = "static", # <--- Prevents flying away
+              icon("ellipsis-vertical")
+            ),
+
+            div(
+              class = "dropdown-menu dropdown-menu-end",
+              # Restore Action
+              tags$a(
+                class = "dropdown-item",
+                href = "javascript:void(0);",
+                onclick = sprintf("restoreVersion('%s')", entry$id),
+                HTML(
+                  '<svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      class="icon icon-1"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round">
+                                      <path d="M12 8l0 4l2 2"></path>
+                                      <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"></path>
+                                    </svg>'
+                ),
+                " Restore this version"
+              ),
+
+              # Download Action (Triggers hidden handler)
+              tags$a(
+                class = "dropdown-item",
+                href = "javascript:void(0);",
+                onclick = sprintf(
+                  "Shiny.setInputValue('history_dl_id', '%s', {priority: 'event'}); document.getElementById('history_dl_btn').click();",
+                  entry$id
+                ),
+                HTML(
+                  '<svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      class="icon icon-1"
+                                      width="24"
+                                      height="24"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                    >
+                                      <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                      <path d="M7 11l5 5l5 -5" />
+                                      <path d="M12 4l0 12" />
+                                    </svg>
+                                    '
+                ),
+                " Download this version"
+              )
+            )
+          )
+        ),
+
+        div(
+          class = "mt-2",
+          div(
+            style = "font-weight: 600; font-size: 0.9rem;",
+            if (nzchar(entry$user)) entry$user else "Unknown User"
+          ),
+          div(class = "text-muted small", date_str)
+        )
+      )
+    })
+
+    # Stop Spinner
+    session$onFlushed(function() {
+      session$sendCustomMessage("toggleHistoryVersionsSpinner", FALSE)
+    }, once = TRUE)
+
+    div(card_list)
+  })
+
+  # 1.b Render History File List
+  output$historyFileList <- renderUI({
+    # Start Spinner
+    session$sendCustomMessage("toggleHistoryFilesSpinner", TRUE)
+
+    req(activeProjectId())
+    res <- renderFileTreeUI(
+      projDir = getActiveProjectDir(),
+      activePath = historyActiveFile(),
+      clickInputId = "historyFileClick",
+      projId = activeProjectId(),
+      readOnly = TRUE
+    )
+
+    # Stop Spinner
+    session$onFlushed(function() {
+      session$sendCustomMessage("toggleHistoryFilesSpinner", FALSE)
+    }, once = TRUE)
+
+    return(res)
+  })
+
+  # 1c. Render History Navbar Info (SYNCED WITH EDITOR)
+  output$historyNavbarInfo <- renderUI({
+    projId <- activeProjectId()
+    filePath <- historyActiveFile()
+    
+    if (is.null(projId)) return(NULL)
+    
+    # Mirror logic from editor navbar
+    projects <- loadProjects()
+    projectName <- "Unknown Project"
+    for (proj in projects) {
+      if (proj$id == projId) {
+        projectName <- proj$name
+        break
+      }
+    }
+    
+    # Construct breadcrumb-style HTML
+    tagList(
+      div(
+        style = "display: flex; align-items: center; gap: 10px; font-size: 0.9rem;",
+        span(
+          class = "file-on-editor",
+          tags$i(class = "fa-regular fa-folder", style = "color: var(--tblr-primary); opacity: 1;")
+        ),
+        span(class = "fw-bold", style = "color: var(--tblr-body-color);", projectName),
+        span(
+          style = "opacity: 0.5; color: var(--tblr-body-color);",
+          tags$i(class = "fa-solid fa-chevron-right", style = "font-size: 0.7em;")
+        ),
+        if (!is.null(filePath) && nzchar(filePath)) {
+          tagList(
+            span(
+              class = "file-on-editor",
+              tags$i(class = "fa-regular fa-file-lines", style = "color: var(--tblr-primary); opacity: 1;")
+            ),
+            span(style = "color: var(--tblr-body-color);", filePath)
+          )
+        } else {
+          span(style = "color: var(--tblr-secondary); font-style: italic;", "No file selected")
+        }
+      )
+    )
+  })
+
+  # 1d. History File Selection
+  observeEvent(input$historyFileClick, {
+    req(input$historyFileClick$path)
+    
+    # Check if file is editable before proceeding (Prevents binary/encoding crashes)
+    isEditable <- isTRUE(input$historyFileClick$isEditable)
+    if (!isEditable) {
+       return()
+    }
+    
+    filePath <- input$historyFileClick$path
+    projId <- activeProjectId()
+
+    # Step A: Update state
+    historyActiveFile(filePath)
+
+    # Step B: Auto-Initialize if none exists
+    ensureFileHistoryExists(projId, filePath)
+
+    # Step C: Load the latest version
+    manifest <- loadHistoryManifest(projId, filePath)
+    if (length(manifest) > 0) {
+      shinyjs::runjs(sprintf("loadHistoryItem('%s')", manifest[[1]]$id))
+    }
+  })
+
   # 2. History Selection (With Diff Fix)
   observeEvent(input$history_selected_id, {
     req(input$history_selected_id)
     snapId <- input$history_selected_id
 
-    manifest <- loadHistoryManifest(activeProjectId(), currentFile())
+    manifest <- loadHistoryManifest(activeProjectId(), historyActiveFile())
     currEntry <- Find(function(x) x$id == snapId, manifest)
     req(currEntry)
 
     currContent <- getHistorySnapshotContent(
       activeProjectId(),
-      currentFile(),
+      historyActiveFile(),
       snapId
     )
 
@@ -987,7 +1135,7 @@
       prevId <- manifest[[idx + 1]]$id
       prevContent <- getHistorySnapshotContent(
         activeProjectId(),
-        currentFile(),
+        historyActiveFile(),
         prevId
       )
     }
@@ -1002,7 +1150,7 @@
           id = currEntry$id,
           user = currEntry$user,
           timestamp = currEntry$timestamp,
-          file = currentFile(),
+          file = historyActiveFile(),
           projectName = getProjectNameById(activeProjectId())
         )
       )
@@ -1015,19 +1163,22 @@
     snapId <- input$history_restore_id
     content <- getHistorySnapshotContent(
       activeProjectId(),
-      currentFile(),
+      historyActiveFile(),
       snapId
     )
 
     if (nzchar(content)) {
-      fullPath <- file.path(getActiveProjectDir(), currentFile())
+      fullPath <- file.path(getActiveProjectDir(), historyActiveFile())
       writeLines(content, fullPath)
-      updateAceEditor(session, "sourceEditor", value = content)
+      
+      # If the restored file is the one currently in the main editor, update it
+      if (identical(historyActiveFile(), currentFile())) {
+        updateAceEditor(session, "sourceEditor", value = content)
+        # Flag to prevent autosave loop immediately after restore
+        rv$fileJustLoaded <- TRUE
+      }
 
-      # Flag to prevent autosave loop immediately after restore
-      rv$fileJustLoaded <- TRUE
-
-      saveHistorySnapshot(activeProjectId(), currentFile(), content)
+      saveHistorySnapshot(activeProjectId(), historyActiveFile(), content)
       showTablerAlert(
         "success",
         "File restored",
@@ -1044,11 +1195,11 @@
       # E.g. "myfile_v_12345.txt"
       snapId <- input$history_dl_id
       paste0(
-        tools::file_path_sans_ext(currentFile()),
+        tools::file_path_sans_ext(historyActiveFile()),
         "_",
         snapId,
         ".",
-        tools::file_ext(currentFile())
+        tools::file_ext(historyActiveFile())
       )
     },
     content = function(file) {
@@ -1056,7 +1207,7 @@
       snapId <- input$history_dl_id
       content <- getHistorySnapshotContent(
         activeProjectId(),
-        currentFile(),
+        historyActiveFile(),
         snapId
       )
       writeLines(content, file)

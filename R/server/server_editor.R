@@ -205,6 +205,9 @@
       return()
     }
 
+    # SYNC TO HISTORY: ensure history overlay is focused on this file
+    historyActiveFile(filePath)
+
     # --- 1. SAFETY CHECKS ---
     finfo <- file.info(fullPath)
     if (is.na(finfo$size)) {
@@ -2066,25 +2069,12 @@
     rv_compiled(list.files(uCompiledDir))
   }
 
-  output$fileListSidebar <- renderUI({
-    # Show spinner while rendering
-    session$sendCustomMessage("toggleFilesSpinner", TRUE)
-
-    # Triggers
-    dummy <- rv_files()
-    activePath <- currentFile()
-
-    projDir <- getActiveProjectDir()
-    if (is.null(projDir)) {
-      return(tags$div(
-        class = "filetree-wrap",
-        style = "padding:12px; color:var(--bs-secondary-color);",
-        tags$em("No project loaded.")
-      ))
-    }
-
-    projId <- activeProjectId()
-
+  # Recursive function to build the file tree UI
+  renderFileTreeUI <- function(projDir,
+                               activePath,
+                               clickInputId,
+                               projId,
+                               readOnly = FALSE) {
     # Recursive function to build the file tree UI
     build_tree_recursive <- function(current_rel_path = "") {
       full_path <- file.path(projDir, current_rel_path)
@@ -2160,51 +2150,32 @@
                 item_name
               ),
 
-              # Kebab Menu
-              div(
-                class = "kebab-wrap",
-                style = "padding-right: 8px;",
-                # Add stopPropagation here so clicking menu doesn't toggle folder
-                onclick = "event.stopPropagation();",
-
-                # --- WRAPPER FOR TOOLTIP ---
-                tags$span(
-                  title = "More actions",
-                  `data-bs-toggle` = "tooltip",
-                  `data-bs-placement` = "bottom",
-
-                  tags$button(
-                    class = "kebab-btn",
-                    `aria-label` = "Folder actions",
-                    `data-menu-id` = paste0("menu_", safeId),
-                    "⋮"
-                  )
-                ),
-                # ---------------------------
-
-                tags$div(
-                  id = paste0("menu_", safeId),
-                  class = "context-menu",
-                  tags$a(
-                    class = "menu-item",
-                    `data-id` = paste0("download_", safeId),
-                    `data-action` = "trigger",
-                    "Download"
+              # Kebab Menu (Hidden if readOnly)
+              if (!readOnly) {
+                div(
+                  class = "kebab-wrap",
+                  style = "padding-right: 8px;",
+                  onclick = "event.stopPropagation();",
+                  tags$span(
+                    title = "More actions",
+                    `data-bs-toggle` = "tooltip",
+                    `data-bs-placement` = "bottom",
+                    tags$button(
+                      class = "kebab-btn",
+                      `aria-label` = "Folder actions",
+                      `data-menu-id` = paste0("menu_", safeId),
+                      "⋮"
+                    )
                   ),
-                  tags$a(
-                    class = "menu-item",
-                    `data-id` = paste0("rename_", safeId),
-                    `data-action` = "trigger",
-                    "Rename"
-                  ),
-                  tags$a(
-                    class = "menu-item",
-                    `data-id` = paste0("delete_", safeId),
-                    `data-action` = "trigger",
-                    "Delete"
+                  tags$div(
+                    id = paste0("menu_", safeId),
+                    class = "context-menu",
+                    tags$a(class = "menu-item", `data-id` = paste0("download_", safeId), `data-action` = "trigger", "Download"),
+                    tags$a(class = "menu-item", `data-id` = paste0("rename_", safeId), `data-action` = "trigger", "Rename"),
+                    tags$a(class = "menu-item", `data-id` = paste0("delete_", safeId), `data-action` = "trigger", "Delete")
                   )
                 )
-              )
+              }
             ),
             # Children Container
             tags$ul(
@@ -2214,7 +2185,7 @@
             )
           )
         } else {
-          # --- FILE NODE (UPDATED) ---
+          # --- FILE NODE ---
           isEditable <- tolower(tools::file_ext(item_name)) %in% text_extensions
           isActive <- !is.null(activePath) &&
             identical(item_rel_path, activePath)
@@ -2226,7 +2197,7 @@
                 "filetree-item-row file-item",
                 if (isActive) " active" else ""
               ),
-              draggable = "true",
+              draggable = if (readOnly) "false" else "true",
               `data-path` = item_rel_path,
               `data-editable` = tolower(isEditable),
               style = "display: flex; align-items: center; cursor: pointer; padding: 4px 0; border-radius: var(--tblr-border-radius);",
@@ -2237,7 +2208,7 @@
                   var path = '%s';
                   var isEditable = %s;
                   if (window.Shiny && Shiny.setInputValue) {
-                    Shiny.setInputValue('fileClick', {
+                    Shiny.setInputValue('%s', {
                       path: path,
                       isEditable: isEditable,
                       nonce: Math.random()
@@ -2245,7 +2216,8 @@
                   }
                 ",
                 item_rel_path,
-                tolower(isEditable)
+                tolower(isEditable),
+                clickInputId
               ),
 
               # Spacer
@@ -2254,127 +2226,112 @@
               # Icon & Name
               span(
                 class = "filetree-label file-name",
-                # 1. min-width: 0 is CRITICAL. It tells the flex container it's allowed to shrink.
                 style = "flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; padding-left: 4px;",
-
                 getFileIcon(item_name),
-
-                # 2. Wrap the text in a span and apply truncation here
                 span(
                   item_name,
                   style = "overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
                 )
               ),
 
-              # Kebab Menu
-              div(
-                class = "kebab-wrap",
-                style = "padding-right: 8px;",
-                # Add stopPropagation here so clicking menu doesn't open file
-                onclick = "event.stopPropagation();",
-
-                # --- WRAPPER FOR TOOLTIP ---
-                tags$span(
-                  title = "More actions",
-                  `data-bs-toggle` = "tooltip",
-                  `data-bs-placement` = "bottom",
-
-                  tags$button(
-                    class = "kebab-btn",
-                    `aria-label` = "File actions",
-                    `data-menu-id` = paste0("menu_", safeId),
-                    "⋮"
-                  )
-                ),
-                # ---------------------------
-
-                tags$div(
-                  id = paste0("menu_", safeId),
-                  class = "context-menu",
-                  tags$a(
-                    class = "menu-item",
-                    `data-id` = paste0("download_", safeId),
-                    `data-action` = "trigger",
-                    "Download"
+              # Kebab Menu (Hidden if readOnly)
+              if (!readOnly) {
+                div(
+                  class = "kebab-wrap",
+                  style = "padding-right: 8px;",
+                  onclick = "event.stopPropagation();",
+                  tags$span(
+                    title = "More actions",
+                    `data-bs-toggle` = "tooltip",
+                    `data-bs-placement` = "bottom",
+                    tags$button(
+                      class = "kebab-btn",
+                      `aria-label` = "File actions",
+                      `data-menu-id` = paste0("menu_", safeId),
+                      "⋮"
+                    )
                   ),
-                  tags$a(
-                    class = "menu-item",
-                    `data-id` = paste0("rename_", safeId),
-                    `data-action` = "trigger",
-                    "Rename"
-                  ),
-                  tags$a(
-                    class = "menu-item",
-                    `data-id` = paste0("delete_", safeId),
-                    `data-action` = "trigger",
-                    "Delete"
+                  tags$div(
+                    id = paste0("menu_", safeId),
+                    class = "context-menu",
+                    tags$a(class = "menu-item", `data-id` = paste0("download_", safeId), `data-action` = "trigger", "Download"),
+                    tags$a(class = "menu-item", `data-id` = paste0("rename_", safeId), `data-action` = "trigger", "Rename"),
+                    tags$a(class = "menu-item", `data-id` = paste0("delete_", safeId), `data-action` = "trigger", "Delete")
                   )
                 )
-              )
+              }
             )
           )
         }
       })
-
-      # Hide spinner after render completes
-      session$onFlushed(
-        function() {
-          session$sendCustomMessage("toggleFilesSpinner", FALSE)
-        },
-        once = TRUE
-      )
-
       return(ui_elems)
     }
 
-    # CSS: Uses !important to enforce the lighter background over the drag-drop classes
+    # CSS
     styles <- tags$style(HTML(
       "
-        /* Reuse hover and active styles */
         .filetree-item-row:hover {
-          background-color: var(--tblr-border-color) !important;
-        }
-        .filetree-item-row:hover .filetree-toggle {
           background-color: var(--tblr-border-color) !important;
         }
         .filetree-item-row.active {
           background-color: var(--tblr-border-color) !important;
           border-left: 4px solid var(--tblr-primary) !important;
         }
-        
-        /* Ensure icons have consistent size */
-        .filetree-label i {
-          width: 16px;
-          text-align: center;
-        }
-
-        /* Kebab menu visibility on hover */
-        .filetree-item-row .kebab-wrap {
-          opacity: 0;
-          transition: opacity 0.2s;
-        }
-        .filetree-item-row:hover .kebab-wrap {
-          opacity: 1;
-        }
-        .context-menu.open ~ .kebab-wrap {
-          opacity: 1;
-        }
+        .filetree-label i { width: 16px; text-align: center; }
+        .filetree-item-row .kebab-wrap { opacity: 0; transition: opacity 0.2s; }
+        .filetree-item-row:hover .kebab-wrap { opacity: 1; }
       "
     ))
 
-    # Main Output with Root Drop Wrapper
     tagList(
       styles,
       tags$div(
         class = "folder-item",
         `data-path` = ".",
         style = "min-height: 100%; background-color: transparent !important; color: inherit !important; display: block !important; padding: 0 !important; cursor: default !important; border: none !important;",
-
         tags$ul(
           style = "padding-left: 5px; margin: 0;",
           build_tree_recursive("")
         )
       )
     )
+  }
+
+  output$fileListSidebar <- renderUI({
+    # Show spinner while rendering
+    session$sendCustomMessage("toggleFilesSpinner", TRUE)
+
+    # Triggers
+    dummy <- rv_files()
+    activePath <- currentFile()
+
+    projDir <- getActiveProjectDir()
+    if (is.null(projDir)) {
+      return(tags$div(
+        class = "filetree-wrap",
+        style = "padding:12px; color:var(--bs-secondary-color);",
+        tags$em("No project loaded.")
+      ))
+    }
+
+    projId <- activeProjectId()
+
+    res <- renderFileTreeUI(
+      projDir = projDir,
+      activePath = activePath,
+      clickInputId = "fileClick",
+      projId = projId,
+      readOnly = FALSE
+    )
+
+    # Hide spinner after render completes
+    session$onFlushed(
+      function() {
+        session$sendCustomMessage("toggleFilesSpinner", FALSE)
+      },
+      once = TRUE
+    )
+
+    return(res)
   })
 

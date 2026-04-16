@@ -14,6 +14,7 @@
   outlineData <- reactiveVal(NULL)
   lintAnnotations <- reactiveVal(list())
   compileAnnotations <- reactiveVal(list())
+  historyActiveFile <- reactiveVal("")
   commentUpdate <- reactiveVal(0)
 
   # User Session State

@@ -1062,7 +1062,7 @@ app_ui <- fluidPage(
       </div>
 
       <div class="navbar-nav flex-row mx-auto">
-        <div class="nav-item" id="historyNavbarInfo" style="color: var(--tblr-body-color);">
+        <div id="historyNavbarInfo" class="nav-item shiny-html-output" style="color: var(--tblr-body-color);">
            </div>
       </div>
 
@@ -1093,16 +1093,25 @@ app_ui <- fluidPage(
 
       <div id="historyContainer" class="d-flex h-100">
 
+        <!-- Left Column: File Tree -->
         <div
-          id="historySidebar"
-          class="border-end bg-body"
-          style="width: 300px; min-width: 300px; overflow-y: auto; padding: 10px;">
-
-          <div
-            id="historySidebarContent"
-            class="shiny-html-output">
+          id="historyFileTreeSidebar"
+          class="border-end bg-body d-flex flex-column"
+          style="width: 250px; min-width: 250px; overflow: hidden;">
+          
+          <div class="pane-header" 
+               style="height: 38px; min-height: 38px; padding: 0 10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--tblr-border-color); cursor: pointer;"
+               onclick="var body = document.getElementById(\'historyFileList\'); var icon = this.querySelector(\'.chevron-icon\'); if(body.style.display === \'none\') { body.style.display = \'block\'; icon.classList.replace(\'fa-chevron-right\', \'fa-chevron-down\'); } else { body.style.display = \'none\'; icon.classList.replace(\'fa-chevron-down\', \'fa-chevron-right\'); }">
+             <strong style="font-size:14px; font-weight:600; text-transform: uppercase;">Project Files</strong>
+             <i class="fa-solid fa-chevron-down chevron-icon" style="font-size: 0.8rem; color: var(--tblr-secondary);"></i>
           </div>
 
+          <div id="historyFileTreeBody" class="flex-fill position-relative" style="overflow-y: auto;">
+             <div id="historyFilesSpinner" style="display:none;">
+                <div class="spinner-border" role="status"></div>
+             </div>
+             <div id="historyFileList" class="shiny-html-output" style="padding: 10px;"></div>
+          </div>
         </div>
       '
     ),
@@ -1143,6 +1152,26 @@ app_ui <- fluidPage(
     ),
     HTML(
       '
+        <!-- Right Column: Versions -->
+        <div
+          id="historySidebar"
+          class="border-start bg-body d-flex flex-column"
+          style="width: 300px; min-width: 300px; overflow: hidden;">
+          
+          <div class="pane-header" 
+               style="height: 38px; min-height: 38px; padding: 0 10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--tblr-border-color); cursor: pointer;"
+               onclick="var body = document.getElementById(\'historySidebarContent\'); var icon = this.querySelector(\'.chevron-icon\'); if(body.style.display === \'none\') { body.style.display = \'block\'; icon.classList.replace(\'fa-chevron-right\', \'fa-chevron-down\'); } else { body.style.display = \'none\'; icon.classList.replace(\'fa-chevron-down\', \'fa-chevron-right\'); }">
+             <strong style="font-size:14px; font-weight:600; text-transform: uppercase;">Version History</strong>
+             <i class="fa-solid fa-chevron-down chevron-icon" style="font-size: 0.8rem; color: var(--tblr-secondary);"></i>
+          </div>
+
+          <div id="historyVersionsBody" class="flex-fill position-relative" style="overflow-y: auto;">
+             <div id="historyVersionsSpinner" style="display:none;">
+                <div class="spinner-border" role="status"></div>
+             </div>
+             <div id="historySidebarContent" class="shiny-html-output" style="padding: 10px;"></div>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -3471,20 +3500,23 @@ app_ui <- fluidPage(
 /* 2. Position the Spinner Wrapper exactly in the center */
 #filesSpinner,
 #outlineSpinner,
-#editorSpinner {
+#editorSpinner,
+#historyFilesSpinner,
+#historyVersionsSpinner {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 50;
-  /* Override the inline margin from your HTML */
+  z-index: 100;
   margin-left: 0 !important;
 }
 
 /* 3. Style the Spinner Animation */
 #filesSpinner .spinner-border,
 #outlineSpinner .spinner-border,
-#editorSpinner .spinner-border {
+#editorSpinner .spinner-border,
+#historyFilesSpinner .spinner-border,
+#historyVersionsSpinner .spinner-border {
   width: 3rem;  /* Make them slightly larger for better visibility */
   height: 3rem;
   animation: spinner-border 0.75s linear infinite;
@@ -12728,6 +12760,20 @@ Shiny.addCustomMessageHandler('enableInlineRename', function(data) {
   // Files spinner toggle
 Shiny.addCustomMessageHandler('toggleFilesSpinner', function(show) {
   var spinner = document.getElementById('filesSpinner');
+  if (spinner) {
+    spinner.style.display = show ? 'inline-block' : 'none';
+  }
+});
+
+Shiny.addCustomMessageHandler('toggleHistoryFilesSpinner', function(show) {
+  var spinner = document.getElementById('historyFilesSpinner');
+  if (spinner) {
+    spinner.style.display = show ? 'inline-block' : 'none';
+  }
+});
+
+Shiny.addCustomMessageHandler('toggleHistoryVersionsSpinner', function(show) {
+  var spinner = document.getElementById('historyVersionsSpinner');
   if (spinner) {
     spinner.style.display = show ? 'inline-block' : 'none';
   }
