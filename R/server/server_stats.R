@@ -954,155 +954,185 @@
     timeline_content <- renderTimelineHTML()
     
     tags$div(
-      class = "page",
+      class = "page-wrapper",
+      style = "padding: 0 !important;",
       tags$div(
-        class = "page-wrapper",
-        tags$div(
-          class = "profile-page-view",
-          style = "min-height: 100vh; background: color-mix(in srgb, var(--tblr-primary) 4%, var(--tblr-bg-surface)) !important; padding: 2.5rem 0; font-family: var(--tblr-body-font-family); font-feature-settings: 'cv03', 'cv04', 'cv11';",
-          tags$div(
-            class = "container-xl",
-        # Custom styles for the scrollable container
-        tags$head(tags$style("
-          .scrollable-timeline-container {
-            max-height: 675px;
-            overflow-y: auto;
-            padding-right: 15px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--tblr-border-color) transparent;
-          }
-          .scrollable-timeline-container::-webkit-scrollbar {
-            width: 6px;
-          }
-          .scrollable-timeline-container::-webkit-scrollbar-thumb {
-            background-color: var(--tblr-border-color);
-            border-radius: 10px;
-          }
-          .avatar-github {
-            width: 120px !important;
-            height: 120px !important;
-            font-size: 3rem !important;
-            line-height: 120px !important;
-            border: 3px solid var(--tblr-bg-surface);
-          }
-        ")),
+        class = "card border-0",
+        style = "border-radius: 0 !important; margin: 0 !important; min-height: 100vh; background-color: var(--tblr-body-bg);",
         
-        # Navigation Header
+        # 1. New Navbar
         tags$div(
-          class = "d-flex align-items-center mb-5",
-          tags$h1(class = "m-0", style = "font-weight: 700;", "User Profile"),
-          tags$div(
-            class = "ms-auto",
-            tags$button(
-              class = "btn btn-outline-secondary btn-pill",
-              onclick = "if (window.Shiny) Shiny.setInputValue('showDashboard', Date.now(), {priority:'event'});",
-              HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>'),
-              "Back to Dashboard"
+          class = "sticky-top",
+          tags$header(
+            class = "navbar navbar-expand-md d-print-none border-0",
+            style = "min-height: 56px; border-bottom: 1px solid var(--tblr-border-color) !important; border-radius: 0 !important; box-shadow: 0 2px 4px rgba(0,0,0,.04) !important;",
+            tags$div(
+              class = "container-fluid",
+              
+              # Back button on the left (matching History style)
+              tags$div(
+                class = "navbar-nav flex-row align-items-center gap-2",
+                tags$div(
+                  class = "nav-item",
+                  tags$button(
+                    class = "btn btn-sm",
+                    onclick = "if (window.Shiny) Shiny.setInputValue('showDashboard', Date.now(), {priority:'event'});",
+                    HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>'),
+                    "Back to Dashboard"
+                  )
+                )
+              ),
+
+              # Centered Title
+              tags$div(
+                class = "navbar-nav flex-row mx-auto",
+                tags$div(
+                  class = "nav-item",
+                  tags$h3(class = "m-0", style = "font-weight: 600; font-size: 1.1rem;", "User Profile")
+                )
+              ),
+
+              # Placeholder for symmetry if needed, or just leave it
+              tags$div(class = "navbar-nav flex-row order-md-last d-none d-md-flex", style = "width: 140px;")
             )
           )
         ),
         
+        # 2. Main Content Area
         tags$div(
-          class = "row g-4",
-          # Left Column: Profile Card
+          class = "page-body",
+          style = "margin-top: 5rem; padding: 0 1.5rem;",
           tags$div(
-            class = "col-lg-4",
+            class = "container-xl mt-4",
+            tags$head(tags$style("
+              .scrollable-timeline-container {
+                max-height: 675px;
+                overflow-y: auto;
+                padding-right: 15px;
+                scrollbar-width: thin;
+                scrollbar-color: var(--tblr-border-color) transparent;
+              }
+              .scrollable-timeline-container::-webkit-scrollbar {
+                width: 6px;
+              }
+              .scrollable-timeline-container::-webkit-scrollbar-thumb {
+                background-color: var(--tblr-border-color);
+                border-radius: 10px;
+              }
+              .avatar-github {
+                width: 120px !important;
+                height: 120px !important;
+                font-size: 3rem !important;
+                line-height: 120px !important;
+                border: 3px solid var(--tblr-bg-surface);
+              }
+            ")),
+            
             tags$div(
-              class = "card h-100",
+              class = "row g-4",
+              # Left Column: Profile Details
               tags$div(
-                class = "card-body text-center p-5",
-                HTML(avatar_html),
-                tags$h2(class = "mt-3 mb-0", textOutput("userName", inline = TRUE)),
-                tags$p(class = "text-secondary", textOutput("userInstitution", inline = TRUE)),
-                tags$div(class = "hr-text", "About"),
+                class = "col-lg-4",
                 tags$div(
-                  class = "text-start mt-4",
-                  tags$label(class = "form-label text-muted small uppercase fw-bold", "Email"),
-                  tags$p(class = "mb-3", textOutput("userEmail", inline = TRUE)),
-                  tags$label(class = "form-label text-muted small uppercase fw-bold", "Bio"),
-                  tags$p(class = "mb-3", textOutput("userBio", inline = TRUE)),
-                  tags$label(class = "form-label text-muted small uppercase fw-bold", "Member Since"),
-                  tags$p(class = "mb-0", textOutput("userMemberSince", inline = TRUE)),
-                  
-                  tags$div(class = "hr-text", "Project Composition"),
+                  class = "card h-100",
+                  style = "border-radius: var(--tblr-border-radius) !important;",
                   tags$div(
-                    class = "mt-3",
+                    class = "card-body text-center p-5",
+                    HTML(avatar_html),
+                    tags$h2(class = "mt-3 mb-0", textOutput("userName", inline = TRUE)),
+                    tags$p(class = "text-secondary", textOutput("userInstitution", inline = TRUE)),
+                    tags$div(class = "hr-text", "About"),
                     tags$div(
-                      class = "d-flex align-items-center justify-content-between mb-1",
-                      tags$span(class = "text-muted small", "Active Projects"),
-                      tags$span(class = "fw-bold small", textOutput("pctActive", inline = TRUE))
-                    ),
-                    uiOutput("activeProjectBar"),
-                    tags$div(
-                      class = "mt-4",
-                      tags$label(class = "form-label text-muted small uppercase fw-bold", "Tag Distribution"),
-                      uiOutput("tagDistributionBar"),
-                      tags$div(class = "mt-2", uiOutput("tagDistributionLegend"))
+                      class = "text-start mt-4",
+                      tags$label(class = "form-label text-muted small uppercase fw-bold", "Email"),
+                      tags$p(class = "mb-3", textOutput("userEmail", inline = TRUE)),
+                      tags$label(class = "form-label text-muted small uppercase fw-bold", "Bio"),
+                      tags$p(class = "mb-3", textOutput("userBio", inline = TRUE)),
+                      tags$label(class = "form-label text-muted small uppercase fw-bold", "Member Since"),
+                      tags$p(class = "mb-0", textOutput("userMemberSince", inline = TRUE)),
+                      
+                      tags$div(class = "hr-text", "Project Composition"),
+                      tags$div(
+                        class = "mt-3",
+                        tags$div(
+                          class = "d-flex align-items-center justify-content-between mb-1",
+                          tags$span(class = "text-muted small", "Active Projects"),
+                          tags$span(class = "fw-bold small", textOutput("pctActive", inline = TRUE))
+                        ),
+                        uiOutput("activeProjectBar"),
+                        tags$div(
+                          class = "mt-4",
+                          tags$label(class = "form-label text-muted small uppercase fw-bold", "Tag Distribution"),
+                          uiOutput("tagDistributionBar"),
+                          tags$div(class = "mt-2", uiOutput("tagDistributionLegend"))
+                        )
+                      )
+                    )
+                  ),
+                  tags$div(
+                    class = "card-footer text-center bg-transparent",
+                    tags$button(
+                      class = "btn btn-primary w-100",
+                      onclick = "openEditProfileOverlay()",
+                      "Edit Profile"
                     )
                   )
                 )
               ),
+              
+              # Right Column: Timeline & Stats
               tags$div(
-                class = "card-footer text-center bg-transparent",
-                tags$button(
-                  class = "btn btn-primary w-100",
-                  onclick = "openEditProfileOverlay()",
-                  "Edit Profile"
+                class = "col-lg-8",
+                # Stats Cards Row
+                tags$div(
+                  class = "row g-3 mb-4",
+                    tags$div(
+                      class = "col-4",
+                      tags$div(
+                        class = "card card-sm",
+                        style = "border-radius: var(--tblr-border-radius) !important;",
+                        tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-primary text-white avatar", style="border-radius: var(--tblr-border-radius) !important;", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19h-7a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v3.5" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("projectCount", inline = TRUE)), tags$div(class = "text-secondary", "Projects"))))
+                      )
+                    ),
+                  tags$div(
+                    class = "col-4",
+                    tags$div(
+                      class = "card card-sm",
+                      style = "border-radius: var(--tblr-border-radius) !important;",
+                      tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-green text-white avatar", style="border-radius: var(--tblr-border-radius) !important;", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("totalFiles", inline = TRUE)), tags$div(class = "text-secondary", "Files"))))
+                    )
+                  ),
+                  tags$div(
+                    class = "col-4",
+                    tags$div(
+                      class = "card card-sm",
+                      style = "border-radius: var(--tblr-border-radius) !important;",
+                      tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-orange text-white avatar", style="border-radius: var(--tblr-border-radius) !important;", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8l0 4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("lastActivity", inline = TRUE)), tags$div(class = "text-secondary", "Last Seen"))))
+                    )
+                  )
+                ),
+                
+                # Scrollable Timeline Card
+                tags$div(
+                  class = "card",
+                  style = "border-radius: var(--tblr-border-radius) !important;",
+                  tags$div(
+                    class = "card-header",
+                    tags$h3(class = "card-title", "Activity Feed")
+                  ),
+                  tags$div(
+                    class = "card-body",
+                    # Wrap timeline in a scrollable div
+                    tags$div(
+                      class = "scrollable-timeline-container",
+                      timeline_content
+                    )
+                  )
                 )
               )
-            )
-          ),
-          
-          # Right Column: Timeline & Stats
-          tags$div(
-            class = "col-lg-8",
-            # Stats Cards Row
-            tags$div(
-              class = "row g-3 mb-4",
-              tags$div(
-                class = "col-4",
-                tags$div(
-                  class = "card card-sm",
-                  tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-primary text-white avatar", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19h-7a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v3.5" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("projectCount", inline = TRUE)), tags$div(class = "text-secondary", "Projects"))))
-                )
-              ),
-              tags$div(
-                class = "col-4",
-                tags$div(
-                  class = "card card-sm",
-                  tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-green text-white avatar", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("totalFiles", inline = TRUE)), tags$div(class = "text-secondary", "Files"))))
-                )
-              ),
-              tags$div(
-                class = "col-4",
-                tags$div(
-                  class = "card card-sm",
-                  tags$div(class = "card-body", tags$div(class = "row align-items-center", tags$div(class = "col-auto", tags$span(class = "bg-orange text-white avatar", HTML('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8l0 4l2 2" /><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" /></svg>'))), tags$div(class = "col", tags$div(class = "font-weight-medium", textOutput("lastActivity", inline = TRUE)), tags$div(class = "text-secondary", "Last Seen"))))
-                )
-              )
-            ),
-            
-            # Scrollable Timeline Card
-            tags$div(
-              class = "card",
-              tags$div(
-                class = "card-header",
-                tags$h3(class = "card-title", "Activity Feed")
-              ),
-              tags$div(
-                class = "card-body",
-                # Wrap timeline in a scrollable div
-                tags$div(
-                  class = "scrollable-timeline-container",
-                  timeline_content
-                )
-              )
-            )
             )
           )
         )
       )
     )
-  )
-})
-
+  })

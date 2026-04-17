@@ -952,10 +952,11 @@
     pct <- if(total == 0) 0 else (active/total)*100
     
     tags$div(
-      class = "progress progress-sm",
+      class = "progress",
+      style = "height: 10px; border-radius: 50rem;",
       tags$div(
         class = "progress-bar bg-primary",
-        style = sprintf("width: %d%%", as.integer(pct)),
+        style = sprintf("width: %d%%; border-radius: 50rem;", as.integer(pct)),
         role = "progressbar",
         aria_valuenow = as.integer(pct),
         aria_valuemin = "0",
@@ -1001,7 +1002,11 @@
       )
     })
     
-    tags$div(class = "progress progress-sm progress-stacked", bars)
+    tags$div(
+      class = "progress progress-stacked", 
+      style = "height: 10px; border-radius: 50rem;",
+      bars
+    )
   })
 
   output$tagDistributionLegend <- renderUI({

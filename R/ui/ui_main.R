@@ -5305,7 +5305,17 @@ body {
       # PROFILE PAGE: show when output.showHomepage is TRUE and IN profile view
       conditionalPanel(
         condition = "output.showHomepage == true && output.isProfileView == true",
-        div(id = "profilePage", class = "profilepage", uiOutput("profile_page_ui"))
+        div(id = "profilePage", class = "profilepage", style = "position: relative; min-height: 100vh;",
+          # Background Spinner (Visible during load)
+          div(class = "d-flex justify-content-center align-items-center w-100", 
+              style = "position: absolute; top: 0; bottom: 0; left: 0; right: 0; z-index: 0;",
+              HTML('<i class="spinner-border text-primary" style="width: 40px; height: 40px; border-width: 1px;"></i>')
+          ),
+          # Profile Content (Z-index 1 ensures it covers the spinner once loaded)
+          div(style = "position: relative; z-index: 1;",
+              uiOutput("profile_page_ui")
+          )
+        )
       ),
 
       # Editor View (your existing main UI)
