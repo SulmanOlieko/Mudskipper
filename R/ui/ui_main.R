@@ -1085,9 +1085,9 @@ app_ui <- fluidPage(
         <div
           id="historyFileTreeSidebar"
           class="border-end bg-body d-flex flex-column"
-          style="width: 250px; min-width: 250px; overflow: hidden;">
-          
-          <div class="pane-header" 
+          style="overflow: hidden; background-color: var(--tblr-body-bg) !important;">
+
+          <div class="pane-header"
                style="height: 38px; min-height: 38px; padding: 0 10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--tblr-border-color); cursor: pointer;"
                onclick="var body = document.getElementById(\'historyFileList\'); var icon = this.querySelector(\'.chevron-icon\'); if(body.style.display === \'none\') { body.style.display = \'block\'; icon.classList.replace(\'fa-chevron-right\', \'fa-chevron-down\'); } else { body.style.display = \'none\'; icon.classList.replace(\'fa-chevron-down\', \'fa-chevron-right\'); }">
              <strong style="font-size:14px; font-weight:600; text-transform: uppercase;">Project Files</strong>
@@ -1144,9 +1144,9 @@ app_ui <- fluidPage(
         <div
           id="historySidebar"
           class="border-start bg-body d-flex flex-column"
-          style="width: 300px; min-width: 300px; overflow: hidden;">
-          
-          <div class="pane-header" 
+          style="overflow: hidden; background-color: var(--tblr-body-bg) !important;">
+
+          <div class="pane-header"
                style="height: 38px; min-height: 38px; padding: 0 10px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--tblr-border-color); cursor: pointer;"
                onclick="var body = document.getElementById(\'historySidebarContent\'); var icon = this.querySelector(\'.chevron-icon\'); if(body.style.display === \'none\') { body.style.display = \'block\'; icon.classList.replace(\'fa-chevron-right\', \'fa-chevron-down\'); } else { body.style.display = \'none\'; icon.classList.replace(\'fa-chevron-down\', \'fa-chevron-right\'); }">
              <strong style="font-size:14px; font-weight:600; text-transform: uppercase;">Version History</strong>
@@ -2131,7 +2131,7 @@ app_ui <- fluidPage(
   flex-wrap: nowrap; /* Prevent wrapping */
   width: 100%;       /* Ensure full width context */
   overflow:hidden;
-  background:var(--bs-body-bg)!important;
+  background:var(--tblr-body-bg)!important;
 }
 
 #utilityRail{
@@ -4174,7 +4174,7 @@ app_ui <- fluidPage(
 
 /* Sidebar Cards */
 .history-card {
-  background: var(--tblr-bg-surface);
+  background: var(--tblr-bg-surface-secondary);
   border: 1px solid var(--tblr-border-color);
   border-radius: var(--tblr-border-radius);
   padding: 12px;
@@ -4189,7 +4189,8 @@ app_ui <- fluidPage(
 }
 
 .history-card.active {
-  background-color: rgba(32, 107, 196, 0.08) !important; /* Light Blue Background */
+  background-color: var(--tblr-bg-surface) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   border-color: var(--tblr-primary-bg-subtle);
   border-left-color: var(--tblr-primary) !important; /* Blue Strip */
 }
@@ -4295,6 +4296,28 @@ app_ui <- fluidPage(
   transform: rotate(-135deg); /* Point right */
   margin-left: auto;
 }
+
+/* --- History Gutters --- */
+#historyContainer .gutter.gutter-horizontal {
+    cursor: col-resize;
+    background: var(--tblr-border-color);
+    position: relative;
+    z-index: 10;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    overflow: visible !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    width: 6px !important;
+    min-width: 6px !important;
+}
+
+#historyContainer .gutter.gutter-horizontal:hover {
+    background: var(--tblr-primary);
+    opacity: 0.5;
+}
+
 .dropdown-menu .dropend:hover > .dropdown-menu {
   display: block;
   top: 0;
@@ -8476,8 +8499,8 @@ app_ui <- fluidPage(
     // Connectivity banners & save tip
     // Connectivity alerts & monitoring
     (function(){
-      var connectivityTimer; 
-      var baseCountdown = 10; 
+      var connectivityTimer;
+      var baseCountdown = 10;
       var currentCountdown = baseCountdown;
       var currentWarningToast = null;
 
@@ -8491,19 +8514,19 @@ app_ui <- fluidPage(
 
       function startConnectivityTimer() {
         if (connectivityTimer) return;
-        
+
         // Show initial Tabler alert
         if (window.showTablerAlert) {
           // We manually manage this one to handle updates
           window.showTablerAlert('warning', 'Connectivity Issue', 'Your internet connectivity is slow or down. Retrying sync in <b>' + baseCountdown + '</b> seconds... Changes you make offline are saved and will be synced when you get online.', 999999);
-          
+
           // Find the toast we just created (it should be the last one in alertContainer)
           var container = document.getElementById('alertContainer');
           if (container) {
             currentWarningToast = container.lastElementChild;
             if (currentWarningToast) {
               currentWarningToast.id = 'connectivityWarningToast';
-              // Remove the close button to make it truly modal/persistent if desired, 
+              // Remove the close button to make it truly modal/persistent if desired,
               // or just let them close it but it will come back if we are still offline.
             }
           }
@@ -8511,26 +8534,26 @@ app_ui <- fluidPage(
 
         currentCountdown = baseCountdown;
         connectivityTimer = setInterval(function() {
-          currentCountdown--; 
-          if (currentCountdown <= 0) { 
-            baseCountdown += 5; 
-            currentCountdown = baseCountdown; 
+          currentCountdown--;
+          if (currentCountdown <= 0) {
+            baseCountdown += 5;
+            currentCountdown = baseCountdown;
           }
           updateWarningContent();
         }, 1000);
       }
 
       function stopConnectivityTimer() {
-        if (connectivityTimer) { 
-          clearInterval(connectivityTimer); 
-          connectivityTimer = null; 
+        if (connectivityTimer) {
+          clearInterval(connectivityTimer);
+          connectivityTimer = null;
         }
-        baseCountdown = 10; 
+        baseCountdown = 10;
         currentCountdown = baseCountdown;
 
         // Remove the warning toast if it exists
         if (currentWarningToast && currentWarningToast.parentNode) {
-          // If the showTablerAlert has a standardized way to remove, use it, 
+          // If the showTablerAlert has a standardized way to remove, use it,
           // otherwise manual removal.
           if (currentWarningToast.querySelector('.btn-close')) {
             currentWarningToast.querySelector('.btn-close').click();
@@ -8548,7 +8571,7 @@ app_ui <- fluidPage(
           window.showTablerAlert('success', 'Back Online', 'You are back online!', 3000);
         }
       });
-      
+
       if (!navigator.onLine) { startConnectivityTimer(); }
     })();
 
@@ -14008,6 +14031,20 @@ function toggleHistoryMode(show) {
         } else {
             HistoryManager.editor.resize();
         }
+
+        // Initialize Split.js for history sidebars if not already done
+        if (!window.historySplit) {
+            window.historySplit = Split(['#historyFileTreeSidebar', '#historyEditorContainer', '#historySidebar'], {
+                sizes: [20, 60, 20],
+                minSize: [150, 200, 150],
+                gutterSize: 2,
+                cursor: 'col-resize',
+                onDrag: function() {
+                    if (HistoryManager.editor) HistoryManager.editor.resize();
+                }
+            });
+        }
+
     } else {
         overlay.classList.remove('show');
         Shiny.setInputValue('history_mode_active', false);
@@ -16775,8 +16812,7 @@ document.addEventListener(\"DOMContentLoaded\", function() {
   z-index: 9999;
   display: flex;
   align-items: stretch;
-  background: var(--tblr-card-cap-bg,
-    color-mix(in srgb, var(--tblr-body-bg, #f8fafc) 75%, #000 25%));
+  background: var(--tblr-body-bg);
   color: var(--tblr-body-color);
   border-top: 1px solid var(--tblr-border-color);
   font-family: var(--tblr-font-sans-serif, 'Inter', sans-serif);
@@ -16787,8 +16823,7 @@ document.addEventListener(\"DOMContentLoaded\", function() {
   overflow: hidden;
 }
 [data-bs-theme=dark] #mudskipper-status-bar {
-  background: var(--tblr-card-cap-bg,
-    color-mix(in srgb, var(--tblr-body-bg, #1a1a2e) 82%, #000 18%));
+  background: var(--tblr-body-bg);
 }
 
 /* Sections */
@@ -16874,9 +16909,5 @@ document.addEventListener(\"DOMContentLoaded\", function() {
 /* Pad body so bar does not overlap content */
 body { padding-bottom: 26px !important; }
   ")),
-
   tags$script(src = "status_bar.js")
 )
-
-
-
