@@ -9396,6 +9396,14 @@ Shiny.addCustomMessageHandler('setAnnotations', function(annotations){
     });
     Shiny.addCustomMessageHandler('saveSettingsToLocal', function(settings){
       try{ localStorage.setItem('latexerSettings', JSON.stringify(settings)); }catch(e){}
+      
+      // Sync History Editor if active
+      if (settings.editorTheme && window.HistoryManager && HistoryManager.editor) {
+        HistoryManager.editor.setTheme('ace/theme/' + settings.editorTheme);
+      }
+      if (settings.fontSize && window.HistoryManager && HistoryManager.editor) {
+        HistoryManager.editor.setFontSize(+settings.fontSize);
+      }
     });
 
 
@@ -9435,6 +9443,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
           if (s.editorTheme) {
             ed.setTheme('ace/theme/' + s.editorTheme);
             con.setTheme('ace/theme/' + s.editorTheme);
+            if (window.HistoryManager && HistoryManager.editor) HistoryManager.editor.setTheme('ace/theme/' + s.editorTheme);
             // Also reflect Selectize (like your working theme selector)
             if (window.$ && $('#editorThemePanel')[0]?.selectize) {
               $('#editorThemePanel')[0].selectize.setValue(String(s.editorTheme), true);
@@ -9447,6 +9456,7 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
             var fs = +s.fontSize;
             ed.setFontSize(fs);
             con.setFontSize(fs);
+            if (window.HistoryManager && HistoryManager.editor) HistoryManager.editor.setFontSize(fs);
 
             // Reflect Selectize value EXACTLY like theme
             if (window.$ && $('#editorFontSizePanel')[0]?.selectize) {
@@ -14090,9 +14100,22 @@ window.HistoryManager = {
             const el = document.getElementById('historyEditor');
             if (window.ace && el) {
                 clearInterval(checkAce);
-                this.editor = ace.edit(\"historyEditor\");
+                this.editor = ace.edit('historyEditor');
                 this.editor.setReadOnly(true);
                 this.editor.$blockScrolling = Infinity;
+                
+                // --- Apply Current Theme/Font Settings ---
+                try {
+                  var s = JSON.parse(localStorage.getItem('latexerSettings') || 'null');
+                  if (s) {
+                    if (s.editorTheme) this.editor.setTheme('ace/theme/' + s.editorTheme);
+                    if (s.fontSize) this.editor.setFontSize(+s.fontSize);
+                  }
+                  // Font family from its own storage key
+                  var ff = localStorage.getItem('mudskipper_font_family');
+                  if (ff) this.editor.setOption('fontFamily', ff);
+                } catch(e) {}
+                
                 this.setupInteractions();
             }
         }, 100);
@@ -16776,10 +16799,13 @@ document.addEventListener(\"DOMContentLoaded\", function() {
 
   // 1. Function to Apply Font
   function applyFont(fontFamily) {
-    var editor = ace.edit(editorId);
-    if (editor) {
-      editor.setOption(\"fontFamily\", fontFamily);
-    }
+    var ids = [editorId, 'dockerConsole', 'historyEditor'];
+    ids.forEach(function(id) {
+      try {
+        var ed = ace.edit(id);
+        if (ed) ed.setOption('fontFamily', fontFamily);
+      } catch(e) {}
+    });
   }
 
   // 2. Load Saved Font on Startup
@@ -16790,12 +16816,39 @@ document.addEventListener(\"DOMContentLoaded\", function() {
     setTimeout(() => applyFont(savedFont), 500);
   }
 
-  // 3. Listen for Changes
+  // 3. Listen for Changes (Font Family)
   if (fontPanel) {
     fontPanel.addEventListener('change', function() {
       const selectedFont = this.value;
       applyFont(selectedFont);
       localStorage.setItem(storageKey, selectedFont);
+    });
+  }
+
+  // 5. Listen for Changes (Theme & Font Size) - PROVIDES IMMEDIATE REACTIVITY
+  const themePanel = document.getElementById('editorThemePanel');
+  if (themePanel) {
+    themePanel.addEventListener('change', function() {
+      const theme = this.value;
+      [editorId, 'dockerConsole', 'historyEditor'].forEach(id => {
+        try {
+          var ed = ace.edit(id);
+          if (ed) ed.setTheme('ace/theme/' + theme);
+        } catch(e) {}
+      });
+    });
+  }
+
+  const sizePanel = document.getElementById('editorFontSizePanel');
+  if (sizePanel) {
+    sizePanel.addEventListener('change', function() {
+      const size = parseInt(this.value);
+      [editorId, 'dockerConsole', 'historyEditor'].forEach(id => {
+        try {
+          var ed = ace.edit(id);
+          if (ed) ed.setFontSize(size);
+        } catch(e) {}
+      });
     });
   }
 

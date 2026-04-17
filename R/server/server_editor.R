@@ -1620,6 +1620,7 @@
       savedTheme <- readLines(themeFile, warn = FALSE)
       updateAceEditor(session, "sourceEditor", theme = savedTheme)
       updateAceEditor(session, "dockerConsole", theme = savedTheme)
+      updateAceEditor(session, "historyEditor", theme = savedTheme)
       session$sendCustomMessage(
         "saveSettingsToLocal",
         list(editorTheme = savedTheme)
@@ -1937,6 +1938,7 @@
       if (!is.null(settings$editorTheme) && settings$editorTheme != "") {
         updateAceEditor(session, "sourceEditor", theme = settings$editorTheme)
         updateAceEditor(session, "dockerConsole", theme = settings$editorTheme)
+        updateAceEditor(session, "historyEditor", theme = settings$editorTheme)
 
         uid <- isolate(user_session$user_info$user_id)
         if (!is.null(uid)) {
@@ -1952,6 +1954,7 @@
         fs <- as.numeric(settings$fontSize)
         updateAceEditor(session, "sourceEditor", fontSize = fs)
         updateAceEditor(session, "dockerConsole", fontSize = fs)
+        updateAceEditor(session, "historyEditor", fontSize = fs)
         session$sendCustomMessage(
           "updateStatus",
           paste0("Font size set to ", fs)
