@@ -3,6 +3,7 @@ app_ui <- fluidPage(
   # Main app content wrapped in container
   tags$div(
     id = "app-content",
+    style = "padding: 0 !important; margin: 0 !important;",
     HTML(
       '
     <!-- Alert System Container -->
@@ -1073,11 +1074,11 @@ app_ui <- fluidPage(
 
   <div
     class="page-wrapper"
-    style="height: calc(103vh - 56px); overflow: hidden; background: var(--tblr-body-bg); padding: 1.5rem;">
+    style="height: calc(103vh - 56px); overflow: hidden; background: var(--tblr-body-bg); padding: 0;">
 
     <div
       class="card h-100"
-      style="display: flex; flex-direction: column; overflow: hidden; background-color: var(--tblr-body-bg);">
+      style="display: flex; flex-direction: column; overflow: hidden; background-color: var(--tblr-body-bg); border-radius: 0 !important;">
 
       <div id="historyContainer" class="d-flex h-100">
 
@@ -3339,9 +3340,17 @@ app_ui <- fluidPage(
 
 .page-body,
 .page-wrapper,
-.container-xl {
+.container-xl,
+.container-fluid {
   padding-top: 0 !important;
   margin-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 :root{
@@ -3353,6 +3362,7 @@ app_ui <- fluidPage(
   padding-top: 0.1rem !important;
   padding-bottom: 0.1rem !important;
   min-height: 0 !important;
+  border-radius: 0 !important;
 }
 
 .navbar .avatar,
@@ -5337,7 +5347,7 @@ app_ui <- fluidPage(
         ),
         div(
           class = "card border border-opacity-100",
-          style = "border-radius: var(--tblr-border-radius); border-color: var(--tblr-border-color); height: 100%; background-color: var(--tblr-bg-surface); border-collapse: separate; border-spacing: 0; overflow: hidden; ",
+          style = "border-radius: 0 !important; border-color: var(--tblr-border-color); height: 100%; background-color: var(--tblr-bg-surface); border-collapse: separate; border-spacing: 0; overflow: hidden; margin: 0 !important;",
           # Include your <body> HTML
           HTML(
             '
