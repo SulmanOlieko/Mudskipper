@@ -1,5 +1,8 @@
-# ------------------------------- UI -----------------------------------
 app_ui <- fluidPage(
+  tags$head(
+    tags$script(src = "cm6-bundle.js"),
+    tags$script(src = "visual-bridge.js")
+  ),
   # Main app content wrapped in container
   tags$div(
     id = "app-content",
@@ -7254,11 +7257,51 @@ body {
                       div(
                         style = "white-space: nowrap; overflow: hidden;",
                         div(
-                          id = "toolbar",
-                          style = "padding-left:5px; padding-right:5px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; max-width: calc(100% - 50px); white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;"
+                          id = "visual-toggle-container",
+                          style = "display: inline-block; vertical-align: middle; margin-top: 0px; margin-left: 5px; margin-right: 5px; width: 130px;",
+                          HTML('
+                            <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist">
+                              <button
+                                id="btn-source-mode"
+                                class="nav-link active"
+                                role="tab"
+                                data-bs-toggle="tab"
+                                aria-selected="true"
+                                aria-current="page"
+                                onclick="window.setEditorMode(\'source\')"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M7 8l-4 4l4 4" />
+                                  <path d="M17 8l4 4l-4 4" />
+                                  <path d="M14 4l-4 16" />
+                                </svg>
+                                Source code
+                              </button>
+                              <button 
+                                id="btn-visual-mode"
+                                class="nav-link" 
+                                role="tab" 
+                                data-bs-toggle="tab" 
+                                aria-selected="false" 
+                                tabindex="-1"
+                                onclick="window.setEditorMode(\'visual\')"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                  <path d="M11.192 17.966c-3.242 -.28 -5.972 -2.269 -8.192 -5.966c2.4 -4 5.4 -6 9 -6c3.326 0 6.14 1.707 8.442 5.122" />
+                                  <path d="M18.42 15.61a2.1 2.1 0 0 1 2.97 2.97l-3.39 3.42h-3v-3l3.42 -3.39z" />
+                                </svg>
+                                Visual editor
+                              </button>
+                            </nav>
+                          ')
                         ),
                         div(
-                          style = "padding-top: 2px; padding-bottom: 0px; padding-left: 8px; width: auto; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 12px;",
+                          id = "toolbar",
+                          style = "padding-left:0px; padding-right:5px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; max-width: calc(100% - 210px); white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
+                        ),
+                        div(
+                          style = "padding-top: 0px; padding-bottom: 0px; padding-left: 4px; width: 65px; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 4px;",
 
                           # 1. Dictate Button (Top)
                           tags$div(
@@ -7289,7 +7332,7 @@ body {
                             "data-bs-placement" = "right",
                             "data-bs-html" = "true",
                             title = "<div>Find/Replace</div><div> CTRL/⌘ + F</div>",
-                            onclick = "var editor = ace.edit('sourceEditor'); if (editor) { ace.require('ace/ext/searchbox').Search(editor, false);}",
+                            onclick = "var editor = ace.edit(\'sourceEditor\'); if (editor) { ace.require(\'ace/ext/searchbox\').Search(editor, false);}",
                             HTML(
                               '
                                         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -7357,6 +7400,10 @@ body {
                         tabSize = 4,
                         useSoftTabs = TRUE,
                         showInvisibles = FALSE
+                      ),
+                      div(
+                        id = "visualEditorContainer",
+                        style = "display:none; height: 92%; overflow: auto;"
                       ),
                       HTML(
                         '
