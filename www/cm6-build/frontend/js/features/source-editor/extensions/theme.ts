@@ -1,22 +1,19 @@
 import { EditorView } from '@codemirror/view'
-import { Annotation, Compartment, TransactionSpec } from '@codemirror/state'
+import { Compartment, TransactionSpec } from '@codemirror/state'
 import { syntaxHighlighting } from '@codemirror/language'
 import { classHighlighter } from './class-highlighter'
 import classNames from 'classnames'
-import { FontFamily, LineHeight, userStyles } from '@/shared/utils/styles'
-import { ActiveOverallTheme } from '@/shared/hooks/use-active-overall-theme'
-import { ThemeCache } from '../utils/theme-cache'
-import getMeta from '@/utils/meta'
+
+type FontFamily = string
+type LineHeight = string
 
 const optionsThemeConf = new Compartment()
-const selectedThemeConf = new Compartment()
-export const themeOptionsChange = Annotation.define<boolean>()
 
 type Options = {
-  fontSize: number
-  fontFamily: FontFamily
-  lineHeight: LineHeight
-  activeOverallTheme: ActiveOverallTheme
+  fontSize?: number
+  fontFamily?: FontFamily
+  lineHeight?: LineHeight
+  activeOverallTheme?: string
 }
 
 export const theme = (options: Options) => [
@@ -27,41 +24,22 @@ export const theme = (options: Options) => [
    */
   syntaxHighlighting(classHighlighter),
   optionsThemeConf.of(createThemeFromOptions(options)),
-  selectedThemeConf.of([]),
 ]
 
 export const setOptionsTheme = (options: Options): TransactionSpec => {
   return {
     effects: optionsThemeConf.reconfigure(createThemeFromOptions(options)),
-    annotations: themeOptionsChange.of(true),
   }
 }
-
-export const setEditorTheme = async (
-  editorTheme: string
-): Promise<TransactionSpec> => {
-  const theme = await loadSelectedTheme(editorTheme)
-
-  return {
-    effects: selectedThemeConf.reconfigure(theme),
-  }
-}
-
-const svgUrl = (content: string) =>
-  `url('data:image/svg+xml,${encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${content}</svg>`
-  )}')`
-
-const tooltipThemeCache = new ThemeCache()
 
 const createThemeFromOptions = ({
   fontSize = 12,
   fontFamily = 'monaco',
   lineHeight = 'normal',
-  activeOverallTheme = 'dark',
+  activeOverallTheme = 'light',
 }: Options) => {
-  // Theme styles that depend on settings.
-  const styles = userStyles({ fontSize, fontFamily, lineHeight })
+  const fontSizeCSS = `${fontSize}px`
+  const lineHeightCSS = lineHeight === 'compact' ? '1.33' : lineHeight === 'wide' ? '1.8' : '1.6'
 
   return [
     EditorView.editorAttributes.of({
@@ -71,19 +49,12 @@ const createThemeFromOptions = ({
           : 'overall-theme-light'
       ),
       style: Object.entries({
-        '--font-size': styles.fontSize,
-        '--source-font-family': styles.fontFamily,
-        '--line-height': styles.lineHeight,
+        '--font-size': fontSizeCSS,
+        '--source-font-family': fontFamily,
+        '--line-height': lineHeightCSS,
       })
         .map(([key, value]) => `${key}: ${value}`)
         .join(';'),
-    }),
-    tooltipThemeCache.get({
-      '.cm-tooltip': {
-        '--font-size': styles.fontSize,
-        '--source-font-family': styles.fontFamily,
-        '--line-height': styles.lineHeight,
-      },
     }),
   ]
 }
@@ -113,7 +84,6 @@ const baseTheme = EditorView.baseTheme({
     lineHeight: 'var(--line-height)',
   },
   '.cm-tooltip': {
-    // NOTE: fontFamily is not set here, as most tooltips use the UI font
     fontSize: 'var(--font-size)',
   },
   '.cm-panel': {
@@ -124,19 +94,6 @@ const baseTheme = EditorView.baseTheme({
   },
   '.cm-lineNumbers': {
     fontFamily: 'var(--source-font-family)',
-  },
-  // double the specificity to override the underline squiggle
-  '.cm-lintRange.cm-lintRange': {
-    backgroundImage: 'none',
-  },
-  // use a background color for lint error ranges
-  '.cm-lintRange-error': {
-    padding: 'var(--half-leading, 0) 0',
-    background: 'rgba(255, 0, 0, 0.2)',
-    // avoid highlighting nested error ranges
-    '& .cm-lintRange-error': {
-      background: 'none',
-    },
   },
   '.cm-specialChar': {
     color: 'red',
@@ -159,27 +116,11 @@ const baseTheme = EditorView.baseTheme({
     boxShadow: '0 1px 1px rgba(255, 255, 255, 0.7)',
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
-  '.cm-diagnosticSource': {
-    display: 'none',
-  },
-  '.ol-cm-diagnostic-actions': {
-    marginTop: '4px',
-  },
-  '.cm-diagnostic:last-of-type .ol-cm-diagnostic-actions': {
-    marginBottom: '4px',
-  },
-  '.cm-vim-panel': {
-    color: 'var(--content-primary-themed)',
-  },
-  '.cm-vim-panel input': {
-    color: 'inherit',
-  },
 })
 
 /**
  * Theme styles that don't depend on settings.
  */
-// TODO: move some/all of these into baseTheme?
 const staticTheme = EditorView.theme({
   // make the editor fill the available height
   '&': {
@@ -191,18 +132,6 @@ const staticTheme = EditorView.theme({
   '&.cm-editor.cm-focused:not(:focus-visible)': {
     outline: 'none',
   },
-  '.cm-panels': {
-    backgroundColor: 'var(--bg-secondary-themed)',
-  },
-  '.cm-panel-bottom': {
-    borderTop: '1px solid var(--border-primary-themed)',
-  },
-  // override default styles for the search panel
-  '.cm-panel.cm-search label': {
-    display: 'inline-flex',
-    alignItems: 'center',
-    fontWeight: 'normal',
-  },
   '.cm-selectionLayer': {
     zIndex: -10,
   },
@@ -213,7 +142,6 @@ const staticTheme = EditorView.theme({
     flexShrink: 0,
   },
   // style the gutter fold button
-  // TODO: add a class to this element for easier theming
   '.cm-foldGutter .cm-gutterElement > span': {
     border: '1px solid transparent',
     borderRadius: '3px',
@@ -263,59 +191,4 @@ const staticTheme = EditorView.theme({
     border: '1px solid black',
     borderRadius: '2px',
   },
-  // align the lint icons with the line numbers
-  '.cm-gutter-lint .cm-gutterElement': {
-    padding: '0.3em',
-  },
-  // reset the default style for the lint gutter error marker, which uses :before
-  '.cm-lint-marker-error:before': {
-    content: 'normal',
-  },
-  // set a new icon for the lint gutter error marker
-  '.cm-lint-marker-error': {
-    content: svgUrl(
-      `<circle cx="20" cy="20" r="15" fill="#f87" stroke="#f43" stroke-width="6"/>`
-    ),
-  },
-  // set a new icon for the lint gutter warning marker
-  '.cm-lint-marker-warning': {
-    content: svgUrl(
-      `<path fill="#FCC483" stroke="#DE8014" stroke-width="6" stroke-linejoin="round" d="M20 6L37 35L3 35Z"/>`
-    ),
-  },
 })
-
-const themeCache = new Map<string, any>()
-
-const loadSelectedTheme = async (editorTheme: string) => {
-  if (!editorTheme) {
-    editorTheme = 'textmate' // use the default theme if unset
-  }
-
-  if (!themeCache.has(editorTheme)) {
-    const themes = getMeta('ol-editorThemes') || []
-    const legacyThemes = getMeta('ol-legacyEditorThemes') || []
-    const themeExists =
-      themes.some(theme => theme.name === editorTheme) ||
-      legacyThemes.some(theme => theme.name === editorTheme)
-    if (!themeExists) {
-      editorTheme = 'textmate' // fallback to default if the theme is not found
-    }
-
-    const { theme, highlightStyle, dark } = await import(
-      /* webpackChunkName: "cm6-theme" */ `../themes/cm6/${editorTheme}.json`
-    )
-
-    // We store these in a cache, so we'll reuse after the first load
-    const extension = [
-      // eslint-disable-next-line @overleaf/no-generated-editor-themes
-      EditorView.theme(theme, { dark }),
-      // eslint-disable-next-line @overleaf/no-generated-editor-themes
-      EditorView.theme(highlightStyle, { dark }),
-    ]
-
-    themeCache.set(editorTheme, extension)
-  }
-
-  return themeCache.get(editorTheme)
-}

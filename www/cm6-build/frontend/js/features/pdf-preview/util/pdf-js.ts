@@ -1,13 +1,12 @@
 import '@/utils/abortsignal-polyfill'
-import * as PDFJS from 'pdfjs-dist'
+import { getDocument, GlobalWorkerOptions, version } from 'pdfjs-dist'
+const PDFJS = { getDocument, GlobalWorkerOptions, version }
 import type { DocumentInitParameters } from 'pdfjs-dist/types/src/display/api'
 
 export { PDFJS }
 
-PDFJS.GlobalWorkerOptions.workerPort = new Worker(
-  /* webpackChunkName: "pdf-worker" */
-  new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url) // NOTE: .mjs extension
-)
+// Use a CDN worker to avoid build-time 'import.meta.url' issues
+PDFJS.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFJS.version}/build/pdf.worker.min.mjs`
 
 export const imageResourcesPath = '/images/pdfjs-dist/'
 const cMapUrl = '/js/pdfjs-dist/cmaps/'

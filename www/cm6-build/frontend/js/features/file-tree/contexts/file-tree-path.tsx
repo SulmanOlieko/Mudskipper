@@ -46,7 +46,11 @@ export const FileTreePathProvider: FC<React.PropsWithChildren> = ({
 
   const previewByPathInFileTree = useCallback(
     (path: string) => {
-      if (!fileTreeData) return null
+      if (!fileTreeData) {
+        console.warn("[FileTreePath] No fileTreeData available for", path)
+        return null
+      }
+      console.log(`[FileTreePath] Requesting preview for: "${path}"`)
       return previewByPath(fileTreeData, projectId, path)
     },
     [fileTreeData, projectId]

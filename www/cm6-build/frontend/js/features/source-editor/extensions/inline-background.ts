@@ -1,6 +1,7 @@
 import { Annotation, Compartment } from '@codemirror/state'
 import { EditorView, ViewPlugin } from '@codemirror/view'
-import { themeOptionsChange } from './theme'
+// themeOptionsChange was part of the original theme.ts — inline a local version
+const themeOptionsChange = Annotation.define<boolean>()
 import { sourceOnly } from './visual/visual'
 import { round } from 'lodash'
 import { hasLanguageLoadedEffect } from './language'

@@ -273,9 +273,10 @@ export const Tabular: FC<{
 }> = ({ tabularNode, view, tableNode, parsedTableData, directTableChild }) => {
   return (
     <ErrorBoundary
-      fallbackRender={() => (
-        <TableRenderingError view={view} codePosition={tabularNode.from} />
-      )}
+      fallbackRender={({ error }) => {
+        console.error('Table rendering error:', error)
+        return <TableRenderingError view={view} codePosition={tabularNode.from} />
+      }}
     >
       <SplitTestProvider>
         <CodeMirrorViewContext.Provider value={view}>

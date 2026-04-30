@@ -470,6 +470,9 @@
 
         # --- CRITICAL FIX: Set flag to prevent autosave from clearing file ---
         rv$fileJustLoaded <- TRUE
+        later::later(function() {
+          rv$fileJustLoaded <- FALSE
+        }, 0.5)
         # ---------------------------------------------------------------------
 
         currentFile(mainFile)

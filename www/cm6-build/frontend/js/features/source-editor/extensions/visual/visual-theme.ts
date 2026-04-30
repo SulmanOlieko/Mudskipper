@@ -41,11 +41,11 @@ const mainVisualTheme = EditorView.theme({
       "'Noto Serif', 'Palatino Linotype', 'Book Antiqua', Palatino, serif !important",
     '--visual-font-size': 'calc(var(--font-size) * 1.15)',
     '& .cm-content': {
-      opacity: 0,
+      // opacity: 0, // removed to prevent invisibility issues
     },
     '&.ol-cm-parsed .cm-content': {
-      opacity: 1,
-      transition: 'opacity 0.1s ease-out',
+      // opacity: 1,
+      // transition: 'opacity 0.1s ease-out',
     },
   },
   '.cm-content.cm-content': {
@@ -466,6 +466,39 @@ const mainVisualTheme = EditorView.theme({
       display: 'inline',
       padding: '0 0.5em',
     },
+  },
+  '.ol-cm-math-loading': {
+    opacity: 0.5,
+    fontStyle: 'italic',
+    padding: '0 0.5em',
+  },
+  '.ol-cm-graphics-loading-placeholder': {
+    minHeight: '100px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'var(--tblr-bg-surface-secondary, rgba(125, 125, 125, 0.05))',
+    border: '1px dashed var(--tblr-border-color, #ccc)',
+    borderRadius: '8px',
+    margin: '1em 0',
+    color: 'var(--tblr-muted, gray)',
+    fontSize: '0.9em',
+    overflow: 'hidden',
+  },
+  '.ol-cm-math-label-badge': {
+    fontSize: '0.75rem',
+    color: 'var(--tblr-muted, #666)',
+    backgroundColor: 'var(--tblr-bg-surface-secondary, #f8f9fa)',
+    border: '1px solid var(--tblr-border-color, #dee2e6)',
+    borderRadius: '4px',
+    padding: '1px 6px',
+    marginTop: '4px',
+    display: 'inline-block',
+    float: 'right',
+    fontFamily: 'var(--tblr-font-sans-serif, sans-serif)',
+    pointerEvents: 'none',
+    userSelect: 'none',
   },
 })
 

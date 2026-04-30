@@ -7397,6 +7397,7 @@ body {
                         wordWrap = TRUE,
                         showPrintMargin = FALSE,
                         autoComplete = "live",
+                        debounce = 100,
                         tabSize = 4,
                         useSoftTabs = TRUE,
                         showInvisibles = FALSE

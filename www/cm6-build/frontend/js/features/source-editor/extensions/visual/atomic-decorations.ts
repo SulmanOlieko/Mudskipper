@@ -584,9 +584,7 @@ export const atomicDecorations = (options: Options) => {
               }
 
               const showBraces =
-                selectionIntersects(state.selection, sectionCtrlSeqNode) ||
-                selectionIntersects(state.selection, openBrace) ||
-                selectionIntersects(state.selection, closeBrace)
+                selectionIntersects(state.selection, ancestorNode)
 
               decorations.push(
                 Decoration.replace({
@@ -1295,16 +1293,15 @@ export const atomicDecorations = (options: Options) => {
       },
       update(value, tr) {
         for (const effect of tr.effects) {
-          // store the "mousedown" value when it changes
           if (effect.is(mouseDownEffect)) {
-            value = {
-              ...value,
-              mousedown: effect.value,
-            }
+            value = { ...value, mousedown: effect.value }
           }
         }
 
         const tree = syntaxTree(tr.state)
+        const docChanged = tr.docChanged
+        const selectionChanged = tr.selection && !tr.selection.main.eq(tr.startState.selection.main)
+
         if (
           tree.type === value.previousTree.type &&
           tree.length < tr.state.doc.length
@@ -1315,20 +1312,22 @@ export const atomicDecorations = (options: Options) => {
             decorations: value.decorations.map(tr.changes),
           }
         } else if (
-          // only update the decorations when the mouse is not making a selection
-          !value.mousedown &&
-          (tree !== value.previousTree ||
-            tr.selection ||
-            hasMouseDownEffect(tr))
+          (!value.mousedown || selectionChanged) &&
+          (docChanged || tree !== value.previousTree || selectionChanged)
         ) {
-          // tree changed, or selection changed, or mousedown ended
-          // TODO: update the existing decorations for the changed range(s)?
+          // Optimization: only re-calculate for viewport + a bit of buffer
+          // However, for consistency, we still do the whole tree but we'll try to make it faster
           const { decorations, preamble } = createDecorations(tr.state, tree)
           value = {
             ...value,
             decorations,
             preamble,
             previousTree: tree,
+          }
+        } else if (docChanged || selectionChanged) {
+          value = {
+            ...value,
+            decorations: value.decorations.map(tr.changes),
           }
         }
 

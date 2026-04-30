@@ -12,6 +12,7 @@
   rv_compiled <- reactiveVal(character(0))
   dockerLog <- reactiveVal("")
   outlineData <- reactiveVal(NULL)
+  currentOutlineItem <- reactiveVal(NULL)
   lintAnnotations <- reactiveVal(list())
   compileAnnotations <- reactiveVal(list())
   historyActiveFile <- reactiveVal("")

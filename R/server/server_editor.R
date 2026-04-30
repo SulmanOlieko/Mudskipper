@@ -438,6 +438,9 @@
       currentFile(filePath)
       updateStatus(filePath)
       rv$fileJustLoaded <- TRUE # IMMEDIATE LOCK to prevent history race
+      later::later(function() {
+        rv$fileJustLoaded <- FALSE
+      }, 0.5)
 
       if (ext == "tex") {
         if (

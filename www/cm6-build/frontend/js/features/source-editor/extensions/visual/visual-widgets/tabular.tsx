@@ -1,4 +1,5 @@
 import { createRoot, Root } from 'react-dom/client'
+import React from 'react'
 import { EditorView, WidgetType } from '@codemirror/view'
 import { SyntaxNode } from '@lezer/common'
 import { Tabular } from '../../../components/table-generator/tabular'

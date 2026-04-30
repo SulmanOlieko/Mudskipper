@@ -19,14 +19,12 @@ window.updateToggleState = function(filename) {
         } else {
             visualBtn.classList.add("disabled");
             visualBtn.title = "Visual Editor only available for .tex files";
-            // If we are currently in visual mode, we MUST switch back to source
             if (currentMode === 'visual') {
                 window.setEditorMode('source');
             }
         }
     }
     
-    // Update active class based on currentMode
     if (visualBtn && sourceBtn) {
         if (currentMode === 'visual' && isTex) {
             visualBtn.classList.add("active");
@@ -38,7 +36,7 @@ window.updateToggleState = function(filename) {
             visualBtn.classList.remove("active");
             sourceBtn.setAttribute("aria-selected", "true");
             visualBtn.setAttribute("aria-selected", "false");
-            currentMode = 'source'; // Force state consistency
+            currentMode = 'source'; 
         }
     }
 };
@@ -48,7 +46,7 @@ window.updateToggleState = function(filename) {
  */
 window.setEditorMode = function(mode) {
     const isTex = activeFileNameOriginal.toLowerCase().endsWith('.tex');
-    if (mode === 'visual' && !isTex) return; // Guard clause
+    if (mode === 'visual' && !isTex) return;
     
     currentMode = mode;
     
@@ -57,8 +55,20 @@ window.setEditorMode = function(mode) {
     
     if (window.ace) {
         const aceEd = ace.edit("sourceEditor");
+        
+        // --- MONKEY PATCH ACE TO SYNC WITH VISUAL EDITOR ---
+        if (!aceEd._originalGetValue) {
+            aceEd._originalGetValue = aceEd.getValue.bind(aceEd);
+            aceEd.getValue = function() {
+                if (currentMode === 'visual' && cm6View) {
+                    return cm6View.state.doc.toString();
+                }
+                return aceEd._originalGetValue();
+            };
+        }
+
         if (currentMode === 'visual') {
-            const content = aceEd.getValue();
+            const content = aceEd._originalGetValue();
             aceWrapper.style.display = "none";
             visualWrapper.style.display = "block";
             
@@ -67,10 +77,12 @@ window.setEditorMode = function(mode) {
                     visualWrapper, 
                     content, 
                     (newDoc) => {
-                        // Update ace silently (without triggering loops ideally)
-                        const cursor = aceEd.getCursorPosition();
-                        aceEd.session.setValue(newDoc);
-                        aceEd.moveCursorToPosition(cursor);
+                        // Notify Shiny that content changed without heavy Ace updates
+                        if (aceEd.session && aceEd.session._emit) {
+                            aceEd.session._emit('change', { action: 'insert', start: {row:0, column:0}, end: {row:0, column:0}, lines: [] });
+                        } else if (aceEd.session && aceEd.session._signal) {
+                            aceEd.session._signal('change', { action: 'insert', start: {row:0, column:0}, end: {row:0, column:0}, lines: [] });
+                        }
                     }
                 );
                 cm6View.dom.style.height = "100%";
@@ -82,9 +94,11 @@ window.setEditorMode = function(mode) {
             aceWrapper.style.display = "block";
             if (cm6View) {
                 const content = cm6View.state.doc.toString();
-                const cursor = aceEd.getCursorPosition();
-                aceEd.session.setValue(content);
-                aceEd.moveCursorToPosition(cursor);
+                if (aceEd._originalGetValue() !== content) {
+                    const cursor = aceEd.getCursorPosition();
+                    aceEd.session.setValue(content);
+                    aceEd.moveCursorToPosition(cursor);
+                }
             }
         }
     }
@@ -92,36 +106,16 @@ window.setEditorMode = function(mode) {
     window.updateToggleState(activeFileNameOriginal);
 };
 
-// Compatibility shim for anything calling the old toggle function
 window.toggleEditorMode = function() {
     window.setEditorMode(currentMode === 'source' ? 'visual' : 'source');
 };
 
-// --- INTERCEPT FILE LOADING ---
-// We need to know the filename to update the toggle state.
-// We intercept Shiny's cmdSafeLoadFile handler or listen to updateStatus.
+// Intercept file loading to update filename state
 (function() {
-    const originalHandler = Shiny.addCustomMessageHandler;
-    // Intercept existing handlers if already registered
-    // Actually, it's easier to just register our own listener that runs alongside
-    
-    // We poll for updateStatus changes or similar
-    setInterval(() => {
-        const statusBar = document.getElementById('statusBar');
-        if (statusBar) {
-            //statusBar contains filename, often in a span with title or similar
-            // But a better way is to listen for the fileClick input change or help from the server
-            // For now, we'll try to extract from #statusBar text if possible, 
-            // but let's look for a cleaner hook.
-        }
-    }, 1000);
-
-    // Better: Hook into Shiny.addCustomMessageHandler to catch 'cmdSafeLoadFile'
     const origAddCustomMessageHandler = Shiny.addCustomMessageHandler;
     Shiny.addCustomMessageHandler = function(type, handler) {
         if (type === 'cmdSafeLoadFile' || type === 'updateStatus') {
             const wrappedHandler = function(msg) {
-                // For updateStatus, msg is the filename (html)
                 if (type === 'updateStatus') {
                     const cleanName = msg.replace(/<[^>]*>/g, '').replace(/\*/g, '').trim();
                     if (cleanName && cleanName !== activeFileNameOriginal) {
@@ -129,14 +123,11 @@ window.toggleEditorMode = function() {
                     }
                 }
                 
-                // For cmdSafeLoadFile, msg has {content, mode}
                 if (type === 'cmdSafeLoadFile' && currentMode === 'visual' && cm6View) {
-                    // Update the visual editor content if it exists and we're in visual mode
                     if (window.MudskipperVisualEditor) {
                         window.MudskipperVisualEditor.setEditorContent(cm6View, msg.content);
                     }
                 }
-                
                 handler(msg);
             };
             return origAddCustomMessageHandler.call(Shiny, type, wrappedHandler);
@@ -145,3 +136,17 @@ window.toggleEditorMode = function() {
     };
 })();
 
+/**
+ * Handle Project State Updates (File List and Base Path)
+ * Essential for figure rendering to find files recursively.
+ */
+Shiny.addCustomMessageHandler('updateProjectState', function(data) {
+    if (data && data.files) {
+        window.projectFileList = data.files;
+        console.log("[VisualBridge] Updated projectFileList:", window.projectFileList.length, "files");
+    }
+    if (data && data.url) {
+        window.activeProjectPath = data.url;
+        console.log("[VisualBridge] Updated activeProjectPath:", window.activeProjectPath);
+    }
+});

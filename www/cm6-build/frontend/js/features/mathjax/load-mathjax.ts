@@ -85,17 +85,40 @@ export const loadMathJax = async (options?: {
       }
 
       const script = document.createElement('script')
-      const path = getMeta('ol-mathJaxPath')
+      let path = getMeta('ol-mathJaxPath')
       if (!path) {
-        reject(new Error('No MathJax path found'))
-        return
+        // Fallback to CDN if the meta tag is not provided by the host application
+        path = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js'
       }
       script.src = path
-      script.addEventListener('load', async () => {
-        await window.MathJax.startup.promise
-        document.head.appendChild(window.MathJax.svgStylesheet())
-        resolve(window.MathJax)
+      script.addEventListener('load', () => {
+        // Give MathJax a moment to initialize the startup property
+        const checkReady = () => {
+          if (window.MathJax && window.MathJax.startup && window.MathJax.tex2svgPromise) {
+             if (typeof window.MathJax.svgStylesheet === 'function') {
+              try {
+                document.head.appendChild(window.MathJax.svgStylesheet())
+              } catch (e) {
+                console.warn('Failed to append MathJax stylesheet:', e)
+              }
+            }
+            resolve(window.MathJax)
+          } else {
+            setTimeout(checkReady, 50)
+          }
+        }
+        checkReady()
       })
+      
+      // Fallback timeout
+      setTimeout(() => {
+        if (window.MathJax && window.MathJax.tex2svgPromise) {
+          resolve(window.MathJax)
+        } else {
+          reject(new Error('MathJax timeout'))
+        }
+      }, 10000)
+
       script.addEventListener('error', reject)
       document.head.append(script)
     })

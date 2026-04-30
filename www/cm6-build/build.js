@@ -17,6 +17,7 @@ esbuild.build({
     '.svg': 'text'
   },
   tsconfig: 'tsconfig.json',
+  jsx: 'automatic',
   define: {
     'import.meta.url': 'undefined',
     'process.env.NODE_ENV': '"production"'

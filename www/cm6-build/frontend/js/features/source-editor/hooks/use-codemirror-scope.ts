@@ -277,10 +277,34 @@ function useCodeMirrorScope(view: EditorView) {
 
   const { previewByPath } = useFileTreePathContext()
 
+  const enhancedPreviewByPath = useCallback(
+    (path: string) => {
+      if (!path) return null
+      console.log(`[VisualEditor] Preview request for: "${path}" (Current doc: "${openDocName}")`)
+
+      // 1. Try relative to the current document (LaTeX default behavior)
+      if (openDocName && !path.startsWith('/')) {
+        const parts = openDocName.split('/')
+        if (parts.length > 1) {
+          const dir = parts.slice(0, -1).join('/')
+          const relativePath = `${dir}/${path}`
+          console.log(`[VisualEditor] Trying relative path: "${relativePath}"`)
+          const preview = previewByPath(relativePath)
+          if (preview) return preview
+        }
+      }
+
+      // 2. Try the path exactly as provided (usually root-relative in Mudskipper)
+      console.log(`[VisualEditor] Trying direct path: "${path}"`)
+      return previewByPath(path) 
+    },
+    [previewByPath, openDocName]
+  )
+
   const showVisual = visual && !!openDocName && isValidTeXFile(openDocName)
 
   const visualRef = useRef({
-    previewByPath,
+    previewByPath: enhancedPreviewByPath,
     visual: showVisual,
   })
 
