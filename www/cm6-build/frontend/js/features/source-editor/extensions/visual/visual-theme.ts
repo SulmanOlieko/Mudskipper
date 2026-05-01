@@ -80,6 +80,10 @@ const mainVisualTheme = EditorView.theme({
     fontStyle: 'normal',
     fontVariant: 'normal',
     textDecoration: 'none',
+    color: '#116329', // Overleaf-style command green
+    '&dark &, .overall-theme-dark &': {
+      color: '#4ec9b0', // Dark mode command teal/green
+    },
   },
   '.ol-cm-strong': {
     fontWeight: 700,
@@ -87,9 +91,17 @@ const mainVisualTheme = EditorView.theme({
   '.ol-cm-punctuation': {
     fontFamily: 'var(--source-font-family)',
     lineHeight: 1,
+    color: '#707070',
+    '&dark &, .overall-theme-dark &': {
+      color: '#a9a9a9',
+    },
   },
   '.ol-cm-brace': {
-    opacity: '0.5',
+    opacity: '0.6',
+    color: '#116329', // Brackets often share command color
+    '&dark &, .overall-theme-dark &': {
+      color: '#4ec9b0',
+    },
   },
   '.ol-cm-math': {
     overflow: 'hidden', // stop the margin from the inner math element affecting the block height
