@@ -89,6 +89,12 @@ window.setEditorMode = function(mode) {
             } else if (cm6View) {
                 window.MudskipperVisualEditor.setEditorContent(cm6View, content);
             }
+            
+            // --- TEMPORARILY DISABLE ACE FEATURES ---
+            if (window.disableMinimap) window.disableMinimap();
+            if (window.stickyScrollInstance) window.stickyScrollInstance.disable();
+            if (window.MathPreviewController) window.MathPreviewController.disable();
+            window.aceSpellCheckEnabled = false;
         } else {
             visualWrapper.style.display = "none";
             aceWrapper.style.display = "block";
@@ -100,6 +106,14 @@ window.setEditorMode = function(mode) {
                     aceEd.moveCursorToPosition(cursor);
                 }
             }
+            
+            // --- RESTORE ACE FEATURES BASED ON SETTINGS ---
+            if (document.getElementById('enableMinimapPanel')?.checked && window.enableMinimap) window.enableMinimap();
+            if (document.getElementById('enableStickyScrollPanel')?.checked && window.stickyScrollInstance) window.stickyScrollInstance.enable();
+            if (document.getElementById('enableMathPreviewPanel')?.checked && window.MathPreviewController) window.MathPreviewController.enable();
+            
+            window.aceSpellCheckEnabled = true;
+            if (window.triggerSpellCheck) window.triggerSpellCheck();
         }
     }
     
@@ -143,10 +157,8 @@ window.toggleEditorMode = function() {
 Shiny.addCustomMessageHandler('updateProjectState', function(data) {
     if (data && data.files) {
         window.projectFileList = data.files;
-        console.log("[VisualBridge] Updated projectFileList:", window.projectFileList.length, "files");
     }
     if (data && data.url) {
         window.activeProjectPath = data.url;
-        console.log("[VisualBridge] Updated activeProjectPath:", window.activeProjectPath);
     }
 });

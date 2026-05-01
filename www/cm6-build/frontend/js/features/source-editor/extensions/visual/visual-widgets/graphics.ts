@@ -93,7 +93,6 @@ export class GraphicsWidget extends WidgetType {
     }
 
     const { url, extension } = preview
-    console.log(`Figure rendering for "${this.filePath}" using URL:`, url)
 
     if (extension === 'svg') {
       this.renderSvg(view, wrapper, url)

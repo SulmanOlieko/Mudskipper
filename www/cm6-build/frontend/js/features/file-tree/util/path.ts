@@ -114,13 +114,11 @@ export function findEntityAnywhere(
   // Check files and docs in current folder
   const file = (folder.fileRefs || []).find(f => f.name === filename)
   if (file) {
-    console.log(`[AnywhereSearch] FOUND "${filename}" at "${currentPath}${file.name}"`)
     return { entity: file, path: currentPath + file.name }
   }
   
   const doc = (folder.docs || []).find(d => d.name === filename)
   if (doc) {
-    console.log(`[AnywhereSearch] FOUND doc "${filename}" at "${currentPath}${doc.name}"`)
     return { entity: doc, path: currentPath + doc.name }
   }
 
@@ -165,7 +163,6 @@ export function previewByPath(
       ? (activePath.endsWith('/') ? activePath : activePath + '/') + foundPath
       : `/project/${foundPath}`
 
-    console.log(`[PathResolver] SUCCESS: "${path}" resolved via ${method} to "${foundPath}"`)
     return { url, extension }
   }
 

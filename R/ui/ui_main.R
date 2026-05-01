@@ -10986,14 +10986,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (match) {
           // It looks like a DOI
           doi = match[0];
-          console.log(\"Detected DOI:\", doi);
           bibtex = await fetchBibtexFromDoi(doi);
         } else {
           // It looks like a Title -> Search CrossRef Metadata first
-          console.log(\"Detected Title, searching metadata...\");
           doi = await findDoiFromTitle(inputVal);
           if (doi) {
-            console.log(\"Found DOI from title:\", doi);
             bibtex = await fetchBibtexFromDoi(doi);
           } else {
             throw new Error(\"Could not find a matching paper for this title.\");
@@ -13398,7 +13395,7 @@ function flushSyncQueue() {
             cursorTimeout = setTimeout(highlightActiveComment, 200);
           });
           // Also trigger request for markers on load
-          if(window.Shiny) Shiny.setInputValue('aceEditorReady', Math.random(), {priority: 'event'});
+          if(window.Shiny && window.Shiny.setInputValue) Shiny.setInputValue('aceEditorReady', Math.random(), {priority: 'event'});
       }
   }, 200);
 
@@ -13555,6 +13552,7 @@ Shiny.addCustomMessageHandler('syncPdfView', function(data) {
         var spellWorker;
         var spellCheckTimer;
         var suggestionBox;
+        window.aceSpellCheckEnabled = true;
 
         // MAPPING: LibreOffice GitHub
 const SPELLCHECK_BASE = \"dictionaries/\";
@@ -13787,6 +13785,7 @@ function updateLanguageDropdown() {
 
         // Trigger check function (Global reference)
         window.triggerSpellCheck = function() {
+           if (!window.aceSpellCheckEnabled) return;
            var editor = ace.edit('sourceEditor');
            if (!editor) return;
            var session = editor.getSession();
@@ -15601,6 +15600,7 @@ createWrapper() {
     /* --- NATIVE FOLD ENGINE PHYSICS --- */
 
     getFoldRange(row) {
+      if (!this.editor || !this.editor.session || !this.editor.session.getFoldWidgetRange) return null;
       if (this.scopeRanges.has(row)) return this.scopeRanges.get(row);
       const range = this.editor.session.getFoldWidgetRange(row);
       if (range) {
@@ -15623,7 +15623,7 @@ createWrapper() {
               break; // Gracefully yield to prevent browser lockup
           }
 
-          if (session.getFoldWidget(r) === 'start') {
+          if (session.getFoldWidget && session.getFoldWidget(r) === 'start') {
               const range = this.getFoldRange(r);
               // Mathematics perfectly confirm an ancestor if its end row wraps the start row
               if (range && range.end.row >= startRow) {
@@ -15652,7 +15652,7 @@ createWrapper() {
       const buffer = lineHeight / 2;
 
       for (let r = topDocRow + 1; r <= searchEndRow; r++) {
-         if (session.getFoldWidget(r) === 'start') {
+         if (session.getFoldWidget && session.getFoldWidget(r) === 'start') {
              const range = this.getFoldRange(r);
              if (range && range.end.row > r) {
                 const targetSlotIndex = baseStack.length + dockingStack.length;
@@ -15674,7 +15674,13 @@ createWrapper() {
     }
 
     update(forceRebuild = false) {
-      if (!this.isEnabled || !this.editor) return;
+      if (!this.isEnabled || !this.editor || !this.editor.container) return;
+      
+      // PERFORMANCE: Skip updates if the editor is not visible
+      if (this.editor.container.offsetWidth === 0) return;
+
+      const session = this.editor.session;
+      if (!session || !session.getFoldWidget) return;
 
       const rows = this.scanForStickyRows();
       const rowString = rows.join(',');
@@ -16306,7 +16312,8 @@ createWrapper() {
 
       for (var m2 in mainMarkers) {
           var marker = mainMarkers[m2];
-          if (marker.clazz !== 'ace_active-line') {
+          // ONLY sync standard static markers (string types) to prevent 'r.update' errors
+          if (marker.clazz !== 'ace_active-line' && typeof marker.type === 'string') {
               miniSession.addMarker(marker.range, marker.clazz, marker.type, marker.inFront);
           }
       }

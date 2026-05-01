@@ -1,4 +1,4 @@
-console.log("=== Mudskipper Visual Editor Bundle Loaded (v2) ===");
+// Mudskipper Visual Editor Bundle Loaded (v2)
 import { EditorState } from "@codemirror/state";
 import {
   EditorView,
@@ -122,7 +122,6 @@ export function initVisualEditor(parentElement, initialDoc, onChange) {
           
           if (exactMatch) {
             foundPath = exactMatch;
-            console.log(`[VisualEditor] Direct match for "${path}": ${foundPath}`);
           } else {
             // Strategy 2: Recursive Search (Find file anywhere in the project)
             // Look for a file that matches the filename exactly
@@ -133,9 +132,6 @@ export function initVisualEditor(parentElement, initialDoc, onChange) {
             
             if (fuzzyMatch) {
               foundPath = fuzzyMatch;
-              console.log(`[VisualEditor] Recursive discovery for "${path}": found at ${foundPath}`);
-            } else {
-              console.warn(`[VisualEditor] Could not resolve figure: "${path}"`);
             }
           }
 

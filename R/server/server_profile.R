@@ -1117,13 +1117,8 @@
         var btn = document.querySelector('%s');
         if (btn) {
           btn.classList.add('active');
-          console.log('Activated button:', '%s');
-        } else {
-          console.log('Button not found:', '%s');
         }
       ",
-          button_selector,
-          button_selector,
           button_selector
         ))
       }

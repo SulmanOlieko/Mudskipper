@@ -531,8 +531,9 @@
     session$sendCustomMessage("updateStatus", paste0("Font size set to ", fs))
   })
 
-  # Auto-save & Dynamic Bibliography Update (200ms)
-  autoSaveSource <- debounce(reactive(input$sourceEditor), 200)
+  # Auto-save & Dynamic Bibliography Update (1 second - safer for UI thread)
+  autoSaveSource <- debounce(reactive(input$sourceEditor), 1000)
+  lastSavedContent <- reactiveVal(NULL)
 
   observeEvent(
     autoSaveSource(),
@@ -548,15 +549,12 @@
       new_content <- autoSaveSource()
       if (is.null(new_content)) return()
 
-      if (file.exists(filePath)) {
-        disk_content <- tryCatch({
-          paste(readLines(filePath, warn = FALSE), collapse = "\n")
-        }, error = function(e) NULL)
-        if (!is.null(disk_content) && identical(new_content, disk_content)) return()
-      }
+      # PERFORMANCE: Memory-based dirty check to avoid reading from disk every 1s
+      if (!is.null(lastSavedContent()) && identical(new_content, lastSavedContent())) return()
 
       tryCatch({
         writeLines(new_content, filePath)
+        lastSavedContent(new_content) # Update memory cache
         updateStatus(file_name)
       }, error = function(e) {
         showTablerAlert("danger", "Save Error", paste("Failed to save:", e$message), 5000)
@@ -572,8 +570,8 @@
     ignoreInit = TRUE
   )
 
-  # History Saving & Timestamp update (5 seconds)
-  historySaveDebounced <- debounce(reactive(input$sourceEditor), 5000)
+  # History Saving & Timestamp update (10 seconds)
+  historySaveDebounced <- debounce(reactive(input$sourceEditor), 10000)
   observeEvent(historySaveDebounced(), {
     isolate({
       projId <- activeProjectId()
@@ -592,8 +590,8 @@
     }
   })
 
-  # Optimized Outline & metadata refresh (2 seconds)
-  outlineSource <- debounce(reactive(input$sourceEditor), 2000)
+  # Optimized Outline & metadata refresh (5 seconds)
+  outlineSource <- debounce(reactive(input$sourceEditor), 5000)
   observeEvent(outlineSource(), {
     isolate({
       file_name <- currentFile()
