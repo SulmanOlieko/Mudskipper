@@ -1,5 +1,4 @@
 // Mudskipper Visual Editor Bundle Loaded (v2)
-import { EditorState, Compartment } from "@codemirror/state";
 import {
   EditorView,
   keymap,
@@ -9,7 +8,10 @@ import {
   crosshairCursor,
   dropCursor,
   tooltips,
+  Decoration,
+  DecorationSet,
 } from "@codemirror/view";
+import { EditorState, Compartment, StateEffect, StateField } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { foldGutter, indentOnInput, indentUnit } from "@codemirror/language";
 import i18n from '@/infrastructure/i18n';
@@ -33,7 +35,31 @@ import { geometryChangeEvent } from "@/features/source-editor/extensions/geometr
 import { keymaps } from "@/features/source-editor/extensions/keymaps.ts";
 
 const darkThemeConf = new Compartment();
-export const BUNDLE_VERSION = 'v4';
+export const BUNDLE_VERSION = 'v5';
+
+// --- SPELLCHECK DECORATIONS ---
+const addSpellcheckEffect = StateEffect.define();
+const clearSpellcheckEffect = StateEffect.define();
+
+const spellcheckField = StateField.define({
+  create() {
+    return Decoration.none;
+  },
+  update(decorations, tr) {
+    decorations = decorations.map(tr.changes);
+    for (const effect of tr.effects) {
+      if (effect.is(addSpellcheckEffect)) {
+        const deco = Decoration.mark({ class: 'cm-misspelled' });
+        const ranges = effect.value.map(t => deco.range(t.from, t.to));
+        decorations = decorations.update({ add: ranges, sort: true });
+      } else if (effect.is(clearSpellcheckEffect)) {
+        decorations = Decoration.none;
+      }
+    }
+    return decorations;
+  },
+  provide: f => EditorView.decorations.from(f)
+});
 
 export function initVisualEditor(parentElement, initialDoc, onChange, settings = {}) {
   const isVisual = true;
@@ -172,6 +198,9 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
       effectListeners(),
       geometryChangeEvent(),
 
+      // Spellcheck field
+      spellcheckField,
+
       // Document change listener
       EditorView.updateListener.of((update) => {
         if (update.docChanged && onChange) {
@@ -275,4 +304,61 @@ export function setCursorPosition(view, row, column = 0) {
     selection: { anchor: pos },
     scrollIntoView: true
   });
+}
+
+/**
+ * Update misspelled decorations based on worker results
+ */
+export function updateSpellcheckDecorations(view, typos) {
+  if (!view) return;
+  
+  const effects = [clearSpellcheckEffect.of()];
+  
+  if (typos && typos.length > 0) {
+    const ranges = typos.map(t => {
+      // Ace uses row/col, we need to convert to absolute pos
+      try {
+        const line = view.state.doc.line(t.row + 1);
+        const from = line.from + t.col;
+        const to = from + t.len;
+        return { from, to };
+      } catch (e) {
+        return null;
+      }
+    }).filter(r => r !== null);
+    
+    if (ranges.length > 0) {
+      effects.push(addSpellcheckEffect.of(ranges));
+    }
+  }
+  
+  view.dispatch({ effects });
+}
+
+/**
+ * Get count of misspelled words
+ */
+export function getSpellcheckErrorCount(view) {
+  if (!view) return 0;
+  const field = view.state.field(spellcheckField, false);
+  if (!field) return 0;
+  let count = 0;
+  field.between(0, view.state.doc.length, () => {
+    count++;
+  });
+  return count;
+}
+
+/**
+ * Insert text at current cursor position
+ */
+export function insertText(view, text) {
+  if (!view) return;
+  const mainSelection = view.state.selection.main;
+  view.dispatch({
+    changes: { from: mainSelection.from, to: mainSelection.to, insert: text },
+    selection: { anchor: mainSelection.from + text.length },
+    scrollIntoView: true
+  });
+  view.focus();
 }

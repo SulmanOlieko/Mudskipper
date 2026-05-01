@@ -1,5 +1,5 @@
 window.cm6View = null;
-let currentMode = 'source'; // 'source' | 'visual'
+window.currentMode = 'source'; // 'source' | 'visual'
 let activeFileNameOriginal = '';
 
 /**
@@ -19,14 +19,14 @@ window.updateToggleState = function(filename) {
         } else {
             visualBtn.classList.add("disabled");
             visualBtn.title = "Visual Editor only available for .tex files";
-            if (currentMode === 'visual') {
+            if (window.currentMode === 'visual') {
                 window.setEditorMode('source');
             }
         }
     }
     
     if (visualBtn && sourceBtn) {
-        if (currentMode === 'visual' && isTex) {
+        if (window.currentMode === 'visual' && isTex) {
             visualBtn.classList.add("active");
             sourceBtn.classList.remove("active");
             visualBtn.setAttribute("aria-selected", "true");
@@ -36,7 +36,7 @@ window.updateToggleState = function(filename) {
             visualBtn.classList.remove("active");
             sourceBtn.setAttribute("aria-selected", "true");
             visualBtn.setAttribute("aria-selected", "false");
-            currentMode = 'source'; 
+            window.currentMode = 'source'; 
         }
     }
 };
@@ -48,7 +48,7 @@ window.setEditorMode = function(mode) {
     const isTex = activeFileNameOriginal.toLowerCase().endsWith('.tex');
     if (mode === 'visual' && !isTex) return;
     
-    currentMode = mode;
+    window.currentMode = mode;
     
     const aceWrapper = document.getElementById("sourceEditor");
     const visualWrapper = document.getElementById("visualEditorContainer");
@@ -60,21 +60,21 @@ window.setEditorMode = function(mode) {
         if (!aceEd._originalGetValue) {
             aceEd._originalGetValue = aceEd.getValue.bind(aceEd);
             aceEd.getValue = function() {
-                if (currentMode === 'visual' && window.cm6View) {
+                if (window.currentMode === 'visual' && window.cm6View) {
                     return window.cm6View.state.doc.toString();
                 }
                 return aceEd._originalGetValue();
             };
         }
 
-        if (currentMode === 'visual') {
+        if (window.currentMode === 'visual') {
             const content = aceEd._originalGetValue();
             const aceCursor = aceEd.getCursorPosition();
             
             aceWrapper.style.display = "none";
             visualWrapper.style.display = "block";
             
-            if (!cm6View && window.MudskipperVisualEditor) {
+            if (!window.cm6View && window.MudskipperVisualEditor) {
                 // Robust theme detection
                 const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
                                     document.documentElement.classList.contains('overall-theme-dark');
@@ -100,6 +100,15 @@ window.setEditorMode = function(mode) {
                             aceEd.session._emit('change', { action: 'insert', start: {row:0, column:0}, end: {row:0, column:0}, lines: [] });
                         } else if (aceEd.session && aceEd.session._signal) {
                             aceEd.session._signal('change', { action: 'insert', start: {row:0, column:0}, end: {row:0, column:0}, lines: [] });
+                        }
+                        
+                        // Trigger updates for visual editor
+                        if (window.triggerSpellCheck) {
+                            clearTimeout(window._visualSpellTimer);
+                            window._visualSpellTimer = setTimeout(() => window.triggerSpellCheck(), 1500);
+                        }
+                        if (window.updateWordCountWithWorker) {
+                            window.updateWordCountWithWorker();
                         }
                     },
                     { theme: theme, fontSize: 14 }
@@ -132,6 +141,10 @@ window.setEditorMode = function(mode) {
             if (window.stickyScrollInstance) window.stickyScrollInstance.disable();
             if (window.MathPreviewController) window.MathPreviewController.disable();
             window.aceSpellCheckEnabled = false;
+            
+            // Immediate sync for status bar
+            if (window.triggerSpellCheck) window.triggerSpellCheck();
+            if (window.updateWordCountWithWorker) window.updateWordCountWithWorker();
         } else {
             visualWrapper.style.display = "none";
             aceWrapper.style.display = "block";
@@ -165,6 +178,7 @@ window.setEditorMode = function(mode) {
             
             window.aceSpellCheckEnabled = true;
             if (window.triggerSpellCheck) window.triggerSpellCheck();
+            if (window.updateWordCountWithWorker) window.updateWordCountWithWorker();
         }
     }
     
@@ -172,7 +186,7 @@ window.setEditorMode = function(mode) {
 };
 
 window.toggleEditorMode = function() {
-    window.setEditorMode(currentMode === 'source' ? 'visual' : 'source');
+    window.setEditorMode(window.currentMode === 'source' ? 'visual' : 'source');
 };
 
 // Intercept file loading to update filename state
@@ -188,13 +202,13 @@ window.toggleEditorMode = function() {
                     }
                 }
                 
-                if (type === 'cmdSafeLoadFile' && currentMode === 'visual' && window.cm6View) {
+                if (type === 'cmdSafeLoadFile' && window.currentMode === 'visual' && window.cm6View) {
                     if (window.MudskipperVisualEditor) {
                         window.MudskipperVisualEditor.setEditorContent(window.cm6View, msg.content);
                     }
                 }
 
-                if (type === 'aceGoTo' && currentMode === 'visual' && window.cm6View) {
+                if (type === 'aceGoTo' && window.currentMode === 'visual' && window.cm6View) {
                     if (window.MudskipperVisualEditor) {
                         window.MudskipperVisualEditor.goToLine(window.cm6View, msg.line);
                     }
@@ -222,33 +236,67 @@ Shiny.addCustomMessageHandler('updateProjectState', function(data) {
     }
 });
 
-// --- RE-INITIALIZE ON THEME CHANGES ---
-(function() {
-    const themeObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && (mutation.attributeName === 'data-bs-theme' || mutation.attributeName === 'class')) {
-                // Use window.cm6View directly
-                if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
-                    // Small delay to ensure classes are fully applied
-                    setTimeout(() => {
-                        const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
-                                            document.documentElement.classList.contains('overall-theme-dark');
-                        const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
-                                           document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                        const isDarkMode = hasDarkClass || hasDarkAttr;
-                        const theme = isDarkMode ? 'dark' : 'light';
-                        
-                        console.log('[VisualBridge] Theme change detected (observer):', theme);
-                        const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ theme: theme, fontSize: 14 });
-                        window.cm6View.dispatch({
-                            effects: themeEffects
-                        });
-                    }, 50);
+// Wait for DOM to be ready before initializing observers and helpers
+document.addEventListener('DOMContentLoaded', () => {
+    // --- RE-INITIALIZE ON THEME CHANGES ---
+    (function() {
+        const themeObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && (mutation.attributeName === 'data-bs-theme' || mutation.attributeName === 'class')) {
+                    if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
+                        setTimeout(() => {
+                            const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
+                                                document.documentElement.classList.contains('overall-theme-dark');
+                            const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
+                                               document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                            const isDarkMode = hasDarkClass || hasDarkAttr;
+                            const theme = isDarkMode ? 'dark' : 'light';
+                            
+                            console.log('[VisualBridge] Theme change detected (observer):', theme);
+                            const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ theme: theme, fontSize: 14 });
+                            window.cm6View.dispatch({
+                                effects: themeEffects
+                            });
+                        }, 50);
+                    }
                 }
-            }
+            });
         });
-    });
 
-    themeObserver.observe(document.documentElement, { attributes: true });
-    themeObserver.observe(document.body, { attributes: true });
-})();
+        if (document.documentElement) themeObserver.observe(document.documentElement, { attributes: true });
+        if (document.body) themeObserver.observe(document.body, { attributes: true });
+    })();
+
+    /**
+     * Unified helper to insert content into whichever editor is currently active
+     */
+    window.insertContentToActiveEditor = function(content) {
+        if (!content) return;
+        
+        // Normalize line endings to \n for consistency across editors
+        const normalized = content.replace(/\r\n/g, '\n');
+        console.log('[VisualBridge] Inserting content. Mode:', window.currentMode, 'Content:', normalized.substring(0, 20) + (normalized.length > 20 ? '...' : ''));
+        
+        if (window.currentMode === 'visual' && window.cm6View) {
+            if (window.MudskipperVisualEditor && window.MudskipperVisualEditor.insertText) {
+                console.log('[VisualBridge] Inserting into CM6');
+                window.MudskipperVisualEditor.insertText(window.cm6View, normalized);
+                return;
+            } else {
+                console.warn('[VisualBridge] CM6 active but insertText API not found');
+            }
+        }
+        
+        // Fallback to Ace
+        try {
+            const aceEd = ace.edit("sourceEditor");
+            if (aceEd) {
+                console.log('[VisualBridge] Inserting into Ace');
+                aceEd.insert(normalized);
+                aceEd.focus();
+            }
+        } catch (e) {
+            console.error("Failed to insert content into Ace:", e);
+        }
+    };
+});

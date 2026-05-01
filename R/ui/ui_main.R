@@ -2096,10 +2096,14 @@ app_ui <- fluidPage(
     // 3. HIJACK the 'insert' method
     // This intercepts the LaTeX code from the toolbar and sends it to Ace instead
     eqInterface.insert = function(latex) {
-      var editor = ace.edit('sourceEditor');
-      if(editor) {
-        editor.insert(latex);
-        editor.focus();
+      if (window.insertContentToActiveEditor) {
+        window.insertContentToActiveEditor(latex);
+      } else {
+        var editor = ace.edit('sourceEditor');
+        if(editor) {
+          editor.insert(latex);
+          editor.focus();
+        }
       }
     };
 
@@ -4028,11 +4032,17 @@ body {
   border-bottom: 2px dotted #d63939; /* Red underline */
 }
 
+.cm-misspelled {
+  border-bottom: 2px dotted #d63939;
+  position: relative;
+  z-index: 2;
+}
+
 /* Spellcheck Suggestion Box */
 #spell-suggestions {
   display: none;
-  position: fixed;
-  z-index: 10000;
+  position: absolute;
+  z-index: 100000 !important;
   background: var(--tblr-bg-surface, #fff);
   border: 1px solid var(--tblr-border-color, #ccc);
   border-radius: var(--tblr-border-radius);
@@ -13761,8 +13771,10 @@ function updateLanguageDropdown() {
           var initLang = localStorage.getItem('mudskipper_spell_lang') || 'en_GB';
           changeLanguage(initLang);
 
+          window.lastTypos = [];
           spellWorker.onmessage = function(e) {
             if (e.data.type === 'result') {
+              window.lastTypos = e.data.typos;
               renderMarkers(e.data.typos);
             } else if (e.data.type === 'suggestions_ready') {
               showSuggestions(e.data.list, e.data.range, e.data.coords);
@@ -13790,16 +13802,33 @@ function updateLanguageDropdown() {
 
         // Trigger check function (Global reference)
         window.triggerSpellCheck = function() {
-           if (!window.aceSpellCheckEnabled) return;
-           var editor = ace.edit('sourceEditor');
-           if (!editor) return;
-           var session = editor.getSession();
-           var lines = session.getLines(0, session.getLength());
+           // We check for workers instead of aceSpellCheckEnabled here because 
+           // we want it to work for Visual Editor even if Ace spellcheck is disabled in the bridge.
+           if (!spellWorker) return;
+           
+           let lines = [];
+           if (window.currentMode === 'visual' && window.cm6View) {
+             const content = window.cm6View.state.doc.toString();
+             lines = content.split('\\n');
+           } else {
+             if (!window.aceSpellCheckEnabled) return;
+             var editor = ace.edit('sourceEditor');
+             if (!editor) return;
+             var session = editor.getSession();
+             lines = session.getLines(0, session.getLength());
+           }
            spellWorker.postMessage({ lines: lines });
         };
 
         // --- 2. Render Markers ---
         function renderMarkers(typos) {
+          if (window.currentMode === 'visual' && window.cm6View) {
+            if (window.MudskipperVisualEditor && window.MudskipperVisualEditor.updateSpellcheckDecorations) {
+              window.MudskipperVisualEditor.updateSpellcheckDecorations(window.cm6View, typos);
+            }
+            return;
+          }
+
           var editor = ace.edit('sourceEditor');
           if (!editor) return;
           var session = editor.getSession();
@@ -13821,7 +13850,9 @@ function updateLanguageDropdown() {
 
         // --- 3. Handle Clicks on Errors ---
         function setupInteraction(editor) {
+          // Ace Click Listener
           editor.on('click', function(e) {
+            if (window.currentMode !== 'source') return;
             var pos = e.getDocumentPosition();
             var session = editor.getSession();
             var markers = session.getMarkers();
@@ -13851,9 +13882,57 @@ function updateLanguageDropdown() {
             }
           });
 
+          // CM6 Click Listener (Global delegation)
+          document.addEventListener('click', function(e) {
+            if (window.currentMode !== 'visual' || !window.cm6View) return;
+            
+            const visualWrapper = document.getElementById(\"visualEditorContainer\");
+            if (!visualWrapper || !visualWrapper.contains(e.target)) return;
+            
+            // Wait for CM6 to update its selection and avoid immediate hiding from document click
+            setTimeout(() => {
+                const view = window.cm6View;
+                const pos = view.state.selection.main.head;
+                
+                // Find typo at this position
+                const typo = (window.lastTypos || []).find(t => {
+                    try {
+                        const line = view.state.doc.line(t.row + 1);
+                        const from = line.from + t.col;
+                        const to = from + t.len;
+                        return pos >= from && pos <= to;
+                    } catch(err) { return false; }
+                });
+                
+                if (typo) {
+                    const line = view.state.doc.line(typo.row + 1);
+                    const from = line.from + typo.col;
+                    const to = from + typo.len;
+                    const wordText = typo.word;
+                    
+                    // Get screen coordinates for CM6 (viewport relative)
+                    const coords = view.coordsAtPos(pos);
+                    if (coords) {
+                        spellWorker.postMessage({
+                            command: 'suggest',
+                            word: wordText,
+                            range: { from, to },
+                            coords: { 
+                                x: coords.left + window.pageXOffset, 
+                                y: coords.top + window.pageYOffset 
+                            }
+                        });
+                    }
+                } else {
+                    suggestionBox.style.display = 'none';
+                }
+            }, 150);
+          });
+
           // Auto-detect language 2 seconds after the user stops typing
             var langDetectTimer;
             editor.on('change', function() {
+                if (window.currentMode !== 'source') return;
                 clearTimeout(langDetectTimer);
                 langDetectTimer = setTimeout(updateLanguageDropdown, 2000);
 
@@ -13863,12 +13942,7 @@ function updateLanguageDropdown() {
                 spellCheckTimer = setTimeout(triggerSpellCheck, 1500);
             });
 
-          editor.on('change', function() {
-            suggestionBox.style.display = 'none';
-            clearTimeout(spellCheckTimer);
-            spellCheckTimer = setTimeout(triggerSpellCheck, 1500);
-          });
-
+          // Global change listener for visual mode already handled in visual-bridge.js
         }
 
         // --- 4. Show & Apply Suggestions ---
@@ -13890,10 +13964,26 @@ function updateLanguageDropdown() {
           var windowHeight = window.innerHeight;
           var lineHeight = 20;
 
-          if (coords.y + lineHeight + boxHeight > windowHeight) {
+          // For absolute positioning, we check against viewport bounds
+          var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          var relativeY = coords.y - scrollTop;
+
+          if (relativeY + lineHeight + boxHeight > windowHeight) {
             suggestionBox.style.top = (coords.y - boxHeight) + 'px';
           } else {
              suggestionBox.style.top = (coords.y + lineHeight) + 'px';
+          }
+          
+          // Ensure it's not off-screen horizontally
+          var boxWidth = suggestionBox.offsetWidth;
+          var windowWidth = window.innerWidth;
+          var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+          var relativeX = coords.x - scrollLeft;
+
+          if (relativeX + boxWidth > windowWidth) {
+            suggestionBox.style.left = (coords.x - boxWidth) + 'px';
+          } else {
+            suggestionBox.style.left = coords.x + 'px';
           }
 
           var items = suggestionBox.querySelectorAll('.suggestion-item');
@@ -13907,6 +13997,15 @@ function updateLanguageDropdown() {
         }
 
         function replaceWord(newWord, rangeData) {
+          if (window.currentMode === 'visual' && window.cm6View) {
+             const view = window.cm6View;
+             view.dispatch({
+               changes: { from: rangeData.from, to: rangeData.to, insert: newWord },
+               selection: { anchor: rangeData.from + newWord.length }
+             });
+             triggerSpellCheck();
+             return;
+          }
           var editor = ace.edit('sourceEditor');
           var Range = ace.require('ace/range').Range;
           var range = new Range(rangeData.start.row, rangeData.start.column, rangeData.end.row, rangeData.end.column);
@@ -14380,10 +14479,16 @@ function initializeLatexWordCounter() {
 
 // 2. Send text to worker (Triggered by editor changes)
 function updateWordCountWithWorker() {
-    const editor = ace.edit(\"sourceEditor\");
-    if (!editor || !latexWordCounterWorker) return;
+    let text = \"\";
+    if (window.currentMode === 'visual' && window.cm6View) {
+        text = window.cm6View.state.doc.toString();
+    } else {
+        const editor = ace.edit(\"sourceEditor\");
+        if (!editor) return;
+        text = editor.getSession().getValue();
+    }
 
-    const text = editor.getSession().getValue();
+    if (!latexWordCounterWorker) return;
 
     // Skip if text hasn't changed
     if (text === lastProcessedTextForCounter) return;
@@ -14620,7 +14725,11 @@ window.toggleDictation = function() {
 
     // Single Insert + Single Focus
     if (finalString.length > 0) {
-      editor.insert(finalString);
+      if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
+        window.insertContentToActiveEditor(finalString);
+      } else {
+        editor.insert(finalString);
+      }
       editor.focus();
     }
   };
@@ -14733,8 +14842,9 @@ function openCopyProjectOverlay() {
       }
 
       if (text) {
-        // Check if snippet manager is available, else insert plain text
-        if (editor.insertSnippet) {
+        if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
+            window.insertContentToActiveEditor(text);
+        } else if (editor.insertSnippet) {
             editor.insertSnippet(text);
         } else {
             editor.insert(text);
@@ -14749,10 +14859,12 @@ function openCopyProjectOverlay() {
         Shiny.addCustomMessageHandler(\"cmdInsertText\", function(data) {
           var editor = getAceEditor();
           if(editor) {
-              if (data.text.includes(\"${1\")) {
-                 editor.insertSnippet(data.text);
+              if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
+                  window.insertContentToActiveEditor(data.text);
+              } else if (data.text.includes(\"${1\")) {
+                  editor.insertSnippet(data.text);
               } else {
-                 editor.insert(data.text);
+                  editor.insert(data.text);
               }
               editor.focus();
           }
@@ -14784,16 +14896,21 @@ function openCopyProjectOverlay() {
     });
 
     // Unified Helper function for insertion
-    // Checks for Ace Editor first, then falls back to standard textarea
+    // Checks for Active Editor (Ace or CM6)
     function insertSymbolToEditor(sym) {
-      // 1. Try Ace Editor (RMarkdown/Shiny standard)
+      if (window.insertContentToActiveEditor) {
+          window.insertContentToActiveEditor(sym);
+          return;
+      }
+      
+      // Fallback
       if (typeof getAceEditor === \"function\") {
-         var editor = getAceEditor();
-         if (editor) {
-            editor.insert(sym);
-            editor.focus();
-            return;
-         }
+          var editor = getAceEditor();
+          if (editor) {
+             editor.insert(sym);
+             editor.focus();
+             return;
+          }
       }
 
       // 2. Fallback to standard Textarea (sourceEditor)
@@ -16668,7 +16785,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Insert
         var editor = ace.edit('sourceEditor');
-        if (editor) { editor.insert(latex); editor.focus(); }
+        if (window.insertContentToActiveEditor) {
+            window.insertContentToActiveEditor(latex);
+        } else if (editor) { 
+            editor.insert(latex); 
+            editor.focus(); 
+        }
 
         closeTableOverlay();
 
