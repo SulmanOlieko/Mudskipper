@@ -22,7 +22,7 @@
 #   R/server/server_misc.R      — Modals, imports, downloads, inserts, citations
 #   R/server/server_chat.R      — AI chat, history, message stream
 # =============================================================================
-
+setwd("~/Mudskipper")
 # ---- 1. Global libraries, options, and constants ----
 source("R/globals.R")
 

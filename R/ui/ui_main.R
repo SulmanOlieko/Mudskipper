@@ -11179,14 +11179,18 @@ document.addEventListener('keydown', function(e) {
       var editor = ace.edit('sourceEditor');
       if (!editor) return;
 
+      var cursorTimer;
       editor.getSession().selection.on('changeCursor', function() {
-        var cursorPosition = editor.getCursorPosition();
-        if (window.Shiny && Shiny.setInputValue) {
-          Shiny.setInputValue('cursorPosition', {
-            row: cursorPosition.row,
-            column: cursorPosition.column
-          }, {priority: 'event'});
-        }
+        if (cursorTimer) clearTimeout(cursorTimer);
+        cursorTimer = setTimeout(function() {
+          var cursorPosition = editor.getCursorPosition();
+          if (window.Shiny && Shiny.setInputValue) {
+            Shiny.setInputValue('cursorPosition', {
+              row: cursorPosition.row,
+              column: cursorPosition.column
+            }, {priority: 'event'});
+          }
+        }, 150);
       });
     } catch(e) {
       console.error('Error setting up cursor tracking:', e);

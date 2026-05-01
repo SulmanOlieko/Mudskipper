@@ -69,6 +69,8 @@ window.setEditorMode = function(mode) {
 
         if (currentMode === 'visual') {
             const content = aceEd._originalGetValue();
+            const aceCursor = aceEd.getCursorPosition();
+            
             aceWrapper.style.display = "none";
             visualWrapper.style.display = "block";
             
@@ -86,8 +88,10 @@ window.setEditorMode = function(mode) {
                     }
                 );
                 cm6View.dom.style.height = "100%";
+                window.MudskipperVisualEditor.setCursorPosition(cm6View, aceCursor.row, aceCursor.column);
             } else if (cm6View) {
                 window.MudskipperVisualEditor.setEditorContent(cm6View, content);
+                window.MudskipperVisualEditor.setCursorPosition(cm6View, aceCursor.row, aceCursor.column);
             }
             
             // --- TEMPORARILY DISABLE ACE FEATURES ---
@@ -98,13 +102,27 @@ window.setEditorMode = function(mode) {
         } else {
             visualWrapper.style.display = "none";
             aceWrapper.style.display = "block";
+            
             if (cm6View) {
                 const content = cm6View.state.doc.toString();
-                if (aceEd._originalGetValue() !== content) {
-                    const cursor = aceEd.getCursorPosition();
+                const cmCursor = window.MudskipperVisualEditor.getCursorPosition(cm6View);
+                
+                // PERFORMANCE: Only update Ace if content actually changed (normalizing line endings)
+                const currentAce = aceEd._originalGetValue();
+                if (currentAce.replace(/\r\n/g, '\n') !== content.replace(/\r\n/g, '\n')) {
                     aceEd.session.setValue(content);
-                    aceEd.moveCursorToPosition(cursor);
                 }
+                
+                // Immediate resize to prevent "blank" editor
+                aceEd.resize(true);
+
+                // Defer cursor and focus slightly to ensure Ace has fully processed the layout change
+                setTimeout(() => {
+                    aceEd.resize(true);
+                    aceEd.moveCursorToPosition({ row: cmCursor.row, column: cmCursor.column });
+                    aceEd.renderer.scrollCursorIntoView({ row: cmCursor.row, column: cmCursor.column }, 0.5);
+                    aceEd.focus();
+                }, 10);
             }
             
             // --- RESTORE ACE FEATURES BASED ON SETTINGS ---
@@ -128,7 +146,7 @@ window.toggleEditorMode = function() {
 (function() {
     const origAddCustomMessageHandler = Shiny.addCustomMessageHandler;
     Shiny.addCustomMessageHandler = function(type, handler) {
-        if (type === 'cmdSafeLoadFile' || type === 'updateStatus') {
+        if (type === 'cmdSafeLoadFile' || type === 'updateStatus' || type === 'aceGoTo') {
             const wrappedHandler = function(msg) {
                 if (type === 'updateStatus') {
                     const cleanName = msg.replace(/<[^>]*>/g, '').replace(/\*/g, '').trim();
@@ -142,6 +160,14 @@ window.toggleEditorMode = function() {
                         window.MudskipperVisualEditor.setEditorContent(cm6View, msg.content);
                     }
                 }
+
+                if (type === 'aceGoTo' && currentMode === 'visual' && cm6View) {
+                    if (window.MudskipperVisualEditor) {
+                        window.MudskipperVisualEditor.goToLine(cm6View, msg.line);
+                    }
+                    return; 
+                }
+                
                 handler(msg);
             };
             return origAddCustomMessageHandler.call(Shiny, type, wrappedHandler);

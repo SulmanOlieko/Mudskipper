@@ -165,6 +165,16 @@ export function initVisualEditor(parentElement, initialDoc, onChange) {
         if (update.docChanged && onChange) {
           onChange(update.state.doc.toString());
         }
+        
+        // --- CURSOR TRACKING FOR OUTLINE ---
+        if (update.selectionSet && window.Shiny && Shiny.setInputValue) {
+          const pos = update.state.selection.main.head;
+          const line = update.state.doc.lineAt(pos);
+          Shiny.setInputValue('cursorPosition', {
+            row: line.number - 1,
+            column: pos - line.from
+          }, {priority: 'event'});
+        }
       }),
     ],
   });
@@ -185,4 +195,43 @@ export function setEditorContent(view, content) {
       changes: { from: 0, to: view.state.doc.length, insert: content },
     });
   }
+}
+
+export function goToLine(view, line) {
+  if (!view || typeof line !== 'number') return;
+  
+  const cmLine = line + 1; // Ace 0-indexed to CM6 1-indexed
+  if (cmLine < 1 || cmLine > view.state.doc.lines) return;
+  
+  const lineObj = view.state.doc.line(cmLine);
+  view.dispatch({
+    selection: { anchor: lineObj.from },
+    scrollIntoView: true,
+    userEvent: 'select'
+  });
+  view.focus();
+}
+
+export function getCursorPosition(view) {
+  if (!view) return { row: 0, column: 0 };
+  const pos = view.state.selection.main.head;
+  const line = view.state.doc.lineAt(pos);
+  return {
+    row: line.number - 1,
+    column: pos - line.from
+  };
+}
+
+export function setCursorPosition(view, row, column = 0) {
+  if (!view) return;
+  const cmLine = row + 1;
+  if (cmLine < 1 || cmLine > view.state.doc.lines) return;
+  
+  const lineObj = view.state.doc.line(cmLine);
+  const pos = Math.min(lineObj.from + column, lineObj.to);
+  
+  view.dispatch({
+    selection: { anchor: pos },
+    scrollIntoView: true
+  });
 }

@@ -713,7 +713,11 @@
         }
       }
 
-      currentOutlineItem(activeItem)
+      # PERFORMANCE: Only update reactive value if the active section has changed
+      # This prevents redundant JS calls to highlight the outline
+      if (!identical(activeItem, isolate(currentOutlineItem()))) {
+        currentOutlineItem(activeItem)
+      }
     },
     ignoreInit = TRUE
   )
