@@ -8,21 +8,16 @@ import { Annotation, Compartment, Extension, Facet } from '@codemirror/state'
  */
 export const visualHighlightStyle = syntaxHighlighting(
   HighlightStyle.define([
-    { tag: tags.link, class: 'ol-cm-link-text' },
-    { tag: tags.url, class: 'ol-cm-url' },
-    { tag: tags.typeName, class: 'ol-cm-monospace' },
-    { tag: tags.attributeValue, class: 'ol-cm-monospace' },
-    { tag: tags.keyword, class: 'ol-cm-monospace' },
-    { tag: tags.string, class: 'ol-cm-monospace' },
+    { tag: tags.keyword, class: 'ol-cm-command' },
+    { tag: tags.tagName, class: 'ol-cm-command' },
+    { tag: tags.typeName, class: 'ol-cm-command' },
+    { tag: tags.attributeValue, class: 'ol-cm-argument' },
+    { tag: tags.monospace, class: 'ol-cm-argument' },
+    { tag: tags.string, class: 'ol-cm-argument' },
     { tag: tags.punctuation, class: 'ol-cm-punctuation' },
-    { tag: tags.literal, class: 'ol-cm-monospace' },
+    { tag: tags.brace, class: 'ol-cm-brace' },
+    { tag: tags.comment, class: 'ol-cm-comment' },
     { tag: tags.strong, class: 'ol-cm-strong' },
-    {
-      tag: tags.monospace,
-      fontFamily: 'var(--source-font-family)',
-      lineHeight: 1,
-      overflowWrap: 'break-word',
-    },
   ])
 )
 
@@ -73,34 +68,43 @@ const mainVisualTheme = EditorView.theme({
     fontFamily: 'inherit',
     textUnderlineOffset: '2px',
   },
-  '.ol-cm-monospace': {
-    fontFamily: 'var(--source-font-family)',
-    lineHeight: 1,
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    fontVariant: 'normal',
-    textDecoration: 'none',
-    color: '#116329', // Overleaf-style command green
-    '&dark &, .overall-theme-dark &': {
-      color: '#4ec9b0', // Dark mode command teal/green
-    },
-  },
   '.ol-cm-strong': {
     fontWeight: 700,
   },
+  '.ol-cm-command': {
+    fontFamily: 'var(--source-font-family)',
+    color: '#0ca678', // Tabler Teal
+    '&dark &, .overall-theme-dark &': {
+      color: '#2fb344', // Lighter teal/green for dark mode
+    },
+  },
+  '.ol-cm-argument': {
+    fontFamily: 'var(--source-font-family)',
+    color: '#206bc4', // Tabler Primary
+    '&dark &, .overall-theme-dark &': {
+      color: '#4299e1', // Lighter blue for dark mode
+    },
+  },
   '.ol-cm-punctuation': {
     fontFamily: 'var(--source-font-family)',
-    lineHeight: 1,
     color: '#707070',
     '&dark &, .overall-theme-dark &': {
       color: '#a9a9a9',
     },
   },
   '.ol-cm-brace': {
-    opacity: '0.6',
-    color: '#116329', // Brackets often share command color
+    fontFamily: 'var(--source-font-family)',
+    color: '#354052', // Tabler Gray-dark/Black
+    opacity: '1',
     '&dark &, .overall-theme-dark &': {
-      color: '#4ec9b0',
+      color: '#f6f8fb', // White/Light gray for dark mode
+    },
+  },
+  '.ol-cm-comment': {
+    fontStyle: 'italic',
+    color: '#45aaf2', // Tabler Azure (Light Blue)
+    '&dark &, .overall-theme-dark &': {
+      color: '#74c0fc',
     },
   },
   '.ol-cm-math': {
