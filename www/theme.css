@@ -1,5 +1,70 @@
-
+/* THEME_VERSION: 19:12 */
   @import url("https://rsms.me/inter/inter.css");
+
+  .material-symbols, .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- Visual Editor UI Fixes --- */
+  
+  /* Fix Bootstrap 5 Popovers for Dropdowns */
+  .popover {
+    position: absolute !important;
+    z-index: 10000 !important;
+    display: block !important;
+    background-color: var(--table-generator-toolbar-background, #fff);
+    border: 1px solid rgba(0, 0, 0, .2);
+    border-radius: .3rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .15);
+  }
+
+  [data-bs-theme="dark"] .popover, 
+  .overall-theme-dark .popover {
+    background-color: #2c3645 !important;
+    color: #fff !important;
+    border-color: #444 !important;
+  }
+
+  .popover .popover-body {
+    padding: .5rem .75rem;
+  }
+
+  /* Ensure dropdown buttons inside popovers are visible and functional */
+  .popover .table-generator-toolbar-button {
+    color: inherit !important;
+    width: 100% !important;
+    text-align: left !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .popover .table-generator-toolbar-button:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Gutter Theme Sync */
+  [data-bs-theme="dark"] .cm-gutters,
+  .overall-theme-dark .cm-gutters {
+    background-color: #202124 !important;
+    color: #9aa0a6 !important;
+    border-right: 1px solid #3c4043 !important;
+  }
+
 /* --- 1. Import Fonts --- */
 
   /* Google Fonts: Fira Code, Instrument Serif, Roboto */

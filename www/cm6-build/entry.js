@@ -1,5 +1,5 @@
 // Mudskipper Visual Editor Bundle Loaded (v2)
-import { EditorState } from "@codemirror/state";
+import { EditorState, Compartment } from "@codemirror/state";
 import {
   EditorView,
   keymap,
@@ -12,6 +12,7 @@ import {
 } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { foldGutter, indentOnInput, indentUnit } from "@codemirror/language";
+import i18n from '@/infrastructure/i18n';
 
 // Overleaf visual extensions — the full pipeline
 import { visual, sourceOnly } from "@/features/source-editor/extensions/visual/visual.ts";
@@ -31,8 +32,19 @@ import { effectListeners } from "@/features/source-editor/extensions/effect-list
 import { geometryChangeEvent } from "@/features/source-editor/extensions/geometry-change-event.ts";
 import { keymaps } from "@/features/source-editor/extensions/keymaps.ts";
 
-export function initVisualEditor(parentElement, initialDoc, onChange) {
+const darkThemeConf = new Compartment();
+export const BUNDLE_VERSION = 'v4';
+
+export function initVisualEditor(parentElement, initialDoc, onChange, settings = {}) {
   const isVisual = true;
+  const { 
+    fontSize = 14, 
+    theme: activeOverallTheme = 'light' 
+  } = settings;
+  
+  console.log('[VisualEditor] BUNDLE UPDATED: May 1, 19:12 (v4)');
+  console.log('[VisualEditor] Initializing with theme:', activeOverallTheme);
+
 
   const state = EditorState.create({
     doc: initialDoc,
@@ -77,17 +89,28 @@ export function initVisualEditor(parentElement, initialDoc, onChange) {
       keymaps,
       filterCharacters(),
 
+      // Phrases for non-React widgets
+      EditorState.phrases.of({
+        "sorry_your_table_cant_be_displayed_at_the_moment": "Sorry, your table can't be displayed at the moment",
+        "this_could_be_because_we_cant_support_some_elements_of_the_table": "This could be because we can't support some elements of the table",
+        "view_code": "View code",
+        "column_width_is_custom_click_to_resize": "Column width is custom, click to resize",
+        "column_width_is_x_click_to_resize": "Column width is $width, click to resize"
+      }),
+
       // Language support — loads Overleaf's configured LaTeX parser
       language('document.tex'),
       indentUnit.of('    '),
 
       // Theme
       theme({
-        fontSize: 14,
+        fontSize: fontSize,
         fontFamily: "'Source Code Pro', monospace",
         lineHeight: 'normal',
-        activeOverallTheme: 'light',
+        activeOverallTheme: activeOverallTheme,
       }),
+      
+      darkThemeConf.of(activeOverallTheme === 'dark' ? EditorView.darkTheme.of(true) : []),
 
       // Editability
       editable(),
@@ -96,16 +119,6 @@ export function initVisualEditor(parentElement, initialDoc, onChange) {
       emptyLineFiller(),
 
       // === THE VISUAL EDITOR ===
-      // This loads the full Overleaf visual pipeline:
-      // - visualTheme (Noto Serif font, proper spacing, CSS)
-      // - visualHighlightStyle (syntax highlighting for visual mode)
-      // - atomicDecorations (preamble, environments, math, graphics, lists, etc.)
-      // - markDecorations (headings, formatting, colors, etc.)
-      // - visualKeymap (Enter for list items, Tab for indent, etc.)
-      // - commandTooltip
-      // - pasteHtml (paste HTML as LaTeX)
-      // - tableGeneratorTheme
-      // - showContentWhenParsed (delayed content display)
       visual({
         visual: isVisual,
         previewByPath: (path) => {
@@ -117,14 +130,13 @@ export function initVisualEditor(parentElement, initialDoc, onChange) {
           let foundPath = cleanPath;
           const fileList = window.projectFileList || [];
           
-          // Strategy 1: Exact match (case insensitive for extension)
+          // Strategy 1: Exact match
           const exactMatch = fileList.find(f => f.toLowerCase() === cleanPath.toLowerCase());
           
           if (exactMatch) {
             foundPath = exactMatch;
           } else {
-            // Strategy 2: Recursive Search (Find file anywhere in the project)
-            // Look for a file that matches the filename exactly
+            // Strategy 2: Recursive Search
             const fuzzyMatch = fileList.find(f => {
               const fName = f.split('/').pop();
               return fName === filename;
@@ -176,6 +188,14 @@ export function initVisualEditor(parentElement, initialDoc, onChange) {
           }, {priority: 'event'});
         }
       }),
+
+      // Phrases for non-React widgets (Preamble, etc.)
+      EditorState.phrases.of({
+        "show_document_preamble": "Show document preamble",
+        "hide_document_preamble": "Hide document preamble",
+        "expand": "Expand",
+        "learn_more": "Learn more",
+      }),
     ],
   });
 
@@ -210,6 +230,27 @@ export function goToLine(view, line) {
     userEvent: 'select'
   });
   view.focus();
+}
+
+import { setOptionsTheme as setBaseOptionsTheme } from "@/features/source-editor/extensions/theme.ts";
+
+export function setOptionsTheme(settings = {}) {
+  const { fontSize = 14, theme: activeOverallTheme = 'light' } = settings;
+  const baseResult = setBaseOptionsTheme({
+    fontSize: fontSize,
+    fontFamily: "'Source Code Pro', monospace",
+    lineHeight: 'normal',
+    activeOverallTheme: activeOverallTheme,
+  });
+  
+  const darkEffect = darkThemeConf.reconfigure(activeOverallTheme === 'dark' ? EditorView.darkTheme.of(true) : []);
+  
+  // Return a flat array of effects
+  if (Array.isArray(baseResult.effects)) {
+    return [...baseResult.effects, darkEffect];
+  } else {
+    return [baseResult.effects, darkEffect];
+  }
 }
 
 export function getCursorPosition(view) {

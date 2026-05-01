@@ -1,7 +1,8 @@
 app_ui <- fluidPage(
   tags$head(
     tags$script(src = "cm6-bundle.js"),
-    tags$script(src = "visual-bridge.js")
+    tags$script(src = "visual-bridge.js"),
+    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200")
   ),
   # Main app content wrapped in container
   tags$div(

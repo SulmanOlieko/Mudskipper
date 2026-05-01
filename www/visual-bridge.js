@@ -1,4 +1,4 @@
-let cm6View = null;
+window.cm6View = null;
 let currentMode = 'source'; // 'source' | 'visual'
 let activeFileNameOriginal = '';
 
@@ -60,8 +60,8 @@ window.setEditorMode = function(mode) {
         if (!aceEd._originalGetValue) {
             aceEd._originalGetValue = aceEd.getValue.bind(aceEd);
             aceEd.getValue = function() {
-                if (currentMode === 'visual' && cm6View) {
-                    return cm6View.state.doc.toString();
+                if (currentMode === 'visual' && window.cm6View) {
+                    return window.cm6View.state.doc.toString();
                 }
                 return aceEd._originalGetValue();
             };
@@ -75,7 +75,23 @@ window.setEditorMode = function(mode) {
             visualWrapper.style.display = "block";
             
             if (!cm6View && window.MudskipperVisualEditor) {
-                cm6View = window.MudskipperVisualEditor.initVisualEditor(
+                // Robust theme detection
+                const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
+                                    document.documentElement.classList.contains('overall-theme-dark');
+                const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
+                                   document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                
+                const isDarkMode = hasDarkClass || hasDarkAttr;
+                const theme = isDarkMode ? 'dark' : 'light';
+                
+                console.log('[VisualBridge] Theme detection:', { 
+                    isDarkMode, 
+                    hasDarkClass, 
+                    hasDarkAttr,
+                    bodyClasses: document.body.className 
+                });
+                
+                window.cm6View = window.MudskipperVisualEditor.initVisualEditor(
                     visualWrapper, 
                     content, 
                     (newDoc) => {
@@ -85,13 +101,30 @@ window.setEditorMode = function(mode) {
                         } else if (aceEd.session && aceEd.session._signal) {
                             aceEd.session._signal('change', { action: 'insert', start: {row:0, column:0}, end: {row:0, column:0}, lines: [] });
                         }
-                    }
+                    },
+                    { theme: theme, fontSize: 14 }
                 );
-                cm6View.dom.style.height = "100%";
-                window.MudskipperVisualEditor.setCursorPosition(cm6View, aceCursor.row, aceCursor.column);
-            } else if (cm6View) {
-                window.MudskipperVisualEditor.setEditorContent(cm6View, content);
-                window.MudskipperVisualEditor.setCursorPosition(cm6View, aceCursor.row, aceCursor.column);
+                window.cm6View.dom.style.height = "100%";
+                window.MudskipperVisualEditor.setCursorPosition(window.cm6View, aceCursor.row, aceCursor.column);
+            } else if (window.cm6View) {
+                const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
+                                    document.documentElement.classList.contains('overall-theme-dark');
+                const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
+                                   document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                
+                const isDarkMode = hasDarkClass || hasDarkAttr;
+                const theme = isDarkMode ? 'dark' : 'light';
+                
+                window.MudskipperVisualEditor.setEditorContent(window.cm6View, content);
+                window.MudskipperVisualEditor.setCursorPosition(window.cm6View, aceCursor.row, aceCursor.column);
+                
+                // Update theme if it changed
+                if (window.cm6View.dispatch && window.MudskipperVisualEditor.setOptionsTheme) {
+                    const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ theme: theme, fontSize: 14 });
+                    window.cm6View.dispatch({
+                        effects: themeEffects
+                    });
+                }
             }
             
             // --- TEMPORARILY DISABLE ACE FEATURES ---
@@ -103,9 +136,9 @@ window.setEditorMode = function(mode) {
             visualWrapper.style.display = "none";
             aceWrapper.style.display = "block";
             
-            if (cm6View) {
-                const content = cm6View.state.doc.toString();
-                const cmCursor = window.MudskipperVisualEditor.getCursorPosition(cm6View);
+            if (window.cm6View) {
+                const content = window.cm6View.state.doc.toString();
+                const cmCursor = window.MudskipperVisualEditor.getCursorPosition(window.cm6View);
                 
                 // PERFORMANCE: Only update Ace if content actually changed (normalizing line endings)
                 const currentAce = aceEd._originalGetValue();
@@ -155,15 +188,15 @@ window.toggleEditorMode = function() {
                     }
                 }
                 
-                if (type === 'cmdSafeLoadFile' && currentMode === 'visual' && cm6View) {
+                if (type === 'cmdSafeLoadFile' && currentMode === 'visual' && window.cm6View) {
                     if (window.MudskipperVisualEditor) {
-                        window.MudskipperVisualEditor.setEditorContent(cm6View, msg.content);
+                        window.MudskipperVisualEditor.setEditorContent(window.cm6View, msg.content);
                     }
                 }
 
-                if (type === 'aceGoTo' && currentMode === 'visual' && cm6View) {
+                if (type === 'aceGoTo' && currentMode === 'visual' && window.cm6View) {
                     if (window.MudskipperVisualEditor) {
-                        window.MudskipperVisualEditor.goToLine(cm6View, msg.line);
+                        window.MudskipperVisualEditor.goToLine(window.cm6View, msg.line);
                     }
                     return; 
                 }
@@ -188,3 +221,34 @@ Shiny.addCustomMessageHandler('updateProjectState', function(data) {
         window.activeProjectPath = data.url;
     }
 });
+
+// --- RE-INITIALIZE ON THEME CHANGES ---
+(function() {
+    const themeObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && (mutation.attributeName === 'data-bs-theme' || mutation.attributeName === 'class')) {
+                // Use window.cm6View directly
+                if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
+                    // Small delay to ensure classes are fully applied
+                    setTimeout(() => {
+                        const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
+                                            document.documentElement.classList.contains('overall-theme-dark');
+                        const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
+                                           document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                        const isDarkMode = hasDarkClass || hasDarkAttr;
+                        const theme = isDarkMode ? 'dark' : 'light';
+                        
+                        console.log('[VisualBridge] Theme change detected (observer):', theme);
+                        const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ theme: theme, fontSize: 14 });
+                        window.cm6View.dispatch({
+                            effects: themeEffects
+                        });
+                    }, 50);
+                }
+            }
+        });
+    });
+
+    themeObserver.observe(document.documentElement, { attributes: true });
+    themeObserver.observe(document.body, { attributes: true });
+})();
