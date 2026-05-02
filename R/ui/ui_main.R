@@ -7262,17 +7262,17 @@ body {
                               </div>
                             '
                     ),
-                    div(
+div(
                       id = "equation-editor",
                       class = "border-bottom",
                       div(
-                        style = "white-space: nowrap; overflow: hidden;",
+                        style = "display: flex; flex-direction: row; align-items: stretch; overflow: hidden;",
                         div(
                           id = "visual-toggle-container",
-                          style = "display: inline-block; vertical-align: middle; margin-top: 0px; margin-left: 0px; margin-right: 0px; width: 100px; height: 100%;padding-left:0px !important; padding-right:0px !important; padding-bottom: 0px !important; padding-top:0px !important;",
+                          style = "position: relative; z-index: 10; flex: 0 0 110px; display: flex; align-items: stretch; padding-left: 2px !important; padding-right: 2px !important; padding-top: 0px !important; padding-bottom: 0px !important;",
                           HTML('
                             <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist",
-                            style="padding-left:0px !important; padding-right:0px !important; padding-bottom: 0px !important; padding-top:0px !important;"
+                            style="padding: 0px !important;"
                             >
                               <button
                                 id="btn-source-mode"
@@ -7311,10 +7311,10 @@ body {
                         ),
                         div(
                           id = "toolbar",
-                          style = "padding-left:0px; padding-right:2px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; max-width: calc(100% - 210px); white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
+                          style = "flex: 1 1 auto; min-width: 0; padding-left:0px; padding-right:2px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
                         ),
                         div(
-                          style = "padding-top: 2px; padding-bottom: 0px; padding-left: 4px; width: 30px; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 12px;",
+                          style = "flex: 0 0 30px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; padding: 2px 0px; border-left: 1px solid var(--tblr-border-color); overflow: hidden; z-index: 100; background: var(--tblr-body-bg) !important;",
 
                           # 1. Dictate Button (Top)
                           tags$div(
@@ -7324,16 +7324,17 @@ body {
                             title = "Dictate",
                             "data-bs-toggle" = "tooltip",
                             "data-bs-placement" = "bottom",
+                            style = "width: 24px !important; min-width: 24px !important; max-width: 24px !important; padding: 0 !important; margin: 0 !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0;",
                             HTML(
                               '
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                          <path d="M3 3l18 18" />
-                                          <path d="M9 5a3 3 0 0 1 6 0v5a3 3 0 0 1 -.13 .874m-2 2a3 3 0 0 1 -3.87 -2.872v-1" />
-                                          <path d="M5 10a7 7 0 0 0 10.846 5.85m2 -2a6.967 6.967 0 0 0 1.152 -3.85" />
-                                          <path d="M8 21l8 0" />
-                                          <path d="M12 17l0 4" />
-                                        </svg>
-                                      '
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M3 3l18 18" />
+                                  <path d="M9 5a3 3 0 0 1 6 0v5a3 3 0 0 1 -.13 .874m-2 2a3 3 0 0 1 -3.87 -2.872v-1" />
+                                  <path d="M5 10a7 7 0 0 0 10.846 5.85m2 -2a6.967 6.967 0 0 0 1.152 -3.85" />
+                                  <path d="M8 21l8 0" />
+                                  <path d="M12 17l0 4" />
+                                </svg>
+                              '
                             )
                           ),
 
@@ -7346,14 +7347,15 @@ body {
                             "data-bs-html" = "true",
                             title = "<div>Find/Replace</div><div> CTRL/⌘ + F</div>",
                             onclick = "var editor = ace.edit(\'sourceEditor\'); if (editor) { ace.require(\'ace/ext/searchbox\').Search(editor, false);}",
+                            style = "width: 24px !important; min-width: 24px !important; max-width: 24px !important; padding: 0 !important; margin: 0 !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0;",
                             HTML(
                               '
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                          <circle cx="10" cy="10" r="7" />
-                                          <line x1="21" y1="21" x2="15" y2="15" />
-                                        </svg>
-                                      '
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                  <circle cx="10" cy="10" r="7" />
+                                  <line x1="21" y1="21" x2="15" y2="15" />
+                                </svg>
+                              '
                             )
                           )
                         )
