@@ -7271,7 +7271,9 @@ body {
                           id = "visual-toggle-container",
                           style = "display: inline-block; vertical-align: middle; margin-top: 0px; margin-left: 5px; margin-right: 5px; width: 130px;",
                           HTML('
-                            <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist">
+                            <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist",
+                            style="padding-left:0px; padding-right:0px; padding-bottom: 0px !important; padding-top:0px !important;"
+                            >
                               <button
                                 id="btn-source-mode"
                                 class="nav-link active"
@@ -7312,7 +7314,7 @@ body {
                           style = "padding-left:0px; padding-right:5px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; max-width: calc(100% - 210px); white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
                         ),
                         div(
-                          style = "padding-top: 0px; padding-bottom: 0px; padding-left: 4px; width: 65px; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 4px;",
+                          style = "padding-top: 2px; padding-bottom: 0px; padding-left: 8px; width: auto; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 12px;",
 
                           # 1. Dictate Button (Top)
                           tags$div(
