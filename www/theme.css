@@ -30,7 +30,6 @@
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .15);
   }
 
-  [data-bs-theme="dark"] .popover, 
   .overall-theme-dark .popover {
     background-color: #2c3645 !important;
     color: #fff !important;
@@ -58,7 +57,6 @@
   }
 
   /* Gutter Theme Sync */
-  [data-bs-theme="dark"] .cm-gutters,
   .overall-theme-dark .cm-gutters {
     background-color: #202124 !important;
     color: #9aa0a6 !important;

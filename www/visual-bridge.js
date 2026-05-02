@@ -75,14 +75,8 @@ window.setEditorMode = function(mode) {
             visualWrapper.style.display = "block";
             
             if (!window.cm6View && window.MudskipperVisualEditor) {
-                // Robust theme detection
-                const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
-                                    document.documentElement.classList.contains('overall-theme-dark');
-                const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
-                                   document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                
-                const isDarkMode = hasDarkClass || hasDarkAttr;
-                const theme = isDarkMode ? 'dark' : 'light';
+                const theme = window.getVisualTheme();
+
                 
                 // window.cm6View initialization
                 window.cm6View = window.MudskipperVisualEditor.initVisualEditor(
@@ -110,13 +104,8 @@ window.setEditorMode = function(mode) {
                 window.cm6View.dom.style.height = "100%";
                 window.MudskipperVisualEditor.setCursorPosition(window.cm6View, aceCursor.row, aceCursor.column);
             } else if (window.cm6View) {
-                const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
-                                    document.documentElement.classList.contains('overall-theme-dark');
-                const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
-                                   document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                
-                const isDarkMode = hasDarkClass || hasDarkAttr;
-                const theme = isDarkMode ? 'dark' : 'light';
+                const theme = window.getVisualTheme();
+
                 
                 window.MudskipperVisualEditor.setEditorContent(window.cm6View, content);
                 window.MudskipperVisualEditor.setCursorPosition(window.cm6View, aceCursor.row, aceCursor.column);
@@ -230,34 +219,48 @@ Shiny.addCustomMessageHandler('updateProjectState', function(data) {
     }
 });
 
+/**
+ * Robust theme detection helper for the visual editor
+ * Priority: 1. Manual setting, 2. Global app theme
+ */
+window.getVisualTheme = function() {
+    let settings = {};
+    try { settings = JSON.parse(localStorage.getItem('latexerSettings') || '{}'); } catch(e) {}
+    const manual = settings.visualEditorTheme || 'light';
+    
+    if (manual !== 'auto') return manual;
+    
+    // Original robust detection (matches Turn 3 state)
+    const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
+                        document.documentElement.classList.contains('overall-theme-dark');
+    const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
+                       document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    
+    return (hasDarkClass || hasDarkAttr) ? 'dark' : 'light';
+};
+
 // Wait for DOM to be ready before initializing observers and helpers
 document.addEventListener('DOMContentLoaded', () => {
     // --- RE-INITIALIZE ON THEME CHANGES ---
     (function() {
+        let lastAppliedTheme = window.getVisualTheme();
+        
         const themeObserver = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes' && (mutation.attributeName === 'data-bs-theme' || mutation.attributeName === 'class')) {
-                    if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
-                        setTimeout(() => {
-                            const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
-                                                document.documentElement.classList.contains('overall-theme-dark');
-                            const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
-                                               document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                            const isDarkMode = hasDarkClass || hasDarkAttr;
-                            const theme = isDarkMode ? 'dark' : 'light';
-                            
-                            const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ theme: theme, fontSize: 14 });
-                            window.cm6View.dispatch({
-                                effects: themeEffects
-                            });
-                        }, 50);
-                    }
+            const currentTheme = window.getVisualTheme();
+            if (currentTheme !== lastAppliedTheme) {
+                lastAppliedTheme = currentTheme;
+                if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
+                    const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ 
+                        theme: currentTheme, 
+                        fontSize: 14 
+                    });
+                    window.cm6View.dispatch({ effects: themeEffects });
                 }
-            });
+            }
         });
 
-        if (document.documentElement) themeObserver.observe(document.documentElement, { attributes: true });
-        if (document.body) themeObserver.observe(document.body, { attributes: true });
+        if (document.documentElement) themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme', 'class'] });
+        if (document.body) themeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-bs-theme', 'class'] });
     })();
 
     /**

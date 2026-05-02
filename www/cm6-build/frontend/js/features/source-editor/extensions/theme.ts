@@ -52,6 +52,21 @@ const createThemeFromOptions = ({
         '--font-size': fontSizeCSS,
         '--source-font-family': fontFamily,
         '--line-height': lineHeightCSS,
+        '--editor-toolbar-bg': activeOverallTheme === 'dark' ? '#2c3645' : '#f8f9fa',
+        '--toolbar-btn-color': activeOverallTheme === 'dark' ? '#f6f8fb' : '#1e1e1e',
+        '--toolbar-dropdown-divider-color': activeOverallTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        '--border-divider-dark': activeOverallTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        // Tabler overrides to prevent theme bleeding
+        '--tblr-bg-surface-secondary': activeOverallTheme === 'dark' ? '#2c3645' : '#f1f5f9',
+        '--tblr-border-color': activeOverallTheme === 'dark' ? '#3c4043' : '#dee2e6',
+        '--tblr-muted': activeOverallTheme === 'dark' ? '#9aa0a6' : '#6c757d',
+        '--tblr-body-color': activeOverallTheme === 'dark' ? '#f6f8fb' : '#1e1e1e',
+        '--tblr-bg-surface': activeOverallTheme === 'dark' ? '#1e2124' : '#fff',
+        // Bootstrap overrides
+        '--bs-body-bg': activeOverallTheme === 'dark' ? '#1e2124' : '#fff',
+        '--bs-body-color': activeOverallTheme === 'dark' ? '#f6f8fb' : '#1e1e1e',
+        '--bs-tertiary-bg': activeOverallTheme === 'dark' ? '#2c3645' : '#f8f9fa',
+        '--bs-border-color': activeOverallTheme === 'dark' ? '#3c4043' : '#dee2e6',
       })
         .map(([key, value]) => `${key}: ${value}`)
         .join(';'),
@@ -65,9 +80,13 @@ const createThemeFromOptions = ({
 const baseTheme = EditorView.baseTheme({
   '&light.cm-editor': {
     colorScheme: 'light',
+    backgroundColor: '#fff',
+    color: '#1e1e1e',
   },
   '&dark.cm-editor': {
     colorScheme: 'dark',
+    backgroundColor: '#1e2124',
+    color: '#f6f8fb',
   },
   '.cm-content': {
     fontSize: 'var(--font-size)',

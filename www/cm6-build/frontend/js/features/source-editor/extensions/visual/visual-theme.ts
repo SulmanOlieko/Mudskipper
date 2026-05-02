@@ -68,27 +68,31 @@ const mainVisualTheme = EditorView.theme({
     fontFamily: 'inherit',
     textUnderlineOffset: '2px',
   },
+  '.ol-cm-monospace': {
+    fontFamily: 'var(--source-font-family)',
+    lineHeight: 1,
+  },
   '.ol-cm-strong': {
     fontWeight: 700,
   },
   '.ol-cm-command': {
     fontFamily: 'var(--source-font-family)',
     color: '#0ca678', // Tabler Teal
-    '&dark &, .overall-theme-dark &': {
+    '&dark &, &.overall-theme-dark &': {
       color: '#2fb344', // Lighter teal/green for dark mode
     },
   },
   '.ol-cm-argument': {
     fontFamily: 'var(--source-font-family)',
     color: '#206bc4', // Tabler Primary
-    '&dark &, .overall-theme-dark &': {
+    '&dark &, &.overall-theme-dark &': {
       color: '#4299e1', // Lighter blue for dark mode
     },
   },
   '.ol-cm-punctuation': {
     fontFamily: 'var(--source-font-family)',
     color: '#707070',
-    '&dark &, .overall-theme-dark &': {
+    '&dark &, &.overall-theme-dark &': {
       color: '#a9a9a9',
     },
   },
@@ -96,14 +100,14 @@ const mainVisualTheme = EditorView.theme({
     fontFamily: 'var(--source-font-family)',
     color: '#354052', // Tabler Gray-dark/Black
     opacity: '1',
-    '&dark &, .overall-theme-dark &': {
+    '&dark &, &.overall-theme-dark &': {
       color: '#f6f8fb', // White/Light gray for dark mode
     },
   },
   '.ol-cm-comment': {
     fontStyle: 'italic',
     color: '#45aaf2', // Tabler Azure (Light Blue)
-    '&dark &, .overall-theme-dark &': {
+    '&dark &, &.overall-theme-dark &': {
       color: '#74c0fc',
     },
   },

@@ -1,7 +1,7 @@
 import { EditorView } from '@codemirror/view'
 
 export const tableGeneratorTheme = EditorView.baseTheme({
-  '&dark .table-generator, .overall-theme-dark .table-generator': {
+  '&dark .table-generator, &.overall-theme-dark .table-generator': {
     '--table-generator-active-border-color': '#ccc',
     '--table-generator-coming-soon-background-color': '#41464f',
     '--table-generator-coming-soon-color': '#fff',
@@ -37,7 +37,7 @@ export const tableGeneratorTheme = EditorView.baseTheme({
     '--table-generator-column-size-indicator-color': 'white',
     '--table-generator-column-size-indicator-hover-color': 'white',
   },
-  '&light .table-generator, .overall-theme-light .table-generator': {
+  '&light .table-generator, &.overall-theme-light .table-generator': {
     '--table-generator-active-border-color': '#666',
     '--table-generator-coming-soon-background-color': 'var(--neutral-10)',
     '--table-generator-coming-soon-color': 'var(--neutral-70)',
@@ -541,7 +541,7 @@ export const tableGeneratorTheme = EditorView.baseTheme({
     backgroundColor: '#eff6ff',
     borderLeftColor: '#3b82f6',
     color: '#1e40af',
-    '&dark &, .overall-theme-dark &': {
+    '&dark &, &.overall-theme-dark &': {
       backgroundColor: '#1e293b',
       borderLeftColor: '#3b82f6',
       color: '#bfdbfe',

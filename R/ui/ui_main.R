@@ -1369,6 +1369,16 @@ app_ui <- fluidPage(
                      </div>
                   </div>
                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                     <h4 class="mb-0">Visual editor theme</h4>
+                     <div style="flex-shrink: 0;">
+                        <select id="visualEditorThemePanel" class="form-select" style="shadow: none; font-size: 12px; padding: 2px 6px; height: auto; min-height: 24px; width: 180px; border: 1px solid #ced4da;">
+                            <option value="auto">Sync with App</option>
+                            <option value="light" selected>Light theme</option>
+                            <option value="dark">Dark theme</option>
+                        </select>
+                     </div>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
                     <h4 class="mb-0">Font family</h4>
                     <div style="flex-shrink: 0;">
                        <select id="editorFontFamilyPanel" class="form-select" style="shadow: none; font-size: 12px; padding: 2px 6px; height: auto; min-height: 24px; width: 180px; border: 1px solid #ced4da;">
@@ -17043,6 +17053,36 @@ document.addEventListener(\"DOMContentLoaded\", function() {
       });
     });
   }
+
+  const visualThemePanel = document.getElementById('visualEditorThemePanel');
+  let settings = {};
+  try { settings = JSON.parse(localStorage.getItem('latexerSettings') || '{}'); } catch(e) {}
+  const savedVisualTheme = settings.visualEditorTheme || 'light';
+  if (visualThemePanel) visualThemePanel.value = savedVisualTheme;
+
+  if (visualThemePanel) {
+    visualThemePanel.addEventListener('change', function() {
+      const setting = this.value;
+      try {
+        let s = JSON.parse(localStorage.getItem('latexerSettings') || '{}');
+        s.visualEditorTheme = setting;
+        localStorage.setItem('latexerSettings', JSON.stringify(s));
+      } catch(e) {}
+      
+      if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
+         const themeToApply = window.getVisualTheme();
+         const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ 
+           theme: themeToApply, 
+           fontSize: 14 
+         });
+         window.cm6View.dispatch({ effects: themeEffects });
+      }
+    });
+  }
+
+
+
+
 
   const sizePanel = document.getElementById('editorFontSizePanel');
   if (sizePanel) {
