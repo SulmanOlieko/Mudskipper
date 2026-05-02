@@ -1346,7 +1346,7 @@ app_ui <- fluidPage(
                             <option value="github">Github</option>
                             <option value="gob">Gob</option>
                             <option value="gruvbox">Gruvbox</option>
-                            <option value="idle_fingers" selected>Idle fingers</option>
+                            <option value="idle_fingers">Idle fingers</option>
                             <option value="iplastic">Iplastic</option>
                             <option value="katzenmilch">Katzenmilch</option>
                             <option value="kr_theme">Kr theme</option>
@@ -1364,7 +1364,7 @@ app_ui <- fluidPage(
                             <option value="tomorrow">Tomorrow</option>
                             <option value="twilight">Twilight</option>
                             <option value="vibrant_ink">Vibrant ink</option>
-                            <option value="xcode">Xcode</option>
+                            <option value="xcode" selected>Xcode</option>
                         </select>
                      </div>
                   </div>
@@ -1372,15 +1372,15 @@ app_ui <- fluidPage(
                     <h4 class="mb-0">Font family</h4>
                     <div style="flex-shrink: 0;">
                        <select id="editorFontFamilyPanel" class="form-select" style="shadow: none; font-size: 12px; padding: 2px 6px; height: auto; min-height: 24px; width: 180px; border: 1px solid #ced4da;">
-                           <option value="\'Fira Code\', monospace" selected>Fira Code</option>
-                           <option value="\'Consolas\', monospace">Consolas</option>
-                           <option value="\'Monaco\', monospace">Monaco</option>
-                           <option value="\'JetBrains Mono\', monospace">JetBrains Mono</option>
-                           <option value="\'Source Code Pro\', monospace">Source Code Pro</option>
-                           <option value="\'Ubuntu Mono\', monospace">Ubuntu Mono</option>
-                           <option value="\'Menlo\', monospace">Menlo</option>
-                           <option value="\'Inconsolata\', monospace">Inconsolata</option>
-                           <option value="monospace">Monospace</option>
+                           <option value="\'Fira Code\', Monaco">Fira Code</option>
+                           <option value="\'Consolas\', Monaco">Consolas</option>
+                           <option value="\'Monaco\'" selected>Monaco</option>
+                           <option value="\'JetBrains Mono\', Monaco">JetBrains Mono</option>
+                           <option value="\'Source Code Pro\', Monaco">Source Code Pro</option>
+                           <option value="\'Ubuntu Mono\', Monaco">Ubuntu Mono</option>
+                           <option value="\'Menlo\', Monaco">Menlo</option>
+                           <option value="\'Inconsolata\', Monaco">Inconsolata</option>
+                           <option value="monospace, Monaco">Monospace</option>
                        </select>
                     </div>
                   </div>
@@ -7269,7 +7269,7 @@ div(
                         style = "display: flex; flex-direction: row; align-items: stretch; overflow: hidden;",
                         div(
                           id = "visual-toggle-container",
-                          style = "position: relative; z-index: 10; flex: 0 0 110px; display: flex; align-items: stretch; padding-left: 2px !important; padding-right: 2px !important; padding-top: 0px !important; padding-bottom: 0px !important;",
+                          style = "position: relative; z-index: 10; flex: 0 0 110px; display: flex; align-items: stretch; padding-left: 2px !important; padding-right: 2px !important; padding-top: 0px !important; padding-bottom: 0px !important; border-radius: 0px !important;",
                           HTML('
                             <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist",
                             style="padding: 0px !important;"
