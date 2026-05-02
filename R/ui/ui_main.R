@@ -7269,10 +7269,10 @@ body {
                         style = "white-space: nowrap; overflow: hidden;",
                         div(
                           id = "visual-toggle-container",
-                          style = "display: inline-block; vertical-align: middle; margin-top: 0px; margin-left: 5px; margin-right: 5px; width: 130px;",
+                          style = "display: inline-block; vertical-align: middle; margin-top: 0px; margin-left: 0px; margin-right: 0px; width: 100px; height: 100%;padding-left:0px !important; padding-right:0px !important; padding-bottom: 0px !important; padding-top:0px !important;",
                           HTML('
                             <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist",
-                            style="padding-left:0px; padding-right:0px; padding-bottom: 0px !important; padding-top:0px !important;"
+                            style="padding-left:0px !important; padding-right:0px !important; padding-bottom: 0px !important; padding-top:0px !important;"
                             >
                               <button
                                 id="btn-source-mode"
@@ -7283,7 +7283,7 @@ body {
                                 aria-current="page"
                                 onclick="window.setEditorMode(\'source\')"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                   <path d="M7 8l-4 4l4 4" />
                                   <path d="M17 8l4 4l-4 4" />
                                   <path d="M14 4l-4 16" />
@@ -7299,7 +7299,7 @@ body {
                                 tabindex="-1"
                                 onclick="window.setEditorMode(\'visual\')"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> 
                                   <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
                                   <path d="M11.192 17.966c-3.242 -.28 -5.972 -2.269 -8.192 -5.966c2.4 -4 5.4 -6 9 -6c3.326 0 6.14 1.707 8.442 5.122" />
                                   <path d="M18.42 15.61a2.1 2.1 0 0 1 2.97 2.97l-3.39 3.42h-3v-3l3.42 -3.39z" />
@@ -7311,10 +7311,10 @@ body {
                         ),
                         div(
                           id = "toolbar",
-                          style = "padding-left:0px; padding-right:5px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; max-width: calc(100% - 210px); white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
+                          style = "padding-left:0px; padding-right:2px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; max-width: calc(100% - 210px); white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
                         ),
                         div(
-                          style = "padding-top: 2px; padding-bottom: 0px; padding-left: 8px; width: auto; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 12px;",
+                          style = "padding-top: 2px; padding-bottom: 0px; padding-left: 4px; width: 30px; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 12px;",
 
                           # 1. Dictate Button (Top)
                           tags$div(
