@@ -309,7 +309,15 @@
        const rect = pageDiv.getBoundingClientRect();
        const clickX = e.clientX - rect.left;
        const clickY = e.clientY - rect.top;
-       notifyParent('syncTexClick', { page: pageNum, x: clickX / currentZoom, y: clickY / currentZoom });
+       setTimeout(() => {
+           const selectText = window.getSelection() ? window.getSelection().toString().trim() : "";
+           notifyParent('syncTexClick', { 
+               page: pageNum, 
+               x: clickX / currentZoom, 
+               y: clickY / currentZoom,
+               selectText: selectText
+           });
+       }, 50);
     });
 
     // 3. Render Annotation Layer (Links & Jumps)

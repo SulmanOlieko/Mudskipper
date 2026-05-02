@@ -488,7 +488,11 @@
             if (!is.null(input$fileClick$gotoLine)) {
               session$sendCustomMessage(
                 'aceGoTo',
-                list(line = as.numeric(input$fileClick$gotoLine))
+                list(
+                  line = as.numeric(input$fileClick$gotoLine),
+                  column = as.numeric(input$fileClick$gotoColumn),
+                  selectText = input$fileClick$selectText
+                )
               )
             } else {
               session$sendCustomMessage(

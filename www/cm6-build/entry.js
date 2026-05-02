@@ -1,4 +1,4 @@
-// Mudskipper Visual Editor Bundle Loaded (v2)
+// Mudskipper Visual Editor Bundle Loaded (v5 - SyncTeX Fixed)
 import {
   EditorView,
   keymap,
@@ -67,15 +67,32 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
     fontSize = 14, 
     theme: activeOverallTheme = 'light' 
   } = settings;
-  
-  console.log('[VisualEditor] BUNDLE UPDATED: May 1, 19:12 (v4)');
-  console.log('[VisualEditor] Initializing with theme:', activeOverallTheme);
 
 
   const state = EditorState.create({
     doc: initialDoc,
     extensions: [
       // Core editor features
+      // --- 1. CORE SYNC EVENTS ---
+      EditorView.domEventHandlers({
+        dblclick: (event, view) => {
+          const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
+          if (pos != null) {
+            const line = view.state.doc.lineAt(pos);
+            const lineNum = line.number; // CM6 is 1-indexed
+            const columnNum = pos - line.from + 1; // 1-indexed
+            if (window.Shiny) {
+              Shiny.setInputValue('editorSyncClick', {
+                line: lineNum,
+                column: columnNum,
+                nonce: Math.random()
+              }, {priority: 'event'});
+            }
+          }
+        }
+      }),
+
+      // --- 2. CORE FEATURES ---
       lineNumbers(),
       highlightSpecialChars(isVisual),
       history({ newGroupDelay: 250 }),
@@ -246,15 +263,36 @@ export function setEditorContent(view, content) {
   }
 }
 
-export function goToLine(view, line) {
+export function goToLine(view, line, column, selectText) {
   if (!view || typeof line !== 'number') return;
   
   const cmLine = line + 1; // Ace 0-indexed to CM6 1-indexed
   if (cmLine < 1 || cmLine > view.state.doc.lines) return;
   
   const lineObj = view.state.doc.line(cmLine);
+  let from = lineObj.from;
+  let to = lineObj.from;
+  
+  // Precision 1: Text matching (highest priority)
+  if (selectText && selectText.length > 0) {
+      const lineText = lineObj.text;
+      const index = lineText.toLowerCase().indexOf(selectText.toLowerCase());
+      if (index !== -1) {
+          from = lineObj.from + index;
+          to = from + selectText.length;
+      } else if (column != null && column > 0) {
+          // Fallback to column if text not found
+          from = Math.min(lineObj.from + (column - 1), lineObj.to);
+          to = from;
+      }
+  } else if (column != null && column > 0) {
+      // Precision 2: Column positioning (SyncTeX columns are 1-indexed)
+      from = Math.min(lineObj.from + (column - 1), lineObj.to);
+      to = from;
+  }
+  
   view.dispatch({
-    selection: { anchor: lineObj.from },
+    selection: { anchor: from, head: to },
     scrollIntoView: true,
     userEvent: 'select'
   });

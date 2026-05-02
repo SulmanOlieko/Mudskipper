@@ -84,13 +84,7 @@ window.setEditorMode = function(mode) {
                 const isDarkMode = hasDarkClass || hasDarkAttr;
                 const theme = isDarkMode ? 'dark' : 'light';
                 
-                console.log('[VisualBridge] Theme detection:', { 
-                    isDarkMode, 
-                    hasDarkClass, 
-                    hasDarkAttr,
-                    bodyClasses: document.body.className 
-                });
-                
+                // window.cm6View initialization
                 window.cm6View = window.MudskipperVisualEditor.initVisualEditor(
                     visualWrapper, 
                     content, 
@@ -210,7 +204,7 @@ window.toggleEditorMode = function() {
 
                 if (type === 'aceGoTo' && window.currentMode === 'visual' && window.cm6View) {
                     if (window.MudskipperVisualEditor) {
-                        window.MudskipperVisualEditor.goToLine(window.cm6View, msg.line);
+                        window.MudskipperVisualEditor.goToLine(window.cm6View, msg.line, msg.column, msg.selectText);
                     }
                     return; 
                 }
@@ -252,7 +246,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             const isDarkMode = hasDarkClass || hasDarkAttr;
                             const theme = isDarkMode ? 'dark' : 'light';
                             
-                            console.log('[VisualBridge] Theme change detected (observer):', theme);
                             const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ theme: theme, fontSize: 14 });
                             window.cm6View.dispatch({
                                 effects: themeEffects
@@ -275,11 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Normalize line endings to \n for consistency across editors
         const normalized = content.replace(/\r\n/g, '\n');
-        console.log('[VisualBridge] Inserting content. Mode:', window.currentMode, 'Content:', normalized.substring(0, 20) + (normalized.length > 20 ? '...' : ''));
         
         if (window.currentMode === 'visual' && window.cm6View) {
             if (window.MudskipperVisualEditor && window.MudskipperVisualEditor.insertText) {
-                console.log('[VisualBridge] Inserting into CM6');
                 window.MudskipperVisualEditor.insertText(window.cm6View, normalized);
                 return;
             } else {
@@ -291,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const aceEd = ace.edit("sourceEditor");
             if (aceEd) {
-                console.log('[VisualBridge] Inserting into Ace');
                 aceEd.insert(normalized);
                 aceEd.focus();
             }

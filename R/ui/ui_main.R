@@ -9476,14 +9476,33 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
 
   // Validate input (default to 0 if missing)
   var line = (data && typeof data.line === 'number') ? data.line : 0;
+  var column = (data && typeof data.column === 'number') ? data.column : 0;
+  var selectText = data.selectText;
 
   // 1. Force Resize (Fixes scroll issues if panel size changed)
   editor.resize(true);
 
   // 2. Move Cursor & Focus
   editor.focus();
-  editor.moveCursorTo(line, 0);
-  editor.clearSelection(); // Prevent selecting text from previous operations
+  
+  // SyncTeX columns are 1-indexed, Ace is 0-indexed
+  var targetCol = Math.max(0, column - 1);
+  editor.moveCursorTo(line, targetCol);
+  
+  if (selectText && selectText.trim().length > 0) {
+      var Range = ace.require('ace/range').Range;
+      var cleanText = selectText.trim();
+      // Search for text on the target line specifically
+      editor.find(cleanText, { 
+          backwards: false, 
+          wrap: false, 
+          caseSensitive: false, 
+          wholeWord: false, 
+          range: new Range(line, 0, line, 2000) 
+      });
+  } else {
+      editor.clearSelection(); 
+  }
 
   // 3. FORCE SCROLL TO CENTER (Most reliable method)
   editor.centerSelection();
