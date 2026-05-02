@@ -7409,7 +7409,7 @@ div(
                     ),
                     div(
                       id = "editorSplit",
-                      style = "height: calc(100% - 30px); position: relative;",
+                      style = "height: 100%; position: relative;",
                       HTML(
                         '<span id="editorSpinner" style="display:none; margin-left:8px;">
                                           <i class="spinner-border spinner-border-sm" style="width:40px; height:40px; border-width: 1px; color:var(--tblr-primary); z-index: 2000;"></i>
@@ -7418,7 +7418,7 @@ div(
                       aceEditor(
                         "sourceEditor",
                         value = "",
-                        height = "92%",
+                        height = "95%",
                         wordWrap = TRUE,
                         showPrintMargin = FALSE,
                         autoComplete = "live",
@@ -7429,7 +7429,7 @@ div(
                       ),
                       div(
                         id = "visualEditorContainer",
-                        style = "display:none; height: 92%; overflow: auto;"
+                        style = "display:none; height: 95%; overflow: auto;"
                       ),
                       HTML(
                         '
