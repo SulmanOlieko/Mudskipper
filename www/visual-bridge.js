@@ -1,6 +1,16 @@
 window.cm6View = null;
 window.currentMode = 'source'; // 'source' | 'visual'
 let activeFileNameOriginal = '';
+window.stopAllEditorActivity = false;
+
+// Helper to check if the editor is currently visible to the user
+function isEditorActive() {
+    if (window.stopAllEditorActivity) return false;
+    const ep = document.getElementById('editorPage');
+    if (!ep) return false;
+    const style = window.getComputedStyle(ep);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+}
 
 /**
  * Update the visual editor toggle buttons active/disabled states
@@ -15,10 +25,8 @@ window.updateToggleState = function(filename) {
     if (visualBtn) {
         if (isTex) {
             visualBtn.classList.remove("disabled");
-            visualBtn.title = "Switch to Visual Editor";
         } else {
             visualBtn.classList.add("disabled");
-            visualBtn.title = "Visual Editor only available for .tex files";
             if (window.currentMode === 'visual') {
                 window.setEditorMode('source');
             }
@@ -29,13 +37,9 @@ window.updateToggleState = function(filename) {
         if (window.currentMode === 'visual' && isTex) {
             visualBtn.classList.add("active");
             sourceBtn.classList.remove("active");
-            visualBtn.setAttribute("aria-selected", "true");
-            sourceBtn.setAttribute("aria-selected", "false");
         } else {
             sourceBtn.classList.add("active");
             visualBtn.classList.remove("active");
-            sourceBtn.setAttribute("aria-selected", "true");
-            visualBtn.setAttribute("aria-selected", "false");
             window.currentMode = 'source'; 
         }
     }
@@ -45,6 +49,8 @@ window.updateToggleState = function(filename) {
  * Set the editor mode (source or visual)
  */
 window.setEditorMode = function(mode) {
+    if (!isEditorActive()) return;
+    
     const isTex = activeFileNameOriginal.toLowerCase().endsWith('.tex');
     if (mode === 'visual' && !isTex) return;
     
@@ -56,7 +62,6 @@ window.setEditorMode = function(mode) {
     if (window.ace) {
         const aceEd = ace.edit("sourceEditor");
         
-        // --- MONKEY PATCH ACE TO SYNC WITH VISUAL EDITOR ---
         if (!aceEd._originalGetValue) {
             aceEd._originalGetValue = aceEd.getValue.bind(aceEd);
             aceEd.getValue = function() {
@@ -76,58 +81,28 @@ window.setEditorMode = function(mode) {
             
             if (!window.cm6View && window.MudskipperVisualEditor) {
                 const theme = window.getVisualTheme();
-
-                
-                // window.cm6View initialization
                 window.cm6View = window.MudskipperVisualEditor.initVisualEditor(
                     visualWrapper, 
                     content, 
                     (newDoc) => {
-                        // Notify Shiny that content changed without heavy Ace updates
-                        if (aceEd.session && aceEd.session._emit) {
-                            aceEd.session._emit('change', { action: 'insert', start: {row:0, column:0}, end: {row:0, column:0}, lines: [] });
-                        } else if (aceEd.session && aceEd.session._signal) {
+                        if (!isEditorActive()) return;
+                        // Signal change to Shiny
+                        if (aceEd.session && aceEd.session._signal) {
                             aceEd.session._signal('change', { action: 'insert', start: {row:0, column:0}, end: {row:0, column:0}, lines: [] });
-                        }
-                        
-                        // Trigger updates for visual editor
-                        if (window.triggerSpellCheck) {
-                            clearTimeout(window._visualSpellTimer);
-                            window._visualSpellTimer = setTimeout(() => window.triggerSpellCheck(), 1500);
-                        }
-                        if (window.updateWordCountWithWorker) {
-                            window.updateWordCountWithWorker();
                         }
                     },
                     { theme: theme, fontSize: 14 }
                 );
                 window.cm6View.dom.style.height = "100%";
                 window.MudskipperVisualEditor.setCursorPosition(window.cm6View, aceCursor.row, aceCursor.column);
-            } else if (window.cm6View) {
-                const theme = window.getVisualTheme();
-
                 
+                // Trigger spellcheck for visual mode
+                if (window.triggerSpellCheck) window.triggerSpellCheck();
+            } else if (window.cm6View) {
                 window.MudskipperVisualEditor.setEditorContent(window.cm6View, content);
                 window.MudskipperVisualEditor.setCursorPosition(window.cm6View, aceCursor.row, aceCursor.column);
-                
-                // Update theme if it changed
-                if (window.cm6View.dispatch && window.MudskipperVisualEditor.setOptionsTheme) {
-                    const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ theme: theme, fontSize: 14 });
-                    window.cm6View.dispatch({
-                        effects: themeEffects
-                    });
-                }
+                if (window.triggerSpellCheck) window.triggerSpellCheck();
             }
-            
-            // --- TEMPORARILY DISABLE ACE FEATURES ---
-            if (window.disableMinimap) window.disableMinimap();
-            if (window.stickyScrollInstance) window.stickyScrollInstance.disable();
-            if (window.MathPreviewController) window.MathPreviewController.disable();
-            window.aceSpellCheckEnabled = false;
-            
-            // Immediate sync for status bar
-            if (window.triggerSpellCheck) window.triggerSpellCheck();
-            if (window.updateWordCountWithWorker) window.updateWordCountWithWorker();
         } else {
             visualWrapper.style.display = "none";
             aceWrapper.style.display = "block";
@@ -135,42 +110,38 @@ window.setEditorMode = function(mode) {
             if (window.cm6View) {
                 const content = window.cm6View.state.doc.toString();
                 const cmCursor = window.MudskipperVisualEditor.getCursorPosition(window.cm6View);
-                
-                // PERFORMANCE: Only update Ace if content actually changed (normalizing line endings)
                 const currentAce = aceEd._originalGetValue();
-                if (currentAce.replace(/\r\n/g, '\n') !== content.replace(/\r\n/g, '\n')) {
+                if (currentAce !== content) {
                     aceEd.session.setValue(content);
                 }
-                
-                // Immediate resize to prevent "blank" editor
                 aceEd.resize(true);
-
-                // Defer cursor and focus slightly to ensure Ace has fully processed the layout change
                 setTimeout(() => {
+                    if (!isEditorActive()) return;
                     aceEd.resize(true);
                     aceEd.moveCursorToPosition({ row: cmCursor.row, column: cmCursor.column });
-                    aceEd.renderer.scrollCursorIntoView({ row: cmCursor.row, column: cmCursor.column }, 0.5);
                     aceEd.focus();
-                }, 10);
+                }, 50);
             }
-            
-            // --- RESTORE ACE FEATURES BASED ON SETTINGS ---
-            if (document.getElementById('enableMinimapPanel')?.checked && window.enableMinimap) window.enableMinimap();
-            if (document.getElementById('enableStickyScrollPanel')?.checked && window.stickyScrollInstance) window.stickyScrollInstance.enable();
-            if (document.getElementById('enableMathPreviewPanel')?.checked && window.MathPreviewController) window.MathPreviewController.enable();
-            
-            window.aceSpellCheckEnabled = true;
-            if (window.triggerSpellCheck) window.triggerSpellCheck();
-            if (window.updateWordCountWithWorker) window.updateWordCountWithWorker();
         }
     }
-    
     window.updateToggleState(activeFileNameOriginal);
 };
 
-window.toggleEditorMode = function() {
-    window.setEditorMode(window.currentMode === 'source' ? 'visual' : 'source');
-};
+// --- HOMEPAGE VISIBILITY MONITOR ---
+document.addEventListener('DOMContentLoaded', () => {
+    const homePage = document.getElementById('homePage');
+    if (homePage) {
+        const observer = new MutationObserver(() => {
+            const style = window.getComputedStyle(homePage);
+            const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+            window.stopAllEditorActivity = isVisible;
+            if (isVisible) {
+                console.log("[VisualBridge] Homepage visible, stopping background activities");
+            }
+        });
+        observer.observe(homePage, { attributes: true, attributeFilter: ['style', 'class'] });
+    }
+});
 
 // Intercept file loading to update filename state
 (function() {
@@ -184,20 +155,13 @@ window.toggleEditorMode = function() {
                         window.updateToggleState(cleanName);
                     }
                 }
-                
                 if (type === 'cmdSafeLoadFile' && window.currentMode === 'visual' && window.cm6View) {
-                    if (window.MudskipperVisualEditor) {
-                        window.MudskipperVisualEditor.setEditorContent(window.cm6View, msg.content);
-                    }
+                    window.MudskipperVisualEditor.setEditorContent(window.cm6View, msg.content);
                 }
-
                 if (type === 'aceGoTo' && window.currentMode === 'visual' && window.cm6View) {
-                    if (window.MudskipperVisualEditor) {
-                        window.MudskipperVisualEditor.goToLine(window.cm6View, msg.line, msg.column, msg.selectText);
-                    }
+                    window.MudskipperVisualEditor.goToLine(window.cm6View, msg.line, msg.column, msg.selectText);
                     return; 
                 }
-                
                 handler(msg);
             };
             return origAddCustomMessageHandler.call(Shiny, type, wrappedHandler);
@@ -206,90 +170,65 @@ window.toggleEditorMode = function() {
     };
 })();
 
-/**
- * Handle Project State Updates (File List and Base Path)
- * Essential for figure rendering to find files recursively.
- */
-Shiny.addCustomMessageHandler('updateProjectState', function(data) {
-    if (data && data.files) {
-        window.projectFileList = data.files;
-    }
-    if (data && data.url) {
-        window.activeProjectPath = data.url;
-    }
-});
-
-/**
- * Robust theme detection helper for the visual editor
- * Priority: 1. Manual setting, 2. Global app theme
- */
 window.getVisualTheme = function() {
     let settings = {};
     try { settings = JSON.parse(localStorage.getItem('latexerSettings') || '{}'); } catch(e) {}
     const manual = settings.visualEditorTheme || 'light';
-    
     if (manual !== 'auto') return manual;
-    
-    // Original robust detection (matches Turn 3 state)
-    const hasDarkClass = document.body.classList.contains('overall-theme-dark') || 
-                        document.documentElement.classList.contains('overall-theme-dark');
-    const hasDarkAttr = document.body.getAttribute('data-bs-theme') === 'dark' || 
-                       document.documentElement.getAttribute('data-bs-theme') === 'dark';
-    
-    return (hasDarkClass || hasDarkAttr) ? 'dark' : 'light';
+    const isDark = document.body.classList.contains('overall-theme-dark') || 
+                   document.documentElement.classList.contains('overall-theme-dark') ||
+                   document.body.getAttribute('data-bs-theme') === 'dark';
+    return isDark ? 'dark' : 'light';
 };
 
-// Wait for DOM to be ready before initializing observers and helpers
 document.addEventListener('DOMContentLoaded', () => {
-    // --- RE-INITIALIZE ON THEME CHANGES ---
-    (function() {
-        let lastAppliedTheme = window.getVisualTheme();
-        
-        const themeObserver = new MutationObserver((mutations) => {
-            const currentTheme = window.getVisualTheme();
-            if (currentTheme !== lastAppliedTheme) {
-                lastAppliedTheme = currentTheme;
-                if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
-                    const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ 
-                        theme: currentTheme, 
-                        fontSize: 14 
-                    });
-                    window.cm6View.dispatch({ effects: themeEffects });
-                }
-            }
-        });
-
-        if (document.documentElement) themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme', 'class'] });
-        if (document.body) themeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-bs-theme', 'class'] });
-    })();
-
-    /**
-     * Unified helper to insert content into whichever editor is currently active
-     */
-    window.insertContentToActiveEditor = function(content) {
-        if (!content) return;
-        
-        // Normalize line endings to \n for consistency across editors
-        const normalized = content.replace(/\r\n/g, '\n');
-        
-        if (window.currentMode === 'visual' && window.cm6View) {
-            if (window.MudskipperVisualEditor && window.MudskipperVisualEditor.insertText) {
-                window.MudskipperVisualEditor.insertText(window.cm6View, normalized);
-                return;
-            } else {
-                console.warn('[VisualBridge] CM6 active but insertText API not found');
-            }
-        }
-        
-        // Fallback to Ace
+    // --- STANDALONE LINTING FOR ACE ---
+    let aceLintTimer = null;
+    window.triggerAceLinting = function() {
+        if (window.currentMode !== 'source' || !isEditorActive()) return;
         try {
+            if (typeof ace === 'undefined') return;
             const aceEd = ace.edit("sourceEditor");
-            if (aceEd) {
-                aceEd.insert(normalized);
-                aceEd.focus();
-            }
+            if (!aceEd || !window.MudskipperVisualEditor?.runStandaloneLinter) return;
+            
+            const text = aceEd.getValue();
+            if (!text) return;
+            
+            const ext = (activeFileNameOriginal || '').split('.').pop().toLowerCase();
+            if (ext !== 'tex' && ext !== 'bib') return;
+            
+            window.MudskipperVisualEditor.runStandaloneLinter(text, ext).then(diagnostics => {
+                if (window.currentMode !== 'source' || !aceEd.session || !isEditorActive()) return;
+                
+                // Diagnostics are now enriched with .row, .column, .text, .type from latex-linter.ts
+                if (window.updateErrorLog) {
+                    window.updateErrorLog(diagnostics);
+                }
+
+                const annotations = diagnostics.map(d => ({
+                    row: d.row,
+                    column: d.column,
+                    text: d.text,
+                    type: d.type === 'info' ? 'information' : d.type
+                }));
+                
+                requestAnimationFrame(() => {
+                    if (window.currentMode === 'source' && isEditorActive() && aceEd.session) {
+                        try { aceEd.session.setAnnotations(annotations); } catch(e) {}
+                    }
+                });
+            }).catch(e => console.error("Ace linter error:", e));
         } catch (e) {
-            console.error("Failed to insert content into Ace:", e);
+            console.error("Failed Ace linting:", e);
         }
     };
+
+    if (window.ace) {
+        const aceEd = ace.edit("sourceEditor");
+        aceEd.on('change', () => {
+            if (window.currentMode !== 'source' || !isEditorActive()) return;
+            clearTimeout(aceLintTimer);
+            aceLintTimer = setTimeout(window.triggerAceLinting, 1500);
+        });
+    }
 });

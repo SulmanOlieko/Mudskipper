@@ -1,7 +1,7 @@
 import { LRLanguage, foldNodeProp, foldInside } from '@codemirror/language'
-import { parser } from '@/../@/../../lezer-latex/latex.mjs'
+import { parser } from '../../../../../../lezer-latex/latex.mjs'
 import { styleTags, tags as t } from '@lezer/highlight'
-import * as termsModule from '@/../@/../../lezer-latex/latex.terms.mjs'
+import * as termsModule from '../../../../../../lezer-latex/latex.terms.mjs'
 import { NodeProp } from '@lezer/common'
 import {
   Tokens,

@@ -344,8 +344,7 @@
         if (file.exists(log_file)) {
           anns <- parse_tex_log(log_file)
           compileAnnotations(anns)
-          current_lint <- isolate(lintAnnotations())
-          session$sendCustomMessage("setAnnotations", c(anns, current_lint))
+          session$sendCustomMessage("setAnnotations", anns)
         }
 
         # Cache Result (Original Behavior)

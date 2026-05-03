@@ -1,4 +1,5 @@
 import { latexIndentService } from './latex-indent-service'
+import { linting } from './linting'
 import { LanguageSupport } from '@codemirror/language'
 import { documentCommands } from './document-commands'
 import { documentOutline } from './document-outline'
@@ -17,5 +18,6 @@ export const latex = () => {
     latexIndentService(),
     figureModal(),
     figureModalPasteHandler(),
+    linting(),
   ])
 }

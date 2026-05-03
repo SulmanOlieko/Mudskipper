@@ -2300,21 +2300,24 @@ let latestLintResult: { text: string; workerResult: ParseResult } | null = null
 // Define an onmessage handler if this file is loaded in a Worker context
 if (typeof onmessage !== 'undefined') {
   onmessage = function (event) {
-    if (event.data && event.type === 'message') {
+    if (event.data && event.data.text !== undefined) {
+      console.log('[LatexWorker] Received text to parse, length:', event.data.text.length);
       let workerResult: Record<never, never> | ParseResult = {}
       const text = event.data.text
+      const requestId = event.data.requestId
       if (latestLintResult && latestLintResult.text === text) {
         workerResult = latestLintResult.workerResult
       } else {
         try {
           workerResult = Parse(event.data.text)
+          console.log('[LatexWorker] Parse complete, found', (workerResult as ParseResult).errors.length, 'errors');
           latestLintResult = { text, workerResult: workerResult as ParseResult }
         } catch (err) {
-          console.error('error in linting', err)
+          console.error('[LatexWorker] Parse error:', err)
           workerResult = { errors: [], contexts: [] }
         }
       }
-      postMessage(workerResult)
+      postMessage({ ...workerResult, requestId })
     }
   }
 }

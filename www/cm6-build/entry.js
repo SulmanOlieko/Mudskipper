@@ -11,13 +11,18 @@ import {
   Decoration,
   DecorationSet,
 } from "@codemirror/view";
+import { lintGutter } from "@codemirror/lint";
 import { EditorState, Compartment, StateEffect, StateField } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { foldGutter, indentOnInput, indentUnit } from "@codemirror/language";
 import i18n from '@/infrastructure/i18n';
+import { latexLinter } from "@/features/source-editor/languages/latex/linter/latex-linter.ts";
+// import { bibtexLintSource } from "@/features/source-editor/languages/bibtex/linting.ts";
+// import { bibtex } from "@/features/source-editor/languages/bibtex/index.ts";
 
 // Overleaf visual extensions — the full pipeline
 import { visual, sourceOnly } from "@/features/source-editor/extensions/visual/visual.ts";
+import { lintTheme } from "@/features/source-editor/extensions/annotations.ts";
 import { language } from "@/features/source-editor/extensions/language.ts";
 import { theme } from "@/features/source-editor/extensions/theme.ts";
 import { editable } from "@/features/source-editor/extensions/editable.ts";
@@ -121,7 +126,7 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
 
       // Tooltips
       tooltips({
-        parent: document.body,
+        parent: parentElement,
         tooltipSpace(view) {
           const { top, bottom } = view.scrollDOM.getBoundingClientRect();
           return { top, left: 0, bottom, right: window.innerWidth };
@@ -144,6 +149,8 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
       // Language support — loads Overleaf's configured LaTeX parser
       language('document.tex'),
       indentUnit.of('    '),
+      lintTheme,
+      lintGutter({ hoverTime: 0 }),
 
       // Theme
       theme({
@@ -299,7 +306,6 @@ export function goToLine(view, line, column, selectText) {
   view.focus();
 }
 
-import { setOptionsTheme as setBaseOptionsTheme } from "@/features/source-editor/extensions/theme.ts";
 
 export function setOptionsTheme(settings = {}) {
   const { fontSize = 14, theme: activeOverallTheme = 'light' } = settings;
@@ -400,3 +406,25 @@ export function insertText(view, text) {
   });
   view.focus();
 }
+
+
+/**
+ * Run the robust linter standalone (for Ace)
+ */
+export async function runStandaloneLinter(text, fileType) {
+  if (fileType === 'latex' || fileType === 'tex') {
+    const state = EditorState.create({ doc: text });
+    const mockView = { state, dispatch: () => {} };
+    return await latexLinter(mockView);
+  } /* else if (fileType === 'bibtex' || fileType === 'bib') {
+    const state = EditorState.create({
+      doc: text,
+      extensions: [bibtex()]
+    });
+    const mockView = { state };
+    return bibtexLintSource(mockView);
+  } */
+  return [];
+}
+
+import { setOptionsTheme as setBaseOptionsTheme } from "@/features/source-editor/extensions/theme.ts";
