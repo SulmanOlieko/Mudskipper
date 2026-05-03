@@ -1174,8 +1174,18 @@
       # If the restored file is the one currently in the main editor, update it
       if (identical(historyActiveFile(), currentFile())) {
         updateAceEditor(session, "sourceEditor", value = content)
+        
+        # Also update the Visual Editor via the bridge
+        session$sendCustomMessage("cmdSafeLoadFile", list(
+          content = content,
+          mode = getAceModeFromExtension(historyActiveFile())
+        ))
+        
         # Flag to prevent autosave loop immediately after restore
         rv$fileJustLoaded <- TRUE
+        later::later(function() {
+          rv$fileJustLoaded <- FALSE
+        }, 1.0)
       }
 
       saveHistorySnapshot(activeProjectId(), historyActiveFile(), content)
