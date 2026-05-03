@@ -11363,7 +11363,12 @@ document.addEventListener('keydown', function(e) {
        el.classList.remove('active');
     });
 
-    var relPath = data.relPath ? data.relPath : data.url.replace(/^project_files\\//, '');
+    var relPath = '';
+    if (data.relPath) {
+        relPath = data.relPath;
+    } else if (data.url && typeof data.url === 'string') {
+        relPath = data.url.replace(/^project_files\\//, '');
+    }
 
     var sidebarItems = document.querySelectorAll('.filetree-item-row');
     sidebarItems.forEach(function(row) {

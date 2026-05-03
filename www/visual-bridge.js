@@ -2,6 +2,8 @@ window.cm6View = null;
 window.currentMode = 'source'; // 'source' | 'visual'
 let activeFileNameOriginal = '';
 window.stopAllEditorActivity = false;
+window.activeProjectPath = '';
+window.projectFileList = [];
 
 // Helper to check if the editor is currently visible to the user
 function isEditorActive() {
@@ -149,16 +151,16 @@ document.addEventListener('DOMContentLoaded', () => {
     Shiny.addCustomMessageHandler = function(type, handler) {
         if (type === 'cmdSafeLoadFile' || type === 'updateStatus' || type === 'aceGoTo') {
             const wrappedHandler = function(msg) {
-                if (type === 'updateStatus') {
+                if (type === 'updateStatus' && typeof msg === 'string') {
                     const cleanName = msg.replace(/<[^>]*>/g, '').replace(/\*/g, '').trim();
                     if (cleanName && cleanName !== activeFileNameOriginal) {
                         window.updateToggleState(cleanName);
                     }
                 }
-                if (type === 'cmdSafeLoadFile' && window.currentMode === 'visual' && window.cm6View) {
+                if (type === 'cmdSafeLoadFile' && msg && window.currentMode === 'visual' && window.cm6View) {
                     window.MudskipperVisualEditor.setEditorContent(window.cm6View, msg.content);
                 }
-                if (type === 'aceGoTo' && window.currentMode === 'visual' && window.cm6View) {
+                if (type === 'aceGoTo' && msg && window.currentMode === 'visual' && window.cm6View) {
                     window.MudskipperVisualEditor.goToLine(window.cm6View, msg.line, msg.column, msg.selectText);
                     return; 
                 }
@@ -169,6 +171,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return origAddCustomMessageHandler.call(Shiny, type, handler);
     };
 })();
+
+/**
+ * Handle Project State Updates (File List and Base Path)
+ * Essential for figure rendering to find files recursively.
+ */
+Shiny.addCustomMessageHandler('updateProjectState', function(data) {
+    if (data && data.files) {
+        window.projectFileList = data.files;
+    }
+    if (data && data.url) {
+        window.activeProjectPath = data.url;
+    }
+});
 
 window.getVisualTheme = function() {
     let settings = {};
