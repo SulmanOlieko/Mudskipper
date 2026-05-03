@@ -470,6 +470,9 @@
 
         # --- CRITICAL FIX: Set flag to prevent autosave from clearing file ---
         rv$fileJustLoaded <- TRUE
+        later::later(function() {
+          rv$fileJustLoaded <- FALSE
+        }, 0.5)
         # ---------------------------------------------------------------------
 
         currentFile(mainFile)
@@ -1114,13 +1117,8 @@
         var btn = document.querySelector('%s');
         if (btn) {
           btn.classList.add('active');
-          console.log('Activated button:', '%s');
-        } else {
-          console.log('Button not found:', '%s');
         }
       ",
-          button_selector,
-          button_selector,
           button_selector
         ))
       }

@@ -8,21 +8,16 @@ import { Annotation, Compartment, Extension, Facet } from '@codemirror/state'
  */
 export const visualHighlightStyle = syntaxHighlighting(
   HighlightStyle.define([
-    { tag: tags.link, class: 'ol-cm-link-text' },
-    { tag: tags.url, class: 'ol-cm-url' },
-    { tag: tags.typeName, class: 'ol-cm-monospace' },
-    { tag: tags.attributeValue, class: 'ol-cm-monospace' },
-    { tag: tags.keyword, class: 'ol-cm-monospace' },
-    { tag: tags.string, class: 'ol-cm-monospace' },
+    { tag: tags.keyword, class: 'ol-cm-command' },
+    { tag: tags.tagName, class: 'ol-cm-command' },
+    { tag: tags.typeName, class: 'ol-cm-command' },
+    { tag: tags.attributeValue, class: 'ol-cm-argument' },
+    { tag: tags.monospace, class: 'ol-cm-argument' },
+    { tag: tags.string, class: 'ol-cm-argument' },
     { tag: tags.punctuation, class: 'ol-cm-punctuation' },
-    { tag: tags.literal, class: 'ol-cm-monospace' },
+    { tag: tags.brace, class: 'ol-cm-brace' },
+    { tag: tags.comment, class: 'ol-cm-comment' },
     { tag: tags.strong, class: 'ol-cm-strong' },
-    {
-      tag: tags.monospace,
-      fontFamily: 'var(--source-font-family)',
-      lineHeight: 1,
-      overflowWrap: 'break-word',
-    },
   ])
 )
 
@@ -41,11 +36,11 @@ const mainVisualTheme = EditorView.theme({
       "'Noto Serif', 'Palatino Linotype', 'Book Antiqua', Palatino, serif !important",
     '--visual-font-size': 'calc(var(--font-size) * 1.15)',
     '& .cm-content': {
-      opacity: 0,
+      // opacity: 0, // removed to prevent invisibility issues
     },
     '&.ol-cm-parsed .cm-content': {
-      opacity: 1,
-      transition: 'opacity 0.1s ease-out',
+      // opacity: 1,
+      // transition: 'opacity 0.1s ease-out',
     },
   },
   '.cm-content.cm-content': {
@@ -76,20 +71,45 @@ const mainVisualTheme = EditorView.theme({
   '.ol-cm-monospace': {
     fontFamily: 'var(--source-font-family)',
     lineHeight: 1,
-    fontWeight: 'normal',
-    fontStyle: 'normal',
-    fontVariant: 'normal',
-    textDecoration: 'none',
   },
   '.ol-cm-strong': {
     fontWeight: 700,
   },
+  '.ol-cm-command': {
+    fontFamily: 'var(--source-font-family)',
+    color: '#0ca678', // Tabler Teal
+    '&dark &, &.overall-theme-dark &': {
+      color: '#2fb344', // Lighter teal/green for dark mode
+    },
+  },
+  '.ol-cm-argument': {
+    fontFamily: 'var(--source-font-family)',
+    color: '#206bc4', // Tabler Primary
+    '&dark &, &.overall-theme-dark &': {
+      color: '#4299e1', // Lighter blue for dark mode
+    },
+  },
   '.ol-cm-punctuation': {
     fontFamily: 'var(--source-font-family)',
-    lineHeight: 1,
+    color: '#707070',
+    '&dark &, &.overall-theme-dark &': {
+      color: '#a9a9a9',
+    },
   },
   '.ol-cm-brace': {
-    opacity: '0.5',
+    fontFamily: 'var(--source-font-family)',
+    color: '#354052', // Tabler Gray-dark/Black
+    opacity: '1',
+    '&dark &, &.overall-theme-dark &': {
+      color: '#f6f8fb', // White/Light gray for dark mode
+    },
+  },
+  '.ol-cm-comment': {
+    fontStyle: 'italic',
+    color: '#45aaf2', // Tabler Azure (Light Blue)
+    '&dark &, &.overall-theme-dark &': {
+      color: '#74c0fc',
+    },
   },
   '.ol-cm-math': {
     overflow: 'hidden', // stop the margin from the inner math element affecting the block height
@@ -466,6 +486,39 @@ const mainVisualTheme = EditorView.theme({
       display: 'inline',
       padding: '0 0.5em',
     },
+  },
+  '.ol-cm-math-loading': {
+    opacity: 0.5,
+    fontStyle: 'italic',
+    padding: '0 0.5em',
+  },
+  '.ol-cm-graphics-loading-placeholder': {
+    minHeight: '100px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: 'var(--tblr-bg-surface-secondary, rgba(125, 125, 125, 0.05))',
+    border: '1px dashed var(--tblr-border-color, #ccc)',
+    borderRadius: '8px',
+    margin: '1em 0',
+    color: 'var(--tblr-muted, gray)',
+    fontSize: '0.9em',
+    overflow: 'hidden',
+  },
+  '.ol-cm-math-label-badge': {
+    fontSize: '0.75rem',
+    color: 'var(--tblr-muted, #666)',
+    backgroundColor: 'var(--tblr-bg-surface-secondary, #f8f9fa)',
+    border: '1px solid var(--tblr-border-color, #dee2e6)',
+    borderRadius: '4px',
+    padding: '1px 6px',
+    marginTop: '4px',
+    display: 'inline-block',
+    float: 'right',
+    fontFamily: 'var(--tblr-font-sans-serif, sans-serif)',
+    pointerEvents: 'none',
+    userSelect: 'none',
   },
 })
 

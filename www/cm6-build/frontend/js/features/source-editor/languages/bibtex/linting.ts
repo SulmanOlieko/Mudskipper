@@ -7,7 +7,7 @@ import {
   EntryType,
   FieldName,
   Comment,
-} from '@/../@/../../lezer-bibtex/bibtex.terms.mjs'
+} from '../../../../../../lezer-bibtex/bibtex.terms.mjs'
 import { SyntaxNodeRef } from '@lezer/common'
 import { EditorState } from '@codemirror/state'
 import { createLinter } from '../../extensions/linting'

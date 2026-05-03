@@ -6,7 +6,6 @@ import {
 } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import { addEffectListener, removeEffectListener } from './effect-listeners'
-import { setMetadataEffect } from './language'
 import { debugConsole } from '@/utils/debugging'
 import {
   dispatchFigureModalPasteEvent,
@@ -136,31 +135,17 @@ export const editFigureData = StateField.define<FigureData | null>({
 
 export const figureModal = (): Extension => [editFigureData]
 
+// Stub: setMetadataEffect was removed with the metadata system.
+// waitForFileTreeUpdate is a no-op in standalone mode.
+const metadataStubEffect = StateEffect.define()
+
 export function waitForFileTreeUpdate(view: EditorView) {
-  const abortController = new AbortController()
-  const promise = new Promise<void>(resolve => {
-    const abort = () => {
-      debugConsole.warn('Aborting wait for file tree update')
-      removeEffectListener(view, setMetadataEffect, listener)
-      resolve()
-    }
-    function listener() {
-      if (abortController.signal.aborted) {
-        // We've already handled this
-        return
-      }
-      abortController.signal.removeEventListener('abort', abort)
-      resolve()
-    }
-    abortController.signal.addEventListener('abort', abort, { once: true })
-    addEffectListener(view, setMetadataEffect, listener, { once: true })
-  })
+  // In standalone mode, resolve immediately since there's no file tree
   return {
-    withTimeout(afterMs = 500) {
-      setTimeout(() => abortController.abort(), afterMs)
-      return promise
+    withTimeout(_afterMs = 500) {
+      return Promise.resolve()
     },
-    promise,
+    promise: Promise.resolve(),
   }
 }
 

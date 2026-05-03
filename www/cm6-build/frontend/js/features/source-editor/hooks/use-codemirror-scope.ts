@@ -28,7 +28,6 @@ import { setAutoPair } from '../extensions/auto-pair'
 import { setAutoComplete } from '../extensions/auto-complete'
 import { usePhrases } from './use-phrases'
 import { setPhrases } from '../extensions/phrases'
-import { setSpellCheckLanguage } from '../extensions/spelling'
 import { setKeybindings } from '../extensions/keybindings'
 import { Highlight } from '../../../../../types/highlight'
 import { EditorView } from '@codemirror/view'
@@ -48,7 +47,6 @@ import { setNonBlinkingCursor } from '@/features/source-editor/extensions/non-bl
 import { useRangesContext } from '@/features/review-panel/context/ranges-context'
 import { updateRanges } from '@/features/source-editor/extensions/ranges'
 import { useThreadsContext } from '@/features/review-panel/context/threads-context'
-import { useHunspell } from '@/features/source-editor/hooks/use-hunspell'
 import { Permissions } from '@/features/ide-react/types/permissions'
 import { GotoOffsetOptions } from '@/features/ide-react/context/editor-manager-context'
 import { GotoLineOptions } from '@/features/ide-react/types/goto-line-options'
@@ -99,14 +97,6 @@ function useCodeMirrorScope(view: EditorView) {
 
   const { project, features: projectFeatures } = useProjectContext()
   const editorContextMenuEnabled = useFeatureFlag('editor-context-menu')
-  let spellCheckLanguage = project?.spellCheckLanguage || ''
-  // spell check is off when read-only
-  if (!permissions.write && !permissions.trackedWrite) {
-    spellCheckLanguage = ''
-  }
-
-  const hunspellManager = useHunspell(spellCheckLanguage)
-
   const { showVisual: visual, trackChanges } = useEditorPropertiesContext()
 
   const { referenceKeys, searchLocalReferences } = useReferencesContext()
@@ -197,21 +187,6 @@ function useCodeMirrorScope(view: EditorView) {
     }
   }, [userId, currentDocument, trackChanges])
 
-  const spellingRef = useRef({
-    spellCheckLanguage,
-    hunspellManager,
-  })
-
-  useEffect(() => {
-    spellingRef.current = {
-      spellCheckLanguage,
-      hunspellManager,
-    }
-    window.setTimeout(() => {
-      view.dispatch(setSpellCheckLanguage(spellingRef.current))
-    })
-  }, [view, spellCheckLanguage, hunspellManager])
-
   const projectFeaturesRef = useRef(projectFeatures)
   const editorContextMenuEnabledRef = useRef(editorContextMenuEnabled)
 
@@ -277,10 +252,34 @@ function useCodeMirrorScope(view: EditorView) {
 
   const { previewByPath } = useFileTreePathContext()
 
+  const enhancedPreviewByPath = useCallback(
+    (path: string) => {
+      if (!path) return null
+      console.log(`[VisualEditor] Preview request for: "${path}" (Current doc: "${openDocName}")`)
+
+      // 1. Try relative to the current document (LaTeX default behavior)
+      if (openDocName && !path.startsWith('/')) {
+        const parts = openDocName.split('/')
+        if (parts.length > 1) {
+          const dir = parts.slice(0, -1).join('/')
+          const relativePath = `${dir}/${path}`
+          console.log(`[VisualEditor] Trying relative path: "${relativePath}"`)
+          const preview = previewByPath(relativePath)
+          if (preview) return preview
+        }
+      }
+
+      // 2. Try the path exactly as provided (usually root-relative in Mudskipper)
+      console.log(`[VisualEditor] Trying direct path: "${path}"`)
+      return previewByPath(path) 
+    },
+    [previewByPath, openDocName]
+  )
+
   const showVisual = visual && !!openDocName && isValidTeXFile(openDocName)
 
   const visualRef = useRef({
-    previewByPath,
+    previewByPath: enhancedPreviewByPath,
     visual: showVisual,
   })
 
@@ -337,7 +336,6 @@ function useCodeMirrorScope(view: EditorView) {
           metadata: metadataRef.current,
           settings: settingsRef.current,
           phrases: phrasesRef.current,
-          spelling: spellingRef.current,
           visual: visualRef.current,
           projectFeatures: projectFeaturesRef.current,
           editorContextMenuEnabled: editorContextMenuEnabledRef.current,

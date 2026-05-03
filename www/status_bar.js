@@ -412,44 +412,105 @@
     update();
   }
 
-  // ─── Hook: Ace editor ─────────────────────────────────────────────────────
-  function hookAce() {
-    let hooked = false;
-    function tryHook() {
-      if (hooked) return true;
+  // ─── Hook: Editors (Ace & CodeMirror 6) ──────────────────────────────────
+  function hookEditors() {
+    let aceHooked = false;
+    let cm6Hooked = false;
+
+    function tryHookAce() {
+      if (aceHooked) return true;
       try {
         const ed = ace.edit('sourceEditor');
         if (!ed) return false;
 
         ed.selection.on('changeCursor', () => {
-          const p = ed.getCursorPosition();
-          SB.line = p.row + 1;
-          SB.col  = p.column + 1;
-          renderCursor();
+          if (window.currentMode === 'source') {
+            const p = ed.getCursorPosition();
+            SB.line = p.row + 1;
+            SB.col  = p.column + 1;
+            renderCursor();
+          }
         });
         ed.getSession().on('change', () => {
-          SB.totalLines = ed.getSession().getLength();
-          renderLines();
+          if (window.currentMode === 'source') {
+            SB.totalLines = ed.getSession().getLength();
+            renderLines();
+          }
         });
         ed.getSession().on('changeMode', () => {
           SB.fileMode = (ed.getSession().getMode().$id || '').replace('ace/mode/', '');
           renderMode();
         });
 
-        // Initial read
-        SB.totalLines = ed.getSession().getLength();
-        SB.fileMode   = (ed.getSession().getMode().$id || '').replace('ace/mode/', '');
-        const p = ed.getCursorPosition();
-        SB.line = p.row + 1; SB.col = p.column + 1;
-        renderAll();
-        hooked = true;
+        aceHooked = true;
         return true;
       } catch(e) { return false; }
     }
-    if (!tryHook()) {
-      let n = 0;
-      const iv = setInterval(() => { if (tryHook() || ++n > 40) clearInterval(iv); }, 350);
+
+    function tryHookCM6() {
+      if (cm6Hooked) return true;
+      if (!window.cm6View) return false;
+
+      // CM6 reactivity: listen for cursorPosition Shiny input as a proxy
+      // or directly check if we can add a listener.
+      // Better: check currentMode in a loop or poll for CM6 cursor.
+      cm6Hooked = true;
+      return true;
     }
+
+    // Polling for both
+    setInterval(() => {
+      tryHookAce();
+      tryHookCM6();
+
+      if (window.currentMode === 'visual' && window.cm6View) {
+        const view = window.cm6View;
+        const pos = view.state.selection.main.head;
+        const line = view.state.doc.lineAt(pos);
+        const newLine = line.number;
+        const newCol = pos - line.from + 1;
+        const newTotal = view.state.doc.lines;
+
+        if (SB.line !== newLine || SB.col !== newCol) {
+          SB.line = newLine;
+          SB.col = newCol;
+          renderCursor();
+        }
+        if (SB.totalLines !== newTotal) {
+          SB.totalLines = newTotal;
+          renderLines();
+        }
+        // Visual mode is always TeX
+        if (SB.fileMode !== 'latex') {
+          SB.fileMode = 'latex';
+          renderMode();
+        }
+      } else if (window.currentMode === 'source') {
+        // Ace handled by events, but initial read might be needed
+        try {
+          const ed = ace.edit('sourceEditor');
+          const p = ed.getCursorPosition();
+          const newLine = p.row + 1;
+          const newCol = p.column + 1;
+          const newTotal = ed.getSession().getLength();
+          const newMode = (ed.getSession().getMode().$id || '').replace('ace/mode/', '');
+
+          if (SB.line !== newLine || SB.col !== newCol) {
+            SB.line = newLine;
+            SB.col = newCol;
+            renderCursor();
+          }
+          if (SB.totalLines !== newTotal) {
+            SB.totalLines = newTotal;
+            renderLines();
+          }
+          if (SB.fileMode !== newMode) {
+            SB.fileMode = newMode;
+            renderMode();
+          }
+        } catch(e) {}
+      }
+    }, 300);
   }
 
   // ─── Hook: Word count ─────────────────────────────────────────────────────
@@ -479,16 +540,22 @@
     }
   }
 
-  // ─── Hook: Spell check (poll Ace misspelled markers) ──────────────────────
+  // ─── Hook: Spell check (poll Misspelled markers/decorations) ──────────────
   function hookSpellCheck() {
     setInterval(() => {
-      try {
-        const markers = ace.edit('sourceEditor').getSession().getMarkers();
-        let c = 0;
-        Object.keys(markers).forEach(k => { if (markers[k].clazz === 'misspelled') c++; });
-        if (c !== SB.spellErrors) { SB.spellErrors = c; renderSpell(); }
-      } catch(e) {}
-    }, 2500);
+      let c = 0;
+      if (window.currentMode === 'visual' && window.cm6View) {
+        if (window.MudskipperVisualEditor && window.MudskipperVisualEditor.getSpellcheckErrorCount) {
+          c = window.MudskipperVisualEditor.getSpellcheckErrorCount(window.cm6View);
+        }
+      } else {
+        try {
+          const markers = ace.edit('sourceEditor').getSession().getMarkers();
+          Object.keys(markers).forEach(k => { if (markers[k].clazz === 'misspelled') c++; });
+        } catch(e) {}
+      }
+      if (c !== SB.spellErrors) { SB.spellErrors = c; renderSpell(); }
+    }, 2000);
   }
 
   // ─── Hook: Shiny custom messages ──────────────────────────────────────────
@@ -741,7 +808,7 @@
 
     hookEditorPageVisibility();
     hookShiny();
-    hookAce();
+    hookEditors();
     hookWordCount();
     hookSpellCheck();
     hookCompileStages();

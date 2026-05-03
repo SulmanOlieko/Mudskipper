@@ -54,17 +54,21 @@
   })
 
   observe({
-    # Explicitly depend on activeProjectId
+    # Explicitly depend on activeProjectId AND rv_files to keep client in sync
     projId <- activeProjectId()
-
+    files <- rv_files()
+    
     if (!is.null(projId) && nzchar(projId)) {
       uid <- isolate(user_session$user_info$user_id)
       if (is.null(uid)) {
         return()
       }
-      pDir <- getUserProjectDir(uid)
-
-      projDir <- file.path(pDir, projId)
+      
+      # Send full file list and project path to client for Visual Editor rendering
+      session$sendCustomMessage("updateProjectState", list(
+        files = files,
+        url = paste0("project/", uid, "/projects/", projId, "/")
+      ))
     }
   })
 
@@ -254,7 +258,10 @@
       # SAFE: Only update reactive trigger if we're in a reactive context
       if (shiny::isRunning()) {
         isolate({
-          projectChangeTrigger(projectChangeTrigger() + 1)
+          # --- OPTIMIZATION: Do NOT trigger Dashboard re-render if we are in the editor ---
+          if (!isTRUE(rv$editor_active)) {
+            projectChangeTrigger(projectChangeTrigger() + 1)
+          }
         })
       }
     }

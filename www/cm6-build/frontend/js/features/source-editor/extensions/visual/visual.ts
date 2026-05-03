@@ -14,10 +14,8 @@ import { visualKeymap } from './visual-keymap'
 import { mousedown, mouseDownEffect } from './selection'
 import { forceParsing, syntaxTree } from '@codemirror/language'
 import { hasLanguageLoadedEffect } from '../language'
-import { restoreScrollPosition } from '../scroll-position'
 import { listItemMarker } from './list-item-marker'
 import { pasteHtml } from './paste-html'
-import { commandTooltip } from '../command-tooltip'
 import { tableGeneratorTheme } from './table-generator'
 import { debugConsole } from '@/utils/debugging'
 import { PreviewPath } from '../../../../../../types/preview-path'
@@ -91,54 +89,74 @@ export const sourceOnly = (visual: boolean, extension: Extension) => {
 const parsedAttributesConf = new Compartment()
 
 /**
- * A view plugin which shows the editor content, makes it focusable,
- * and restores the scroll position, once the initial decorations have been applied.
+ * Parse the document incrementally using requestAnimationFrame so each chunk
+ * respects the 16ms frame budget and the main thread stays responsive.
+ */
+function parseChunked(
+  view: EditorView,
+  totalLength: number,
+  onComplete: () => void
+): void {
+  const FRAME_BUDGET_MS = 14 // leave 2ms headroom per frame
+
+  function tick() {
+    // forceParsing expects a timeout duration in ms, not a deadline timestamp!
+    const done = forceParsing(view, totalLength, FRAME_BUDGET_MS)
+    if (done) {
+      onComplete()
+    } else {
+      requestAnimationFrame(tick)
+    }
+  }
+
+  requestAnimationFrame(tick)
+}
+
+/**
+ * A view plugin which marks the editor as visually "parsed" (adds the
+ * ol-cm-parsed CSS class) once the initial decorations have been applied.
+ * Editing is always enabled — the editable() extension owns that lifecycle.
  */
 export const showContentWhenParsed = [
-  parsedAttributesConf.of([EditorView.editable.of(false)]),
+  // Only manage the CSS class — no longer blocks editability here.
+  parsedAttributesConf.of([]),
   ViewPlugin.define(view => {
-    const showContent = () => {
-      view.dispatch(
-        {
-          effects: parsedAttributesConf.reconfigure([
-            EditorView.editorAttributes.of({
-              class: 'ol-cm-parsed',
-            }),
-            EditorView.editable.of(true),
-          ]),
-        },
-        restoreScrollPosition()
-      )
+    const markParsed = () => {
+      view.dispatch({
+        effects: parsedAttributesConf.reconfigure([
+          EditorView.editorAttributes.of({
+            class: 'ol-cm-parsed',
+          }),
+        ]),
+      })
       view.focus()
     }
 
-    // already parsed
+    // If the document is already fully parsed (e.g. empty or tiny file),
+    // mark immediately in the next microtask.
     if (syntaxTree(view.state).length === view.state.doc.length) {
-      window.setTimeout(showContent)
+      window.setTimeout(markParsed)
       return {}
     }
 
-    // as a fallback, make sure the content is visible after 5s
-    const fallbackTimer = window.setTimeout(showContent, 5000)
+    // Fallback: always mark parsed after 5 s even if the parser is stuck.
+    const fallbackTimer = window.setTimeout(markParsed, 5000)
 
     let languageLoaded = false
 
     return {
       update(update) {
-        // wait for the language to load before telling the parser to run
+        // Wait for the language to load before triggering the parser.
         if (!languageLoaded && hasLanguageLoadedEffect(update)) {
           languageLoaded = true
-          // in a timeout, as this is already in a dispatch cycle
+          // Defer so we are outside the current dispatch cycle, then parse
+          // chunk-by-chunk to avoid blocking the main thread.
           window.setTimeout(() => {
-            // run asynchronously
-            new Promise(() => {
-              // tell the parser to run until the end of the document
-              forceParsing(view, view.state.doc.length, Infinity)
-              // clear the fallback timeout
+            parseChunked(view, view.state.doc.length, () => {
               window.clearTimeout(fallbackTimer)
-              // show the content, in a timeout so the decorations can build first
-              window.setTimeout(showContent)
-            }).catch(debugConsole.error)
+              // Give decorations one more frame to build before marking.
+              window.setTimeout(markParsed)
+            })
           })
         }
       },
@@ -173,7 +191,6 @@ const extension = (options: Options) => [
   atomicDecorations(options),
   markDecorations, // NOTE: must be after atomicDecorations, so that mark decorations wrap inline widgets
   visualKeymap,
-  commandTooltip,
   scrollJumpAdjuster,
   showContentWhenParsed,
   pasteHtml,

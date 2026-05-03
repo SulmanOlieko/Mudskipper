@@ -33,7 +33,7 @@ const editableAttributes = [
  * We add tabindex="0" in read-only mode to ensure the editor remains focusable for keyboard shortcuts.
  */
 export const editable = () => {
-  return [readOnlyConf.of(readOnlyAttributes)]
+  return [readOnlyConf.of(editableAttributes)]
 }
 
 export const setEditable = (value = true): TransactionSpec => {

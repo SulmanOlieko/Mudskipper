@@ -21,22 +21,19 @@ type FileRefFindResult = {
 
 export type FindResult = DocFindResult | FolderFindResult | FileRefFindResult
 
-// Finds the entity with a given ID in the tree represented by `folder` and
-// returns a path to that entity, represented by an array of folders starting at
-// the root plus the entity itself
 function pathComponentsInFolder(
   folder: Folder,
   id: string,
   ancestors: FileTreeEntity[] = []
 ): FileTreeEntity[] | null {
   const docOrFileRef =
-    folder.docs.find(doc => doc._id === id) ||
-    folder.fileRefs.find(fileRef => fileRef._id === id)
+    (folder.docs || []).find(doc => doc._id === id) ||
+    (folder.fileRefs || []).find(fileRef => fileRef._id === id)
   if (docOrFileRef) {
     return ancestors.concat([docOrFileRef])
   }
 
-  for (const subfolder of folder.folders) {
+  for (const subfolder of folder.folders || []) {
     if (subfolder._id === id) {
       return ancestors.concat([subfolder])
     } else {
@@ -54,8 +51,6 @@ function pathComponentsInFolder(
   return null
 }
 
-// Finds the entity with a given ID in the tree represented by `folder` and
-// returns a path to that entity as a string
 export function pathInFolder(folder: Folder, id: string): string | null {
   return (
     pathComponentsInFolder(folder, id)
@@ -68,11 +63,13 @@ export function findEntityByPath(
   folder: Folder,
   path: string
 ): FindResult | null {
-  if (path === '') {
+  if (!path || path === '' || path === '/') {
     return { entity: folder, type: 'folder' }
   }
 
-  const parts = path.split('/')
+  const parts = path.split('/').filter(Boolean)
+  if (parts.length === 0) return { entity: folder, type: 'folder' }
+
   const name = parts.shift()
   const rest = parts.join('/')
 
@@ -80,17 +77,17 @@ export function findEntityByPath(
     return findEntityByPath(folder, rest)
   }
 
-  const doc = folder.docs.find(doc => doc.name === name)
+  const doc = (folder.docs || []).find(doc => doc.name === name)
   if (doc) {
     return { entity: doc, type: 'doc' }
   }
 
-  const fileRef = folder.fileRefs.find(fileRef => fileRef.name === name)
+  const fileRef = (folder.fileRefs || []).find(fileRef => fileRef.name === name)
   if (fileRef) {
     return { entity: fileRef, type: 'fileRef' }
   }
 
-  for (const subfolder of folder.folders) {
+  for (const subfolder of folder.folders || []) {
     if (subfolder.name === name) {
       if (rest === '') {
         return { entity: subfolder, type: 'folder' }
@@ -103,33 +100,72 @@ export function findEntityByPath(
   return null
 }
 
+/**
+ * Mudskipper-specific: Dynamic search for a file anywhere in the project tree.
+ */
+export function findEntityAnywhere(
+  folder: Folder,
+  filename: string,
+  currentPath: string = ''
+): { entity: FileRef | Doc; path: string } | null {
+  const ignoredFolders = ['history', 'chat_files', 'comments', 'compiled_cache', '.git']
+  if (ignoredFolders.includes(folder.name)) return null
+
+  // Check files and docs in current folder
+  const file = (folder.fileRefs || []).find(f => f.name === filename)
+  if (file) {
+    return { entity: file, path: currentPath + file.name }
+  }
+  
+  const doc = (folder.docs || []).find(d => d.name === filename)
+  if (doc) {
+    return { entity: doc, path: currentPath + doc.name }
+  }
+
+  // Recurse into subfolders
+  for (const sub of folder.folders || []) {
+    const result = findEntityAnywhere(sub, filename, currentPath + sub.name + '/')
+    if (result) return result
+  }
+
+  return null
+}
+
 export function previewByPath(
   folder: Folder,
   projectId: string,
   path: string
 ): PreviewPath | null {
-  for (const suffix of [
-    '',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.pdf',
-    '.svg',
-    '.PNG',
-    '.JPG',
-    '.JPEG',
-    '.PDF',
-    '.SVG',
-  ]) {
-    const result = findEntityByPath(folder, path + suffix)
+  if (!folder) return null
 
-    if (result?.type === 'fileRef') {
-      const { name, hash } = result.entity
-      const extension = name.slice(name.lastIndexOf('.') + 1)
-      const url = `/project/${projectId}/blob/${hash}`
-      return { url, extension }
+  // Strategy 1: Try exact path match
+  let result = findEntityByPath(folder, path)
+  let foundPath = path
+  let method = 'direct'
+
+  // Strategy 2: If no direct match, search anywhere (Dynamic Discovery)
+  if (!result) {
+    const filename = path.split('/').pop() || path
+    const searchResult = findEntityAnywhere(folder, filename)
+    if (searchResult) {
+      result = { entity: searchResult.entity, type: 'fileRef' }
+      foundPath = searchResult.path
+      method = 'discovery'
     }
   }
+
+  if (result?.entity) {
+    const name = result.entity.name
+    const extension = name.slice(name.lastIndexOf('.') + 1).toLowerCase()
+    
+    const activePath = (window as any).activeProjectPath
+    const url = activePath 
+      ? (activePath.endsWith('/') ? activePath : activePath + '/') + foundPath
+      : `/project/${foundPath}`
+
+    return { url, extension }
+  }
+
   return null
 }
 

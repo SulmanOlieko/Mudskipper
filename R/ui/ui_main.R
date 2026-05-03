@@ -1,7 +1,8 @@
 app_ui <- fluidPage(
   tags$head(
     tags$script(src = "cm6-bundle.js"),
-    tags$script(src = "visual-bridge.js")
+    tags$script(src = "visual-bridge.js"),
+    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200")
   ),
   # Main app content wrapped in container
   tags$div(
@@ -1345,7 +1346,7 @@ app_ui <- fluidPage(
                             <option value="github">Github</option>
                             <option value="gob">Gob</option>
                             <option value="gruvbox">Gruvbox</option>
-                            <option value="idle_fingers" selected>Idle fingers</option>
+                            <option value="idle_fingers">Idle fingers</option>
                             <option value="iplastic">Iplastic</option>
                             <option value="katzenmilch">Katzenmilch</option>
                             <option value="kr_theme">Kr theme</option>
@@ -1363,7 +1364,17 @@ app_ui <- fluidPage(
                             <option value="tomorrow">Tomorrow</option>
                             <option value="twilight">Twilight</option>
                             <option value="vibrant_ink">Vibrant ink</option>
-                            <option value="xcode">Xcode</option>
+                            <option value="xcode" selected>Xcode</option>
+                        </select>
+                     </div>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                     <h4 class="mb-0">Visual editor theme</h4>
+                     <div style="flex-shrink: 0;">
+                        <select id="visualEditorThemePanel" class="form-select" style="shadow: none; font-size: 12px; padding: 2px 6px; height: auto; min-height: 24px; width: 180px; border: 1px solid #ced4da;">
+                            <option value="auto">Sync with App</option>
+                            <option value="light" selected>Light theme</option>
+                            <option value="dark">Dark theme</option>
                         </select>
                      </div>
                   </div>
@@ -1371,15 +1382,15 @@ app_ui <- fluidPage(
                     <h4 class="mb-0">Font family</h4>
                     <div style="flex-shrink: 0;">
                        <select id="editorFontFamilyPanel" class="form-select" style="shadow: none; font-size: 12px; padding: 2px 6px; height: auto; min-height: 24px; width: 180px; border: 1px solid #ced4da;">
-                           <option value="\'Fira Code\', monospace" selected>Fira Code</option>
-                           <option value="\'Consolas\', monospace">Consolas</option>
-                           <option value="\'Monaco\', monospace">Monaco</option>
-                           <option value="\'JetBrains Mono\', monospace">JetBrains Mono</option>
-                           <option value="\'Source Code Pro\', monospace">Source Code Pro</option>
-                           <option value="\'Ubuntu Mono\', monospace">Ubuntu Mono</option>
-                           <option value="\'Menlo\', monospace">Menlo</option>
-                           <option value="\'Inconsolata\', monospace">Inconsolata</option>
-                           <option value="monospace">Monospace</option>
+                           <option value="\'Fira Code\', Monaco">Fira Code</option>
+                           <option value="\'Consolas\', Monaco">Consolas</option>
+                           <option value="\'Monaco\'" selected>Monaco</option>
+                           <option value="\'JetBrains Mono\', Monaco">JetBrains Mono</option>
+                           <option value="\'Source Code Pro\', Monaco">Source Code Pro</option>
+                           <option value="\'Ubuntu Mono\', Monaco">Ubuntu Mono</option>
+                           <option value="\'Menlo\', Monaco">Menlo</option>
+                           <option value="\'Inconsolata\', Monaco">Inconsolata</option>
+                           <option value="monospace, Monaco">Monospace</option>
                        </select>
                     </div>
                   </div>
@@ -2095,10 +2106,14 @@ app_ui <- fluidPage(
     // 3. HIJACK the 'insert' method
     // This intercepts the LaTeX code from the toolbar and sends it to Ace instead
     eqInterface.insert = function(latex) {
-      var editor = ace.edit('sourceEditor');
-      if(editor) {
-        editor.insert(latex);
-        editor.focus();
+      if (window.insertContentToActiveEditor) {
+        window.insertContentToActiveEditor(latex);
+      } else {
+        var editor = ace.edit('sourceEditor');
+        if(editor) {
+          editor.insert(latex);
+          editor.focus();
+        }
       }
     };
 
@@ -4027,11 +4042,17 @@ body {
   border-bottom: 2px dotted #d63939; /* Red underline */
 }
 
+.cm-misspelled {
+  border-bottom: 2px dotted #d63939;
+  position: relative;
+  z-index: 2;
+}
+
 /* Spellcheck Suggestion Box */
 #spell-suggestions {
   display: none;
-  position: fixed;
-  z-index: 10000;
+  position: absolute;
+  z-index: 100000 !important;
   background: var(--tblr-bg-surface, #fff);
   border: 1px solid var(--tblr-border-color, #ccc);
   border-radius: var(--tblr-border-radius);
@@ -7251,16 +7272,18 @@ body {
                               </div>
                             '
                     ),
-                    div(
+div(
                       id = "equation-editor",
                       class = "border-bottom",
                       div(
-                        style = "white-space: nowrap; overflow: hidden;",
+                        style = "display: flex; flex-direction: row; align-items: stretch; overflow: hidden;",
                         div(
                           id = "visual-toggle-container",
-                          style = "display: inline-block; vertical-align: middle; margin-top: 0px; margin-left: 5px; margin-right: 5px; width: 130px;",
+                          style = "position: relative; z-index: 10; flex: 0 0 110px; display: flex; align-items: stretch; padding-left: 2px !important; padding-right: 2px !important; padding-top: 0px !important; padding-bottom: 0px !important; border-radius: 0px !important;",
                           HTML('
-                            <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist">
+                            <nav class="nav nav-segmented nav-segmented-vertical nav-sm" role="tablist",
+                            style="padding: 0px !important;"
+                            >
                               <button
                                 id="btn-source-mode"
                                 class="nav-link active"
@@ -7270,7 +7293,7 @@ body {
                                 aria-current="page"
                                 onclick="window.setEditorMode(\'source\')"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                   <path d="M7 8l-4 4l4 4" />
                                   <path d="M17 8l4 4l-4 4" />
                                   <path d="M14 4l-4 16" />
@@ -7286,7 +7309,7 @@ body {
                                 tabindex="-1"
                                 onclick="window.setEditorMode(\'visual\')"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> 
                                   <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
                                   <path d="M11.192 17.966c-3.242 -.28 -5.972 -2.269 -8.192 -5.966c2.4 -4 5.4 -6 9 -6c3.326 0 6.14 1.707 8.442 5.122" />
                                   <path d="M18.42 15.61a2.1 2.1 0 0 1 2.97 2.97l-3.39 3.42h-3v-3l3.42 -3.39z" />
@@ -7298,10 +7321,10 @@ body {
                         ),
                         div(
                           id = "toolbar",
-                          style = "padding-left:0px; padding-right:5px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; max-width: calc(100% - 210px); white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
+                          style = "flex: 1 1 auto; min-width: 0; padding-left:0px; padding-right:2px; padding-bottom: 0px !important; display: inline-block; vertical-align: top; white-space: nowrap; height: 100%; background: var(--tblr-bg-surface) !important;",
                         ),
                         div(
-                          style = "padding-top: 0px; padding-bottom: 0px; padding-left: 4px; width: 65px; display: inline-flex; flex-direction: column; justify-content: center; vertical-align: center; height: 100%; border-left: 1px solid var(--tblr-border-color); border-radius: 0; gap: 4px;",
+                          style = "flex: 0 0 30px; display: flex; flex-direction: column; justify-content: space-evenly; align-items: center; padding: 2px 0px; border-left: 1px solid var(--tblr-border-color); overflow: hidden; z-index: 100; background: var(--tblr-body-bg) !important;",
 
                           # 1. Dictate Button (Top)
                           tags$div(
@@ -7311,16 +7334,17 @@ body {
                             title = "Dictate",
                             "data-bs-toggle" = "tooltip",
                             "data-bs-placement" = "bottom",
+                            style = "width: 24px !important; min-width: 24px !important; max-width: 24px !important; padding: 0 !important; margin: 0 !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0;",
                             HTML(
                               '
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                          <path d="M3 3l18 18" />
-                                          <path d="M9 5a3 3 0 0 1 6 0v5a3 3 0 0 1 -.13 .874m-2 2a3 3 0 0 1 -3.87 -2.872v-1" />
-                                          <path d="M5 10a7 7 0 0 0 10.846 5.85m2 -2a6.967 6.967 0 0 0 1.152 -3.85" />
-                                          <path d="M8 21l8 0" />
-                                          <path d="M12 17l0 4" />
-                                        </svg>
-                                      '
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M3 3l18 18" />
+                                  <path d="M9 5a3 3 0 0 1 6 0v5a3 3 0 0 1 -.13 .874m-2 2a3 3 0 0 1 -3.87 -2.872v-1" />
+                                  <path d="M5 10a7 7 0 0 0 10.846 5.85m2 -2a6.967 6.967 0 0 0 1.152 -3.85" />
+                                  <path d="M8 21l8 0" />
+                                  <path d="M12 17l0 4" />
+                                </svg>
+                              '
                             )
                           ),
 
@@ -7333,14 +7357,15 @@ body {
                             "data-bs-html" = "true",
                             title = "<div>Find/Replace</div><div> CTRL/⌘ + F</div>",
                             onclick = "var editor = ace.edit(\'sourceEditor\'); if (editor) { ace.require(\'ace/ext/searchbox\').Search(editor, false);}",
+                            style = "width: 24px !important; min-width: 24px !important; max-width: 24px !important; padding: 0 !important; margin: 0 !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0;",
                             HTML(
                               '
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                          <circle cx="10" cy="10" r="7" />
-                                          <line x1="21" y1="21" x2="15" y2="15" />
-                                        </svg>
-                                      '
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                  <circle cx="10" cy="10" r="7" />
+                                  <line x1="21" y1="21" x2="15" y2="15" />
+                                </svg>
+                              '
                             )
                           )
                         )
@@ -7384,7 +7409,7 @@ body {
                     ),
                     div(
                       id = "editorSplit",
-                      style = "height: calc(100% - 30px); position: relative;",
+                      style = "height: 100%; position: relative;",
                       HTML(
                         '<span id="editorSpinner" style="display:none; margin-left:8px;">
                                           <i class="spinner-border spinner-border-sm" style="width:40px; height:40px; border-width: 1px; color:var(--tblr-primary); z-index: 2000;"></i>
@@ -7393,17 +7418,18 @@ body {
                       aceEditor(
                         "sourceEditor",
                         value = "",
-                        height = "92%",
+                        height = "95%",
                         wordWrap = TRUE,
                         showPrintMargin = FALSE,
                         autoComplete = "live",
+                        debounce = 100,
                         tabSize = 4,
                         useSoftTabs = TRUE,
                         showInvisibles = FALSE
                       ),
                       div(
                         id = "visualEditorContainer",
-                        style = "display:none; height: 92%; overflow: auto;"
+                        style = "display:none; height: 95%; overflow: auto;"
                       ),
                       HTML(
                         '
@@ -9460,14 +9486,33 @@ Shiny.addCustomMessageHandler('aceGoTo', function(data){
 
   // Validate input (default to 0 if missing)
   var line = (data && typeof data.line === 'number') ? data.line : 0;
+  var column = (data && typeof data.column === 'number') ? data.column : 0;
+  var selectText = data.selectText;
 
   // 1. Force Resize (Fixes scroll issues if panel size changed)
   editor.resize(true);
 
   // 2. Move Cursor & Focus
   editor.focus();
-  editor.moveCursorTo(line, 0);
-  editor.clearSelection(); // Prevent selecting text from previous operations
+  
+  // SyncTeX columns are 1-indexed, Ace is 0-indexed
+  var targetCol = Math.max(0, column - 1);
+  editor.moveCursorTo(line, targetCol);
+  
+  if (selectText && selectText.trim().length > 0) {
+      var Range = ace.require('ace/range').Range;
+      var cleanText = selectText.trim();
+      // Search for text on the target line specifically
+      editor.find(cleanText, { 
+          backwards: false, 
+          wrap: false, 
+          caseSensitive: false, 
+          wholeWord: false, 
+          range: new Range(line, 0, line, 2000) 
+      });
+  } else {
+      editor.clearSelection(); 
+  }
 
   // 3. FORCE SCROLL TO CENTER (Most reliable method)
   editor.centerSelection();
@@ -10985,14 +11030,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (match) {
           // It looks like a DOI
           doi = match[0];
-          console.log(\"Detected DOI:\", doi);
           bibtex = await fetchBibtexFromDoi(doi);
         } else {
           // It looks like a Title -> Search CrossRef Metadata first
-          console.log(\"Detected Title, searching metadata...\");
           doi = await findDoiFromTitle(inputVal);
           if (doi) {
-            console.log(\"Found DOI from title:\", doi);
             bibtex = await fetchBibtexFromDoi(doi);
           } else {
             throw new Error(\"Could not find a matching paper for this title.\");
@@ -11181,14 +11223,18 @@ document.addEventListener('keydown', function(e) {
       var editor = ace.edit('sourceEditor');
       if (!editor) return;
 
+      var cursorTimer;
       editor.getSession().selection.on('changeCursor', function() {
-        var cursorPosition = editor.getCursorPosition();
-        if (window.Shiny && Shiny.setInputValue) {
-          Shiny.setInputValue('cursorPosition', {
-            row: cursorPosition.row,
-            column: cursorPosition.column
-          }, {priority: 'event'});
-        }
+        if (cursorTimer) clearTimeout(cursorTimer);
+        cursorTimer = setTimeout(function() {
+          var cursorPosition = editor.getCursorPosition();
+          if (window.Shiny && Shiny.setInputValue) {
+            Shiny.setInputValue('cursorPosition', {
+              row: cursorPosition.row,
+              column: cursorPosition.column
+            }, {priority: 'event'});
+          }
+        }, 150);
       });
     } catch(e) {
       console.error('Error setting up cursor tracking:', e);
@@ -11317,7 +11363,12 @@ document.addEventListener('keydown', function(e) {
        el.classList.remove('active');
     });
 
-    var relPath = data.relPath ? data.relPath : data.url.replace(/^project_files\\//, '');
+    var relPath = '';
+    if (data.relPath) {
+        relPath = data.relPath;
+    } else if (data.url && typeof data.url === 'string') {
+        relPath = data.url.replace(/^project_files\\//, '');
+    }
 
     var sidebarItems = document.querySelectorAll('.filetree-item-row');
     sidebarItems.forEach(function(row) {
@@ -13397,7 +13448,7 @@ function flushSyncQueue() {
             cursorTimeout = setTimeout(highlightActiveComment, 200);
           });
           // Also trigger request for markers on load
-          if(window.Shiny) Shiny.setInputValue('aceEditorReady', Math.random(), {priority: 'event'});
+          if(window.Shiny && window.Shiny.setInputValue) Shiny.setInputValue('aceEditorReady', Math.random(), {priority: 'event'});
       }
   }, 200);
 
@@ -13554,6 +13605,7 @@ Shiny.addCustomMessageHandler('syncPdfView', function(data) {
         var spellWorker;
         var spellCheckTimer;
         var suggestionBox;
+        window.aceSpellCheckEnabled = true;
 
         // MAPPING: LibreOffice GitHub
 const SPELLCHECK_BASE = \"dictionaries/\";
@@ -13757,8 +13809,10 @@ function updateLanguageDropdown() {
           var initLang = localStorage.getItem('mudskipper_spell_lang') || 'en_GB';
           changeLanguage(initLang);
 
+          window.lastTypos = [];
           spellWorker.onmessage = function(e) {
             if (e.data.type === 'result') {
+              window.lastTypos = e.data.typos;
               renderMarkers(e.data.typos);
             } else if (e.data.type === 'suggestions_ready') {
               showSuggestions(e.data.list, e.data.range, e.data.coords);
@@ -13786,15 +13840,33 @@ function updateLanguageDropdown() {
 
         // Trigger check function (Global reference)
         window.triggerSpellCheck = function() {
-           var editor = ace.edit('sourceEditor');
-           if (!editor) return;
-           var session = editor.getSession();
-           var lines = session.getLines(0, session.getLength());
+           // We check for workers instead of aceSpellCheckEnabled here because 
+           // we want it to work for Visual Editor even if Ace spellcheck is disabled in the bridge.
+           if (!spellWorker) return;
+           
+           let lines = [];
+           if (window.currentMode === 'visual' && window.cm6View) {
+             const content = window.cm6View.state.doc.toString();
+             lines = content.split('\\n');
+           } else {
+             if (!window.aceSpellCheckEnabled) return;
+             var editor = ace.edit('sourceEditor');
+             if (!editor) return;
+             var session = editor.getSession();
+             lines = session.getLines(0, session.getLength());
+           }
            spellWorker.postMessage({ lines: lines });
         };
 
         // --- 2. Render Markers ---
         function renderMarkers(typos) {
+          if (window.currentMode === 'visual' && window.cm6View) {
+            if (window.MudskipperVisualEditor && window.MudskipperVisualEditor.updateSpellcheckDecorations) {
+              window.MudskipperVisualEditor.updateSpellcheckDecorations(window.cm6View, typos);
+            }
+            return;
+          }
+
           var editor = ace.edit('sourceEditor');
           if (!editor) return;
           var session = editor.getSession();
@@ -13816,7 +13888,9 @@ function updateLanguageDropdown() {
 
         // --- 3. Handle Clicks on Errors ---
         function setupInteraction(editor) {
+          // Ace Click Listener
           editor.on('click', function(e) {
+            if (window.currentMode !== 'source') return;
             var pos = e.getDocumentPosition();
             var session = editor.getSession();
             var markers = session.getMarkers();
@@ -13846,9 +13920,57 @@ function updateLanguageDropdown() {
             }
           });
 
+          // CM6 Click Listener (Global delegation)
+          document.addEventListener('click', function(e) {
+            if (window.currentMode !== 'visual' || !window.cm6View) return;
+            
+            const visualWrapper = document.getElementById(\"visualEditorContainer\");
+            if (!visualWrapper || !visualWrapper.contains(e.target)) return;
+            
+            // Wait for CM6 to update its selection and avoid immediate hiding from document click
+            setTimeout(() => {
+                const view = window.cm6View;
+                const pos = view.state.selection.main.head;
+                
+                // Find typo at this position
+                const typo = (window.lastTypos || []).find(t => {
+                    try {
+                        const line = view.state.doc.line(t.row + 1);
+                        const from = line.from + t.col;
+                        const to = from + t.len;
+                        return pos >= from && pos <= to;
+                    } catch(err) { return false; }
+                });
+                
+                if (typo) {
+                    const line = view.state.doc.line(typo.row + 1);
+                    const from = line.from + typo.col;
+                    const to = from + typo.len;
+                    const wordText = typo.word;
+                    
+                    // Get screen coordinates for CM6 (viewport relative)
+                    const coords = view.coordsAtPos(pos);
+                    if (coords) {
+                        spellWorker.postMessage({
+                            command: 'suggest',
+                            word: wordText,
+                            range: { from, to },
+                            coords: { 
+                                x: coords.left + window.pageXOffset, 
+                                y: coords.top + window.pageYOffset 
+                            }
+                        });
+                    }
+                } else {
+                    suggestionBox.style.display = 'none';
+                }
+            }, 150);
+          });
+
           // Auto-detect language 2 seconds after the user stops typing
             var langDetectTimer;
             editor.on('change', function() {
+                if (window.currentMode !== 'source') return;
                 clearTimeout(langDetectTimer);
                 langDetectTimer = setTimeout(updateLanguageDropdown, 2000);
 
@@ -13858,12 +13980,7 @@ function updateLanguageDropdown() {
                 spellCheckTimer = setTimeout(triggerSpellCheck, 1500);
             });
 
-          editor.on('change', function() {
-            suggestionBox.style.display = 'none';
-            clearTimeout(spellCheckTimer);
-            spellCheckTimer = setTimeout(triggerSpellCheck, 1500);
-          });
-
+          // Global change listener for visual mode already handled in visual-bridge.js
         }
 
         // --- 4. Show & Apply Suggestions ---
@@ -13885,10 +14002,26 @@ function updateLanguageDropdown() {
           var windowHeight = window.innerHeight;
           var lineHeight = 20;
 
-          if (coords.y + lineHeight + boxHeight > windowHeight) {
+          // For absolute positioning, we check against viewport bounds
+          var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          var relativeY = coords.y - scrollTop;
+
+          if (relativeY + lineHeight + boxHeight > windowHeight) {
             suggestionBox.style.top = (coords.y - boxHeight) + 'px';
           } else {
              suggestionBox.style.top = (coords.y + lineHeight) + 'px';
+          }
+          
+          // Ensure it's not off-screen horizontally
+          var boxWidth = suggestionBox.offsetWidth;
+          var windowWidth = window.innerWidth;
+          var scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+          var relativeX = coords.x - scrollLeft;
+
+          if (relativeX + boxWidth > windowWidth) {
+            suggestionBox.style.left = (coords.x - boxWidth) + 'px';
+          } else {
+            suggestionBox.style.left = coords.x + 'px';
           }
 
           var items = suggestionBox.querySelectorAll('.suggestion-item');
@@ -13902,6 +14035,15 @@ function updateLanguageDropdown() {
         }
 
         function replaceWord(newWord, rangeData) {
+          if (window.currentMode === 'visual' && window.cm6View) {
+             const view = window.cm6View;
+             view.dispatch({
+               changes: { from: rangeData.from, to: rangeData.to, insert: newWord },
+               selection: { anchor: rangeData.from + newWord.length }
+             });
+             triggerSpellCheck();
+             return;
+          }
           var editor = ace.edit('sourceEditor');
           var Range = ace.require('ace/range').Range;
           var range = new Range(rangeData.start.row, rangeData.start.column, rangeData.end.row, rangeData.end.column);
@@ -14375,10 +14517,16 @@ function initializeLatexWordCounter() {
 
 // 2. Send text to worker (Triggered by editor changes)
 function updateWordCountWithWorker() {
-    const editor = ace.edit(\"sourceEditor\");
-    if (!editor || !latexWordCounterWorker) return;
+    let text = \"\";
+    if (window.currentMode === 'visual' && window.cm6View) {
+        text = window.cm6View.state.doc.toString();
+    } else {
+        const editor = ace.edit(\"sourceEditor\");
+        if (!editor) return;
+        text = editor.getSession().getValue();
+    }
 
-    const text = editor.getSession().getValue();
+    if (!latexWordCounterWorker) return;
 
     // Skip if text hasn't changed
     if (text === lastProcessedTextForCounter) return;
@@ -14615,7 +14763,11 @@ window.toggleDictation = function() {
 
     // Single Insert + Single Focus
     if (finalString.length > 0) {
-      editor.insert(finalString);
+      if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
+        window.insertContentToActiveEditor(finalString);
+      } else {
+        editor.insert(finalString);
+      }
       editor.focus();
     }
   };
@@ -14728,8 +14880,9 @@ function openCopyProjectOverlay() {
       }
 
       if (text) {
-        // Check if snippet manager is available, else insert plain text
-        if (editor.insertSnippet) {
+        if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
+            window.insertContentToActiveEditor(text);
+        } else if (editor.insertSnippet) {
             editor.insertSnippet(text);
         } else {
             editor.insert(text);
@@ -14744,10 +14897,12 @@ function openCopyProjectOverlay() {
         Shiny.addCustomMessageHandler(\"cmdInsertText\", function(data) {
           var editor = getAceEditor();
           if(editor) {
-              if (data.text.includes(\"${1\")) {
-                 editor.insertSnippet(data.text);
+              if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
+                  window.insertContentToActiveEditor(data.text);
+              } else if (data.text.includes(\"${1\")) {
+                  editor.insertSnippet(data.text);
               } else {
-                 editor.insert(data.text);
+                  editor.insert(data.text);
               }
               editor.focus();
           }
@@ -14779,16 +14934,21 @@ function openCopyProjectOverlay() {
     });
 
     // Unified Helper function for insertion
-    // Checks for Ace Editor first, then falls back to standard textarea
+    // Checks for Active Editor (Ace or CM6)
     function insertSymbolToEditor(sym) {
-      // 1. Try Ace Editor (RMarkdown/Shiny standard)
+      if (window.insertContentToActiveEditor) {
+          window.insertContentToActiveEditor(sym);
+          return;
+      }
+      
+      // Fallback
       if (typeof getAceEditor === \"function\") {
-         var editor = getAceEditor();
-         if (editor) {
-            editor.insert(sym);
-            editor.focus();
-            return;
-         }
+          var editor = getAceEditor();
+          if (editor) {
+             editor.insert(sym);
+             editor.focus();
+             return;
+          }
       }
 
       // 2. Fallback to standard Textarea (sourceEditor)
@@ -15600,6 +15760,7 @@ createWrapper() {
     /* --- NATIVE FOLD ENGINE PHYSICS --- */
 
     getFoldRange(row) {
+      if (!this.editor || !this.editor.session || !this.editor.session.getFoldWidgetRange) return null;
       if (this.scopeRanges.has(row)) return this.scopeRanges.get(row);
       const range = this.editor.session.getFoldWidgetRange(row);
       if (range) {
@@ -15622,7 +15783,7 @@ createWrapper() {
               break; // Gracefully yield to prevent browser lockup
           }
 
-          if (session.getFoldWidget(r) === 'start') {
+          if (session.getFoldWidget && session.getFoldWidget(r) === 'start') {
               const range = this.getFoldRange(r);
               // Mathematics perfectly confirm an ancestor if its end row wraps the start row
               if (range && range.end.row >= startRow) {
@@ -15651,7 +15812,7 @@ createWrapper() {
       const buffer = lineHeight / 2;
 
       for (let r = topDocRow + 1; r <= searchEndRow; r++) {
-         if (session.getFoldWidget(r) === 'start') {
+         if (session.getFoldWidget && session.getFoldWidget(r) === 'start') {
              const range = this.getFoldRange(r);
              if (range && range.end.row > r) {
                 const targetSlotIndex = baseStack.length + dockingStack.length;
@@ -15673,7 +15834,13 @@ createWrapper() {
     }
 
     update(forceRebuild = false) {
-      if (!this.isEnabled || !this.editor) return;
+      if (!this.isEnabled || !this.editor || !this.editor.container) return;
+      
+      // PERFORMANCE: Skip updates if the editor is not visible
+      if (this.editor.container.offsetWidth === 0) return;
+
+      const session = this.editor.session;
+      if (!session || !session.getFoldWidget) return;
 
       const rows = this.scanForStickyRows();
       const rowString = rows.join(',');
@@ -16305,7 +16472,8 @@ createWrapper() {
 
       for (var m2 in mainMarkers) {
           var marker = mainMarkers[m2];
-          if (marker.clazz !== 'ace_active-line') {
+          // ONLY sync standard static markers (string types) to prevent 'r.update' errors
+          if (marker.clazz !== 'ace_active-line' && typeof marker.type === 'string') {
               miniSession.addMarker(marker.range, marker.clazz, marker.type, marker.inFront);
           }
       }
@@ -16655,7 +16823,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Insert
         var editor = ace.edit('sourceEditor');
-        if (editor) { editor.insert(latex); editor.focus(); }
+        if (window.insertContentToActiveEditor) {
+            window.insertContentToActiveEditor(latex);
+        } else if (editor) { 
+            editor.insert(latex); 
+            editor.focus(); 
+        }
 
         closeTableOverlay();
 
@@ -16885,6 +17058,36 @@ document.addEventListener(\"DOMContentLoaded\", function() {
       });
     });
   }
+
+  const visualThemePanel = document.getElementById('visualEditorThemePanel');
+  let settings = {};
+  try { settings = JSON.parse(localStorage.getItem('latexerSettings') || '{}'); } catch(e) {}
+  const savedVisualTheme = settings.visualEditorTheme || 'light';
+  if (visualThemePanel) visualThemePanel.value = savedVisualTheme;
+
+  if (visualThemePanel) {
+    visualThemePanel.addEventListener('change', function() {
+      const setting = this.value;
+      try {
+        let s = JSON.parse(localStorage.getItem('latexerSettings') || '{}');
+        s.visualEditorTheme = setting;
+        localStorage.setItem('latexerSettings', JSON.stringify(s));
+      } catch(e) {}
+      
+      if (window.cm6View && window.MudskipperVisualEditor && window.MudskipperVisualEditor.setOptionsTheme) {
+         const themeToApply = window.getVisualTheme();
+         const themeEffects = window.MudskipperVisualEditor.setOptionsTheme({ 
+           theme: themeToApply, 
+           fontSize: 14 
+         });
+         window.cm6View.dispatch({ effects: themeEffects });
+      }
+    });
+  }
+
+
+
+
 
   const sizePanel = document.getElementById('editorFontSizePanel');
   if (sizePanel) {

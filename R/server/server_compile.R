@@ -344,8 +344,7 @@
         if (file.exists(log_file)) {
           anns <- parse_tex_log(log_file)
           compileAnnotations(anns)
-          current_lint <- isolate(lintAnnotations())
-          session$sendCustomMessage("setAnnotations", c(anns, current_lint))
+          session$sendCustomMessage("setAnnotations", anns)
         }
 
         # Cache Result (Original Behavior)
@@ -531,124 +530,124 @@
     session$sendCustomMessage("updateStatus", paste0("Font size set to ", fs))
   })
 
-  # Auto-save & Dynamic Bibliography Update
+  # Auto-save & Dynamic Bibliography Update (1 second - safer for UI thread)
   autoSaveSource <- debounce(reactive(input$sourceEditor), 1000)
+  lastSavedContent <- reactiveVal(NULL)
 
   observeEvent(
     autoSaveSource(),
     {
-      req(currentFile())
-      projDir <- getActiveProjectDir()
-      req(projDir)
+      isolate({
+        file_name <- currentFile()
+        projDir <- getActiveProjectDir()
+      })
+      req(file_name, projDir)
+      if (isTRUE(rv$fileJustLoaded)) return()
 
-      # 1. Flag Check: Skip if we just loaded this file programmatically
-      if (isTRUE(rv$fileJustLoaded)) {
-        return()
-      }
-
-      filePath <- file.path(projDir, currentFile())
+      filePath <- file.path(projDir, file_name)
       new_content <- autoSaveSource()
+      if (is.null(new_content)) return()
 
-      # Don't process NULL content
-      if (is.null(new_content)) {
-        return()
-      }
+      # PERFORMANCE: Memory-based dirty check to avoid reading from disk every 1s
+      if (!is.null(lastSavedContent()) && identical(new_content, lastSavedContent())) return()
 
-      # --- CRITICAL FIX: Content Equality Check ---
-      # Compare editor content vs disk content to prevent "Phantom Edits" on load
-      if (file.exists(filePath)) {
-        # Read disk content (warn=FALSE handles missing trailing newlines gracefully)
-        disk_content <- paste(
-          readLines(filePath, warn = FALSE),
-          collapse = "\n"
-        )
+      tryCatch({
+        writeLines(new_content, filePath)
+        lastSavedContent(new_content) # Update memory cache
+        updateStatus(file_name)
+      }, error = function(e) {
+        showTablerAlert("danger", "Save Error", paste("Failed to save:", e$message), 5000)
+      })
 
-        # If they are identical, nothing changed. Stop here.
-        if (identical(new_content, disk_content)) {
-          return()
-        }
-      }
-      # --------------------------------------------
-
-      # 2. Save the file to disk (Only if content actually changed)
-      writeLines(new_content, filePath)
-      # Reset the status to the clean, saved state
-      updateStatus(currentFile())
-
-      # 3. Save History Snapshot
-      if (exists("saveHistorySnapshot")) {
-        saveHistorySnapshot(activeProjectId(), currentFile(), new_content)
-      }
-
-      # ✅ NEW: FORCE sync of comment positions on every save
       session$sendCustomMessage("requestLiveCommentCoordinates", NULL)
 
-      # Whenever a .tex file is auto-saved, enforce it as the main file
-      if (tolower(tools::file_ext(currentFile())) == "tex") {
-        # 1. Update persistence (projects.json)
-        updateProjectMainFilePreference(activeProjectId(), currentFile())
-
-        # 2. Update the Dropdown UI to match immediately
-        # This ensures the "Compile" button targets this file
-        updateSelectInput(session, "compileMainFile", selected = currentFile())
-      }
-
-      if (!is.null(activeProjectId())) {
-        updateProjectTimestamp(activeProjectId())
-      }
-
-      # 2. NEW: Hot-Reload Bibliography Keys AND Labels
-      ext <- tolower(tools::file_ext(currentFile()))
-
-      if (ext == "bib") {
-        # If editing a .bib file, refresh citation keys
-        projects <- loadProjects()
-        mainFile <- NULL
-        for (proj in projects) {
-          if (!is.null(proj$id) && proj$id == activeProjectId()) {
-            mainFile <- proj$mainFile
-            break
-          }
-        }
-
-        texContent <- ""
-        if (!is.null(mainFile) && file.exists(file.path(projDir, mainFile))) {
-          texContent <- paste(
-            readLines(file.path(projDir, mainFile), warn = FALSE),
-            collapse = "\n"
-          )
-        }
-
-        pushBibCitations(texContent, projDir)
-      } else if (ext == "tex") {
-        # For .tex files, update BOTH citations AND labels
-        pushBibCitations(autoSaveSource(), projDir)
-        pushLabelKeys(autoSaveSource())
-      }
-
-      # 3. Auto-Compile Logic (Existing)
-      if (isTruthy(input$autoCompile) && input$autoCompile == "on") {
-        if (!isTRUE(compileState$active)) {
-          startCompileAsync()
-        }
+      if (tolower(tools::file_ext(file_name)) == "tex") {
+        updateProjectMainFilePreference(activeProjectId(), file_name)
+        updateSelectInput(session, "compileMainFile", selected = file_name)
       }
     },
     ignoreInit = TRUE
   )
 
-  # ----------------- ACTIVE OUTLINE WITH CURSOR TRACKING ------------------
-  currentOutlineItem <- reactiveVal(NULL)
+  # History Saving & Timestamp update (10 seconds)
+  historySaveDebounced <- debounce(reactive(input$sourceEditor), 10000)
+  observeEvent(historySaveDebounced(), {
+    isolate({
+      projId <- activeProjectId()
+      file_name <- currentFile()
+      content <- historySaveDebounced()
+    })
+    req(projId, file_name, content)
+    if (isTRUE(rv$fileJustLoaded)) return()
+    
+    if (exists("saveHistorySnapshot")) {
+      saveHistorySnapshot(projId, file_name, content)
+    }
+    
+    if (exists("updateProjectTimestamp")) {
+      updateProjectTimestamp(projId)
+    }
+  })
 
+  # Optimized Outline & metadata refresh (5 seconds)
+  outlineSource <- debounce(reactive(input$sourceEditor), 5000)
+  observeEvent(outlineSource(), {
+    isolate({
+      file_name <- currentFile()
+      projId <- activeProjectId()
+      projDir <- getActiveProjectDir()
+      content <- outlineSource()
+    })
+    req(file_name, projId, projDir)
+    if (isTRUE(rv$fileJustLoaded)) return()
+
+    ext <- tolower(tools::file_ext(file_name))
+
+    # 1. Update Outline
+    if (ext == "tex") {
+      odf <- parseOutline(content)
+      outlineData(odf)
+    }
+
+    # 2. Update Bibliography & Labels
+    if (ext == "bib") {
+      # If editing a .bib file, refresh citation keys for the main file
+      projects <- loadProjects()
+      mainFile <- NULL
+      for (proj in projects) {
+        if (!is.null(proj$id) && proj$id == projId) {
+          mainFile <- proj$mainFile
+          break
+        }
+      }
+
+      texContent <- ""
+      if (!is.null(mainFile) && file.exists(file.path(projDir, mainFile))) {
+        texContent <- tryCatch({
+          paste(readLines(file.path(projDir, mainFile), warn = FALSE), collapse = "\n")
+        }, error = function(e) "")
+      }
+      pushBibCitations(texContent, projDir)
+    } else if (ext == "tex") {
+      pushBibCitations(content, projDir)
+      pushLabelKeys(content)
+    }
+
+    # 3. Auto-Compile Logic
+    if (isTruthy(input$autoCompile) && input$autoCompile == "on") {
+      if (!isTRUE(compileState$active)) {
+        startCompileAsync()
+      }
+    }
+  })
+
+  # --- ACTIVE OUTLINE WITH CURSOR TRACKING ---
+  
   parseOutline <- function(txt) {
-    if (is.null(txt) || !nzchar(txt)) {
-      return(NULL)
-    }
+    if (is.null(txt) || !nzchar(txt)) return(NULL)
     lines <- unlist(strsplit(txt, "\n", fixed = TRUE))
-    if (length(lines) == 0) {
-      return(NULL)
-    }
+    if (length(lines) == 0) return(NULL)
 
-    # Regex patterns (unchanged hierarchy logic)
     pats <- list(
       list(re = "^\\\\part\\*?\\{(.*)\\}", lv = 0),
       list(re = "^\\\\chapter\\*?\\{(.*)\\}", lv = 0),
@@ -659,37 +658,20 @@
     )
 
     out <- list()
-    for (i in seq_along(lines)) {
-      ln <- trimws(lines[[i]])
-      for (p in pats) {
-        if (grepl(p$re, ln)) {
-          # Use regexec to capture the content inside the first brace set
+    for (p in pats) {
+      indices <- grep(p$re, lines, perl = TRUE)
+      if (length(indices) > 0) {
+        for (i in indices) {
+          ln <- trimws(lines[[i]])
           m <- regexec(p$re, ln, perl = TRUE)
           res <- regmatches(ln, m)[[1]]
 
           if (length(res) > 1) {
             title <- res[2]
-
-            # --- CLEANING LOGIC START ---
-
-            # 1. Remove }\label{... and everything after it (User request)
-            # This handles cases like: \section{Title}\label{sec:xyz}
             title <- sub("\\}\\s*\\\\label\\{.*$", "", title)
-
-            # 2. Remove standard \label{...} if it was inside the title
             title <- gsub("\\\\label\\{[^}]+\\}", "", title)
-
-            # 3. Clean trailing closing brace if the greedy match captured it
-            # (e.g. if original was just \section{Title})
-            if (grepl("\\}$", title)) {
-              title <- sub("\\}$", "", title)
-            }
-
-            # 4. Remove common LaTeX formatting commands for cleaner UI
-            # e.g., \textbf{Text} -> Text
+            if (grepl("\\}$", title)) title <- sub("\\}$", "", title)
             title <- gsub("\\\\[a-zA-Z]+\\{([^}]*)\\}", "\\1", title)
-
-            # --- CLEANING LOGIC END ---
 
             out[[length(out) + 1]] <- list(
               line = i - 1L,
@@ -697,14 +679,14 @@
               title = trimws(title)
             )
           }
-          break
         }
       }
     }
-    if (length(out) == 0) {
-      return(NULL)
-    }
-    do.call(rbind, lapply(out, as.data.frame, stringsAsFactors = FALSE))
+
+    if (length(out) == 0) return(NULL)
+    res_df <- do.call(rbind, lapply(out, as.data.frame, stringsAsFactors = FALSE))
+    res_df <- res_df[order(res_df$line), ]
+    return(res_df)
   }
 
   # Track cursor position in editor
@@ -723,7 +705,6 @@
       activeItem <- NULL
       for (i in seq_len(nrow(odf))) {
         if (odf$line[i] <= cursorLine) {
-          # Check if this is the last section or if cursor is before next section
           if (i == nrow(odf) || odf$line[i + 1] > cursorLine) {
             activeItem <- i
             break
@@ -731,37 +712,15 @@
         }
       }
 
-      currentOutlineItem(activeItem)
+      # PERFORMANCE: Only update reactive value if the active section has changed
+      # This prevents redundant JS calls to highlight the outline
+      if (!identical(activeItem, isolate(currentOutlineItem()))) {
+        currentOutlineItem(activeItem)
+      }
     },
     ignoreInit = TRUE
   )
 
-  outlineSource <- debounce(reactive(input$sourceEditor), 600)
-  observeEvent(
-    outlineSource(),
-    {
-      currFile <- currentFile()
-      ext <- if (!is.null(currFile)) tolower(tools::file_ext(currFile)) else ""
-
-      if (ext != "tex") {
-        outlineData(NULL)
-
-        # --- FIX: Explicitly stop spinner here ---
-        # If outlineData was already NULL, renderUI won't run to stop it.
-        # We must ensure it stops regardless.
-        session$sendCustomMessage("toggleOutlineSpinner", FALSE)
-        # -----------------------------------------
-
-        return()
-      }
-
-      txt <- outlineSource()
-      odf <- parseOutline(txt)
-      outlineData(odf)
-      # For the .tex path, renderUI will trigger and handle stopping the spinner
-    },
-    ignoreInit = FALSE
-  )
 
   output$outlineSidebar <- renderUI({
     # 1. Start spinner immediately

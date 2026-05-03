@@ -1,7 +1,7 @@
 import { EditorView } from '@codemirror/view'
 
 export const tableGeneratorTheme = EditorView.baseTheme({
-  '&dark .table-generator': {
+  '&dark .table-generator, &.overall-theme-dark .table-generator': {
     '--table-generator-active-border-color': '#ccc',
     '--table-generator-coming-soon-background-color': '#41464f',
     '--table-generator-coming-soon-color': '#fff',
@@ -32,14 +32,12 @@ export const tableGeneratorTheme = EditorView.baseTheme({
     '--table-generator-error-background': '#2c3645',
     '--table-generator-error-color': '#fff',
     '--table-generator-error-border-color': '#677283',
-    '--table-generator-column-size-indicator-background': 'var(--neutral-80)',
-    '--table-generator-column-size-indicator-hover-background':
-      'var(--neutral-70)',
+    '--table-generator-column-size-indicator-background': '#3a3f4b',
+    '--table-generator-column-size-indicator-hover-background': '#4a4f5b',
     '--table-generator-column-size-indicator-color': 'white',
     '--table-generator-column-size-indicator-hover-color': 'white',
   },
-
-  '&light .table-generator': {
+  '&light .table-generator, &.overall-theme-light .table-generator': {
     '--table-generator-active-border-color': '#666',
     '--table-generator-coming-soon-background-color': 'var(--neutral-10)',
     '--table-generator-coming-soon-color': 'var(--neutral-70)',
@@ -526,5 +524,48 @@ export const tableGeneratorTheme = EditorView.baseTheme({
     '& td': {
       lineHeight: '1',
     },
+  },
+  '.notification': {
+    display: 'flex',
+    padding: '12px 16px',
+    borderRadius: '4px',
+    marginBottom: '12px',
+    gap: '12px',
+    borderLeftWidth: '4px',
+    borderLeftStyle: 'solid',
+    fontFamily: 'var(--bs-body-font-family)',
+    fontSize: '14px',
+    lineHeight: '1.4',
+  },
+  '.notification-type-info': {
+    backgroundColor: '#eff6ff',
+    borderLeftColor: '#3b82f6',
+    color: '#1e40af',
+    '&dark &, &.overall-theme-dark &': {
+      backgroundColor: '#1e293b',
+      borderLeftColor: '#3b82f6',
+      color: '#bfdbfe',
+    },
+  },
+  '.notification-icon': {
+    flexShrink: '0',
+    color: '#3b82f6',
+    '& span': {
+      fontSize: '20px',
+    },
+  },
+  '.notification-content': {
+    '& p': {
+      margin: '0',
+    },
+    '& strong': {
+      display: 'block',
+      marginBottom: '4px',
+    },
+  },
+  '.table-generator-error-container': {
+    padding: '20px',
+    width: '100%',
+    boxSizing: 'border-box',
   },
 })

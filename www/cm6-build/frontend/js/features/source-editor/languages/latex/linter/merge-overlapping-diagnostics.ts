@@ -70,7 +70,10 @@ export const mergeCompatibleOverlappingDiagnostics = (
   const allMergedDiagnostics = []
 
   // Partition by diagnostic source (compiler or linter)
-  for (const diagnosticsForSource of groupBy(diagnostics, 'source')) {
+  // Ensure source exists for grouping, default to 'linter'
+  const diagnosticsWithSource = diagnostics.map(d => ({ ...d, source: d.source || 'linter' }))
+  
+  for (const diagnosticsForSource of groupBy(diagnosticsWithSource, 'source')) {
     // Partition into severities
     const diagnosticsBySeverity = groupBy(diagnosticsForSource, 'severity')
 

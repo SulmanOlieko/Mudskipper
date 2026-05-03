@@ -2,7 +2,6 @@ import { EditorView, WidgetType } from '@codemirror/view'
 import { placeSelectionInsideBlock } from '../selection'
 import { isEqual } from 'lodash'
 import { FigureData } from '../../figure-modal'
-import { debugConsole } from '@/utils/debugging'
 import { PreviewPath } from '../../../../../../../types/preview-path'
 
 export class GraphicsWidget extends WidgetType {
@@ -21,7 +20,6 @@ export class GraphicsWidget extends WidgetType {
   toDOM(view: EditorView): HTMLElement {
     this.destroyed = false
 
-    // this is a block decoration, so it's outside the line decorations from the environment
     const element = document.createElement('div')
     element.classList.add('ol-cm-environment-figure')
     element.classList.add('ol-cm-environment-line')
@@ -45,15 +43,15 @@ export class GraphicsWidget extends WidgetType {
     )
   }
 
-  updateDOM(element: HTMLImageElement, view: EditorView) {
+  updateDOM(element: HTMLElement, view: EditorView) {
     this.destroyed = false
     element.classList.toggle('ol-cm-environment-centered', this.centered)
-    if (
-      this.filePath === element.dataset.filepath &&
-      element.dataset.width === String(this.figureData?.width?.toString())
-    ) {
+    
+    const inner = element.querySelector('.ol-cm-graphics, .ol-cm-graphics-loading-placeholder')
+    if (inner && (inner as HTMLElement).dataset?.filepath === this.filePath) {
       return true
     }
+
     this.renderGraphic(element, view)
     view.requestMeasure()
     return true
@@ -62,7 +60,6 @@ export class GraphicsWidget extends WidgetType {
   ignoreEvent(event: Event) {
     return (
       event.type !== 'mouseup' &&
-      // Pass events through to the edit button
       !(
         event.target instanceof HTMLElement &&
         event.target.closest('.ol-cm-graphics-edit-button')
@@ -83,41 +80,124 @@ export class GraphicsWidget extends WidgetType {
   }
 
   renderGraphic(element: HTMLElement, view: EditorView) {
-    element.textContent = '' // ensure the element is empty
+    element.textContent = ''
+    const wrapper = document.createElement('div')
+    wrapper.dataset.filepath = this.filePath
+    element.appendChild(wrapper)
 
     const preview = this.previewByPath(this.filePath)
-    element.dataset.filepath = this.filePath
-    element.dataset.width = this.figureData?.width?.toString()
-
+    
     if (!preview) {
-      const message = document.createElement('div')
-      message.classList.add('ol-cm-graphics-error')
-      message.classList.add('ol-cm-monospace')
-      message.textContent = this.filePath
-      element.append(message)
+      this.showError(wrapper, `Path not found: ${this.filePath}`)
       return
     }
 
-    switch (preview.extension) {
-      case 'pdf':
-      case 'PDF':
-        {
-          const canvas = document.createElement('canvas')
-          canvas.classList.add('ol-cm-graphics')
-          this.renderPDF(view, canvas, preview.url).catch(debugConsole.error)
-          element.append(canvas)
-        }
-        break
+    const { url, extension } = preview
 
-      case 'svg':
-      case 'SVG':
-        element.append(this.createSvgImage(view, preview.url))
-        break
-
-      default:
-        element.append(this.createImage(view, preview.url))
-        break
+    if (extension === 'svg') {
+      this.renderSvg(view, wrapper, url)
+    } else if (extension === 'pdf') {
+      this.renderNativePDF(view, wrapper, url)
+    } else {
+      this.renderDefaultImage(view, wrapper, url)
     }
+  }
+
+  private renderNativePDF(view: EditorView, wrapper: HTMLElement, url: string) {
+    const image = document.createElement('img')
+    image.classList.add('ol-cm-graphics')
+    image.dataset.filepath = this.filePath
+    const width = this.getFigureWidth()
+    image.style.width = width
+    image.style.maxWidth = width
+    image.style.display = 'block'
+
+    image.addEventListener('load', () => {
+      wrapper.textContent = ''
+      wrapper.appendChild(image)
+      wrapper.classList.remove('ol-cm-graphics-loading-placeholder')
+      this.height = image.height > 0 ? image.height : 300
+      view.requestMeasure()
+    })
+
+    image.addEventListener('error', () => {
+      console.warn('Native PDF render failed, falling back to PDF.js')
+      this.renderPDF(view, wrapper, url).catch(err => {
+        console.error('All PDF methods failed:', err)
+        this.showError(wrapper, `PDF Error: ${this.filePath}`)
+      })
+    })
+
+    image.src = url
+  }
+
+  private renderDefaultImage(view: EditorView, wrapper: HTMLElement, url: string) {
+    const image = document.createElement('img')
+    image.classList.add('ol-cm-graphics')
+    image.dataset.filepath = this.filePath
+    const width = this.getFigureWidth()
+    image.style.width = width
+    image.style.maxWidth = width
+    image.style.display = 'block'
+
+    image.addEventListener('load', () => {
+      wrapper.textContent = ''
+      wrapper.appendChild(image)
+      wrapper.classList.remove('ol-cm-graphics-loading-placeholder')
+      this.height = image.height > 0 ? image.height : 300
+      view.requestMeasure()
+    })
+
+    image.addEventListener('error', () => {
+      this.showError(wrapper, `Load Failed: ${this.filePath}`)
+    })
+
+    image.src = url
+  }
+
+  private renderSvg(view: EditorView, wrapper: HTMLElement, url: string) {
+    const image = document.createElement('img')
+    image.classList.add('ol-cm-graphics')
+    image.dataset.filepath = this.filePath
+    const width = this.getFigureWidth()
+    image.style.width = width
+    image.style.maxWidth = width
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`Status: ${response.status}`)
+        return response.text()
+      })
+      .then(svgText => {
+        if (this.destroyed) return
+        const blob = new Blob([svgText], { type: 'image/svg+xml' })
+        const objectUrl = URL.createObjectURL(blob)
+
+        const showError = () => {
+          URL.revokeObjectURL(objectUrl)
+          this.showError(wrapper, `SVG Failed: ${this.filePath}`)
+        }
+
+        image.addEventListener('load', () => {
+          URL.revokeObjectURL(objectUrl)
+          wrapper.textContent = ''
+          wrapper.appendChild(image)
+          wrapper.classList.remove('ol-cm-graphics-loading-placeholder')
+          this.height = image.height > 0 ? image.height : 300
+          view.requestMeasure()
+        }, { once: true })
+
+        image.addEventListener('error', showError, { once: true })
+        image.src = objectUrl
+      })
+      .catch(() => {
+        this.showError(wrapper, `SVG Error: ${this.filePath}`)
+      })
+  }
+
+  private showError(wrapper: HTMLElement, message: string) {
+    wrapper.classList.add('ol-cm-graphics-loading-placeholder')
+    wrapper.innerHTML = `<strong>${message}</strong>`
   }
 
   getFigureWidth() {
@@ -127,147 +207,32 @@ export class GraphicsWidget extends WidgetType {
     return ''
   }
 
-  createImage(view: EditorView, url: string) {
-    const wrapper = document.createElement('div')
-    const image = document.createElement('img')
-    image.classList.add('ol-cm-graphics')
-    image.classList.add('ol-cm-graphics-loading')
-    const width = this.getFigureWidth()
-    image.style.width = width
-    image.style.maxWidth = width
-
-    image.src = url
-    image.addEventListener('load', () => {
-      image.classList.remove('ol-cm-graphics-loading')
-      this.height = image.height // for estimatedHeight
-      view.requestMeasure()
-    })
-    image.addEventListener('error', () => {
-      const errorElement = this.createErrorElement(view)
-      wrapper.replaceChildren(errorElement)
-      this.height = wrapper.clientHeight
-      view.requestMeasure()
-    })
-
-    wrapper.appendChild(image)
-    return wrapper
-  }
-
-  /**
-   * Creates an image element for SVG files by fetching the content and
-   * creating a Blob URL with the correct MIME type. This is necessary because
-   * the server serves blobs as application/octet-stream, which browsers won't
-   * render as SVG.
-   */
-  createSvgImage(view: EditorView, url: string) {
-    const wrapper = document.createElement('div')
-    const image = document.createElement('img')
-    image.classList.add('ol-cm-graphics')
-    image.classList.add('ol-cm-graphics-loading')
-    const width = this.getFigureWidth()
-    image.style.width = width
-    image.style.maxWidth = width
-
-    // Fetch SVG and create a Blob URL with correct MIME type
-    fetch(url)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch SVG: ${response.status}`)
-        }
-        return response.text()
-      })
-      .then(svgText => {
-        if (this.destroyed) {
-          return
-        }
-
-        const blob = new Blob([svgText], { type: 'image/svg+xml' })
-        const objectUrl = URL.createObjectURL(blob)
-
-        const showError = () => {
-          URL.revokeObjectURL(objectUrl)
-          const errorElement = this.createErrorElement(view)
-          wrapper.replaceChildren(errorElement)
-          this.height = wrapper.clientHeight
-          view.requestMeasure()
-        }
-
-        image.addEventListener(
-          'load',
-          () => {
-            URL.revokeObjectURL(objectUrl)
-            image.classList.remove('ol-cm-graphics-loading')
-            this.height = image.height
-            view.requestMeasure()
-          },
-          { once: true }
-        )
-
-        image.addEventListener('error', showError, { once: true })
-
-        image.src = objectUrl
-      })
-      .catch(() => {
-        if (this.destroyed) {
-          return
-        }
-
-        const errorElement = this.createErrorElement(view)
-        wrapper.replaceChildren(errorElement)
-        this.height = wrapper.clientHeight
-        view.requestMeasure()
-      })
-
-    wrapper.appendChild(image)
-    return wrapper
-  }
-
-  createErrorElement(view: EditorView): HTMLElement {
-    const wrapper = document.createElement('div')
-    wrapper.classList.add('ol-cm-graphics-loading-error')
-    const title = document.createElement('span')
-    title.classList.add('ol-cm-graphics-loading-error-title')
-    title.textContent = view.state.phrase(
-      'the_visual_editor_cant_preview_this_type_of_image_file'
-    )
-    const subtitle = document.createElement('span')
-    subtitle.classList.add('ol-cm-graphics-loading-error-subtitle')
-    subtitle.textContent = view.state.phrase(
-      'click_recompile_and_check_your_pdf_to_see_how_its_looking'
-    )
-    wrapper.appendChild(title)
-    wrapper.appendChild(subtitle)
-    return wrapper
-  }
-
-  async renderPDF(view: EditorView, canvas: HTMLCanvasElement, url: string) {
-    const { loadPdfDocumentFromUrl } =
-      await import('@/features/pdf-preview/util/pdf-js')
-
-    // bail out if loading PDF.js took too long
-    if (this.destroyed) {
-      return
-    }
-
+  async renderPDF(view: EditorView, wrapper: HTMLElement, url: string) {
+    const { loadPdfDocumentFromUrl } = await import('@/features/pdf-preview/util/pdf-js')
+    if (this.destroyed) return
     const pdf = await loadPdfDocumentFromUrl(url).promise
     const page = await pdf.getPage(1)
+    if (this.destroyed) return
 
-    // bail out if loading the PDF took too long
-    if (this.destroyed) {
-      return
-    }
-
-    const viewport = page.getViewport({ scale: 1 })
+    const canvas = document.createElement('canvas')
+    canvas.classList.add('ol-cm-graphics')
+    const viewport = page.getViewport({ scale: 2 })
     canvas.width = viewport.width
     canvas.height = viewport.height
+    
     const width = this.getFigureWidth()
     canvas.style.width = width
     canvas.style.maxWidth = width
-    page.render({
+    
+    await page.render({
       canvasContext: canvas.getContext('2d')!,
       viewport,
-    })
-    this.height = viewport.height
+    }).promise
+
+    if (this.destroyed) return
+    wrapper.textContent = ''
+    wrapper.appendChild(canvas)
+    this.height = (viewport.height * (parseInt(width) || 800)) / viewport.width || 300
     view.requestMeasure()
   }
 }

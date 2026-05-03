@@ -1,8 +1,12 @@
 import { createRoot, Root } from 'react-dom/client'
+import React from 'react'
 import { EditorView, WidgetType } from '@codemirror/view'
 import { SyntaxNode } from '@lezer/common'
 import { Tabular } from '../../../components/table-generator/tabular'
 import { ParsedTableData } from '../../../components/table-generator/utils'
+
+import { I18nextProvider } from 'react-i18next'
+import i18n from '@/infrastructure/i18n'
 
 export class TabularWidget extends WidgetType {
   static roots: WeakMap<HTMLElement, Root> = new WeakMap()
@@ -19,10 +23,10 @@ export class TabularWidget extends WidgetType {
 
   renderInDOMContainer(children: React.ReactNode, element: HTMLElement) {
     const root = TabularWidget.roots.get(element) || createRoot(element)
-    if (!TabularWidget.roots.has(element)) {
+    if (!TabularWidget.roots.get(element)) {
       TabularWidget.roots.set(element, root)
     }
-    root.render(children)
+    root.render(<I18nextProvider i18n={i18n}>{children}</I18nextProvider>)
   }
 
   toDOM(view: EditorView) {

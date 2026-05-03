@@ -136,6 +136,10 @@ export const ToolbarDropdownItem: FC<
       role="menuitem"
       type="button"
       {...props}
+      onMouseDown={event => {
+        event.preventDefault()
+        event.stopPropagation()
+      }}
       onClick={onClick}
     >
       {icon && <MaterialIcon type={icon} />}

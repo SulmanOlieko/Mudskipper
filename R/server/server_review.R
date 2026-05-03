@@ -1045,6 +1045,7 @@
     click_page <- input$syncTexClick$page
     click_x <- input$syncTexClick$x
     click_y <- input$syncTexClick$y
+    select_text <- input$syncTexClick$selectText
 
     # 2. Validation: Ensure Synctex file exists
     uid <- isolate(user_session$user_info$user_id)
@@ -1090,17 +1091,20 @@
 
         # 4. Parse Output Robustly
         lines <- unlist(strsplit(output_str, "\n"))
-        input_line <- grep("^Input:", lines, value = TRUE)
-        line_num_line <- grep("^Line:", lines, value = TRUE)
+          input_line <- grep("^Input:", lines, value = TRUE)
+          line_num_line <- grep("^Line:", lines, value = TRUE)
+          col_num_line <- grep("^Column:", lines, value = TRUE)
 
-        if (length(input_line) > 0 && length(line_num_line) > 0) {
-          # Extract raw values
-          raw_file <- sub("^Input:", "", input_line[1])
-          raw_line <- sub("^Line:", "", line_num_line[1])
+          if (length(input_line) > 0 && length(line_num_line) > 0) {
+            # Extract raw values
+            raw_file <- sub("^Input:", "", input_line[1])
+            raw_line <- sub("^Line:", "", line_num_line[1])
+            raw_column <- if (length(col_num_line) > 0) sub("^Column:", "", col_num_line[1]) else "0"
 
-          # Clean path (remove ./ prefix if present)
-          detected_file <- trimws(sub("^\\./", "", raw_file))
-          target_line <- as.integer(trimws(raw_line))
+            # Clean path (remove ./ prefix if present)
+            detected_file <- trimws(sub("^\\./", "", raw_file))
+            target_line <- as.integer(trimws(raw_line))
+            target_column <- as.integer(trimws(raw_column))
 
           if (nzchar(detected_file) && !is.na(target_line) && target_line > 0) {
             # 5. Path Resolution Strategy
@@ -1145,15 +1149,20 @@
               if (currentFile() != final_rel_path) {
                 # Load file via JS trigger (handles editor mode, content, etc.)
                 shinyjs::runjs(sprintf(
-                  "if(window.Shiny) Shiny.setInputValue('fileClick', {path: '%s', isEditable: true, gotoLine: %d, context: 'synctex', nonce: Math.random()}, {priority: 'event'});",
+                  "if(window.Shiny) Shiny.setInputValue('fileClick', {path: '%s', isEditable: true, gotoLine: %d, gotoColumn: %d, selectText: '%s', context: 'synctex', nonce: Math.random()}, {priority: 'event'});",
                   final_rel_path,
-                  target_line - 1
+                  target_line - 1,
+                  target_column,
+                  gsub("'", "\\\\'", select_text)
                 ))
               } else {
-                # Same file: Just scroll
                 session$sendCustomMessage(
                   'aceGoTo',
-                  list(line = target_line - 1)
+                  list(
+                    line = target_line - 1,
+                    column = target_column,
+                    selectText = select_text
+                  )
                 )
               }
             } else {}

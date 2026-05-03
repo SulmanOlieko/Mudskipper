@@ -273,9 +273,10 @@ export const Tabular: FC<{
 }> = ({ tabularNode, view, tableNode, parsedTableData, directTableChild }) => {
   return (
     <ErrorBoundary
-      fallbackRender={() => (
-        <TableRenderingError view={view} codePosition={tabularNode.from} />
-      )}
+      fallbackRender={({ error }) => {
+        console.error('Table rendering error:', error)
+        return <TableRenderingError view={view} codePosition={tabularNode.from} />
+      }}
     >
       <SplitTestProvider>
         <CodeMirrorViewContext.Provider value={view}>
@@ -312,7 +313,9 @@ const TabularWrapper: FC<React.PropsWithChildren> = () => {
       if (
         !ref.current?.contains(event.target as Node) &&
         !(event.target as HTMLElement).closest('.table-generator-help-modal') &&
-        !(event.target as HTMLElement).closest('.table-generator-width-modal')
+        !(event.target as HTMLElement).closest('.table-generator-width-modal') &&
+        !(event.target as HTMLElement).closest('.table-generator-toolbar-dropdown-popover') &&
+        !(event.target as HTMLElement).closest('.table-generator-toolbar-dropdown-menu')
       ) {
         if (selection) {
           setSelection(null)

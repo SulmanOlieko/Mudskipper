@@ -1,11 +1,5 @@
 import { EditorSelection, EditorState, SelectionRange } from '@codemirror/state'
 import { Command, EditorView } from '@codemirror/view'
-import {
-  closeSearchPanel,
-  openSearchPanel,
-  searchPanelOpen,
-} from '@codemirror/search'
-import { sendMB } from '@/infrastructure/event-tracking'
 import { toggleRanges, wrapRanges } from '../../commands/ranges'
 import {
   ancestorListType,
@@ -18,23 +12,28 @@ import {
   wrapInNumberedList,
 } from './lists'
 import { snippet } from '@codemirror/autocomplete'
-import { snippets } from './snippets'
 import { minimumListDepthForSelection } from '../../utils/tree-operations/ancestors'
 import { isVisual } from '../visual/visual'
-import { sendSearchEvent } from '@/features/event-tracking/search-events'
 
-export const toggleBold = toggleRanges('\\textbf')
-export const toggleItalic = toggleRanges('\\textit')
+// Inline snippet definitions (previously imported from snippets.ts)
+const snippets = {
+  figure: '\\\\begin{figure}\n\t\\\\centering\n\t\\\\includegraphics{#{example-image}}\n\t\\\\caption{#{Caption}}\n\t\\\\label{fig:#{label}}\n\\\\end{figure}',
+  cite: '\\\\cite{#{key}}',
+  ref: '\\\\ref{#{label}}',
+}
+
+export const toggleBold = toggleRanges('\\\\textbf')
+export const toggleItalic = toggleRanges('\\\\textit')
 
 // TODO: apply as a snippet?
 // TODO: read URL from clipboard?
-export const wrapInHref = wrapRanges('\\href{}{', '}', false, (range, view) =>
+export const wrapInHref = wrapRanges('\\\\href{}{', '}', false, (range, view) =>
   isVisual(view) ? range : EditorSelection.cursor(range.from - 2)
 )
 export const toggleBulletList = toggleListForRanges('itemize')
 export const toggleNumberedList = toggleListForRanges('enumerate')
-export const wrapInInlineMath = wrapRanges('\\(', '\\)')
-export const wrapInDisplayMath = wrapRanges('\n\\[', '\\]\n')
+export const wrapInInlineMath = wrapRanges('\\\\(', '\\\\)')
+export const wrapInDisplayMath = wrapRanges('\\n\\\\[', '\\\\]\\n')
 
 export const ensureEmptyLine = (
   state: EditorState,
@@ -78,17 +77,17 @@ export const insertTable = (view: EditorView, sizeX: number, sizeY: number) => {
   const placeholder = visual ? '' : '#{}'
   const placeholderAtStart = visual ? '#{}' : ''
   const { pos, suffix } = ensureEmptyLine(state, state.selection.main)
-  const template = `${placeholderAtStart}\n\\begin{table}
-\t\\centering
-\t\\begin{tabular}{${'c'.repeat(sizeX)}}
+  const template = `${placeholderAtStart}\n\\\\begin{table}
+\t\\\\centering
+\t\\\\begin{tabular}{${'c'.repeat(sizeX)}}
 ${(
   '\t\t' +
   `${placeholder} & ${placeholder}`.repeat(sizeX - 1) +
-  '\\\\\n'
-).repeat(sizeY)}\t\\end{tabular}
-\t\\caption{Caption}
-\t\\label{tab:placeholder}
-\\end{table}${suffix}`
+  '\\\\\\\\\n'
+).repeat(sizeY)}\t\\\\end{tabular}
+\t\\\\caption{Caption}
+\t\\\\label{tab:placeholder}
+\\\\end{table}${suffix}`
   snippet(template)({ state, dispatch }, { label: 'Table' }, pos, pos)
   return true
 }
@@ -147,28 +146,6 @@ export const indentIncrease: Command = view => {
     default:
       return false
   }
-}
-
-export const toggleSearch: Command = view => {
-  if (searchPanelOpen(view.state)) {
-    closeSearchPanel(view)
-  } else {
-    sendSearchEvent('search-open', {
-      searchType: 'document',
-      method: 'button',
-      location: 'toolbar',
-      mode: isVisual(view) ? 'visual' : 'source',
-    })
-    openSearchPanel(view)
-  }
-  return true
-}
-
-export const addComment = (location: string) => {
-  sendMB('add-comment', {
-    location,
-  })
-  window.dispatchEvent(new Event('add-new-review-comment'))
 }
 
 export const deleteSelection: Command = view => {

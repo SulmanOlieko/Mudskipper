@@ -1,6 +1,10 @@
-import { EditorView } from '@codemirror/view'
-import { emitCommandEvent } from '../../extensions/toolbar/utils/analytics'
+// Stub out analytics to prevent crashes in visual editor
+export const TableGeneratorAnalytics = {
+  emitEvent: (event: string, metadata: any) => {
+    // console.log('[Analytics Stub] Event:', event, metadata);
+  }
+};
 
-export function emitTableGeneratorEvent(view: EditorView, command: string) {
-  emitCommandEvent(view, 'codemirror-table-generator-event', command)
-}
+export const emitTableGeneratorEvent = (event: string, metadata: any) => {
+  // console.log('[Analytics Stub] Event:', event, metadata);
+};

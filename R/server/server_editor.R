@@ -438,6 +438,9 @@
       currentFile(filePath)
       updateStatus(filePath)
       rv$fileJustLoaded <- TRUE # IMMEDIATE LOCK to prevent history race
+      later::later(function() {
+        rv$fileJustLoaded <- FALSE
+      }, 0.5)
 
       if (ext == "tex") {
         if (
@@ -485,7 +488,11 @@
             if (!is.null(input$fileClick$gotoLine)) {
               session$sendCustomMessage(
                 'aceGoTo',
-                list(line = as.numeric(input$fileClick$gotoLine))
+                list(
+                  line = as.numeric(input$fileClick$gotoLine),
+                  column = as.numeric(input$fileClick$gotoColumn),
+                  selectText = input$fileClick$selectText
+                )
               )
             } else {
               session$sendCustomMessage(
@@ -1500,77 +1507,6 @@
     mk_icon(icon_name)
   }
 
-  # --- REAL-TIME LINTING (restored from legacy app) ---
-  # Debounced observer fires 1 second after last keystroke; never waits for compilation
-  lint_trigger <- reactive({
-    input$sourceEditor
-  }) %>%
-    debounce(1000)
-
-  observeEvent(lint_trigger(), {
-    req(activeProjectId())
-    req(currentFile())
-
-    # Only run on .tex files
-    if (!grepl("\\.tex$", currentFile(), ignore.case = TRUE)) {
-      lintAnnotations(list())
-      session$sendCustomMessage("setAnnotations", compileAnnotations())
-      return()
-    }
-
-    projDir <- getActiveProjectDir()
-
-    # Write current editor content to a temp hidden file so chktex can read it
-    actual_filename <- basename(currentFile())
-    temp_lint_filename <- paste0(".lint_", actual_filename)
-    temp_lint_path <- file.path(projDir, temp_lint_filename)
-
-    tryCatch(
-      writeLines(input$sourceEditor, temp_lint_path),
-      error = function(e) return()
-    )
-
-    # Run chktex inside the texlive Docker image (already pulled on your machine)
-    fmt <- "%l|%c|%d|%k|%m\n"
-    docker_args <- c(
-      "run", "--rm",
-      "-v", paste0(normalizePath(projDir), ":/project"),
-      "-w", "/project",
-      "texlive/texlive:latest",
-      "chktex", "-q", "-v0", "-f", fmt,
-      temp_lint_filename
-    )
-
-    output_raw <- tryCatch({
-      res <- processx::run("docker", docker_args, error_on_status = FALSE, timeout = 5)
-      res$stdout
-    }, error = function(e) "")
-
-    # Clean up temp file
-    if (file.exists(temp_lint_path)) unlink(temp_lint_path)
-
-    # Parse chktex output
-    annotations <- list()
-    if (nzchar(output_raw)) {
-      raw_lines <- strsplit(output_raw, "\n")[[1]]
-      for (raw_line in raw_lines) {
-        parts <- strsplit(raw_line, "\\|")[[1]]
-        if (length(parts) >= 5) {
-          row <- max(0, as.integer(parts[1]) - 1)
-          col <- max(0, as.integer(parts[2]) - 1)
-          kind_char <- toupper(substr(trimws(parts[4]), 1, 1))
-          type <- switch(kind_char, "E" = "error", "W" = "warning", "M" = "info", "info")
-          annotations[[length(annotations) + 1]] <- list(
-            row = row, column = col, text = parts[5], type = type
-          )
-        }
-      }
-    }
-
-    # Merge with persistent compilation annotations and push to Ace
-    lintAnnotations(annotations)
-    session$sendCustomMessage("setAnnotations", c(isolate(compileAnnotations()), annotations))
-  })
 
   # Function to load user preferences and state
   loadUserAppCache <- function(uid) {

@@ -21,13 +21,13 @@ export class EditableGraphicsWidget extends GraphicsWidget {
     }
   }
 
-  updateDOM(element: HTMLImageElement, view: EditorView): boolean {
+  updateDOM(element: HTMLElement, view: EditorView): boolean {
     this.destroyed = false
     element.classList.toggle('ol-cm-environment-centered', this.centered)
-    if (
-      this.filePath === element.dataset.filepath &&
-      element.dataset.width === String(this.figureData?.width?.toString())
-    ) {
+    
+    // Check if we actually need to re-render the graphic
+    const inner = element.querySelector('.ol-cm-graphics, .ol-cm-graphics-loading-placeholder')
+    if (inner && (inner as HTMLElement).dataset?.filepath === this.filePath) {
       // Figure remained the same, so just update the event listener on the button
       const button = element.querySelector<HTMLButtonElement>(
         '.ol-cm-graphics-edit-button'
@@ -37,6 +37,7 @@ export class EditableGraphicsWidget extends GraphicsWidget {
       }
       return true
     }
+
     this.renderGraphic(element, view)
     view.requestMeasure()
     return true
