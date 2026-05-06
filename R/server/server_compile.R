@@ -555,6 +555,14 @@
         writeLines(new_content, filePath)
         lastSavedContent(new_content) # Update memory cache
         updateStatus(file_name)
+        
+        # --- NEW: SYNCHRONOUS HISTORY & TIMESTAMP ---
+        if (exists("saveHistorySnapshot")) {
+          saveHistorySnapshot(activeProjectId(), file_name, new_content)
+        }
+        if (exists("updateProjectTimestamp")) {
+          updateProjectTimestamp(activeProjectId())
+        }
       }, error = function(e) {
         showTablerAlert("danger", "Save Error", paste("Failed to save:", e$message), 5000)
       })
@@ -568,26 +576,6 @@
     },
     ignoreInit = TRUE
   )
-
-  # History Saving & Timestamp update (10 seconds)
-  historySaveDebounced <- debounce(reactive(input$sourceEditor), 10000)
-  observeEvent(historySaveDebounced(), {
-    isolate({
-      projId <- activeProjectId()
-      file_name <- currentFile()
-      content <- historySaveDebounced()
-    })
-    req(projId, file_name, content)
-    if (isTRUE(rv$fileJustLoaded)) return()
-    
-    if (exists("saveHistorySnapshot")) {
-      saveHistorySnapshot(projId, file_name, content)
-    }
-    
-    if (exists("updateProjectTimestamp")) {
-      updateProjectTimestamp(projId)
-    }
-  })
 
   # Optimized Outline & metadata refresh (5 seconds)
   outlineSource <- debounce(reactive(input$sourceEditor), 5000)

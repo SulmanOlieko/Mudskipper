@@ -14,7 +14,8 @@
 
     # Sanitize path for storage
     safeProj <- gsub("[^a-zA-Z0-9]", "_", projId)
-    safePath <- gsub("[^a-zA-Z0-9]", "_", basename(filePath))
+    # USE FULL PATH to prevent collisions between same-named files in different folders
+    safePath <- gsub("[^a-zA-Z0-9]", "_", filePath)
 
     cDir <- getUserCommentsDir(uid)
     if (is.null(cDir)) {
@@ -108,7 +109,8 @@
     }
 
     safeProj <- gsub("[^a-zA-Z0-9]", "_", projId)
-    safePath <- gsub("[^a-zA-Z0-9]", "_", basename(filePath))
+    # USE FULL PATH to prevent collisions between same-named files in different folders
+    safePath <- gsub("[^a-zA-Z0-9]", "_", filePath)
 
     cDir <- getUserCommentsDir(uid)
     if (is.null(cDir)) {
@@ -131,7 +133,7 @@
     reviewPaneVisible(newState)
   })
 
-  # 3. Add Comment (Fixed for Instant Rendering)
+  # 3. Add Comment (Robust Offset-Based)
   observeEvent(input$addCommentTrigger, {
     req(input$addCommentTrigger)
     data <- input$addCommentTrigger
@@ -143,11 +145,9 @@
       avatar = user$profilePicture,
       timestamp = format(Sys.time(), "%b %d, %H:%M"),
       selectedText = data$text,
-      # Ensure integers for Ace
-      startRow = as.integer(data$startRow),
-      startCol = as.integer(data$startCol),
-      endRow = as.integer(data$endRow),
-      endCol = as.integer(data$endCol),
+      # Absolute character offsets (robust, editor-agnostic)
+      from = as.integer(data$from),
+      to = as.integer(data$to),
       content = "",
       replies = list(),
       resolved = FALSE,
@@ -168,8 +168,9 @@
     }
     # ------------------------
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
 
-    # 1. CRITICAL FIX: Push the visual marker to Ace IMMEDIATELY
+    # Push comments to JS CommentStore
     session$sendCustomMessage(
       "renderCommentMarkers",
       list(
@@ -213,6 +214,7 @@
     })
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   # Cancel comment edit (new or existing)
@@ -244,6 +246,7 @@
       }
       saveComments(activeProjectId(), currentFile(), cmts)
       commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
     }
   })
 
@@ -258,6 +261,7 @@
     })
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   observeEvent(input$deleteComment, {
@@ -266,6 +270,7 @@
     cmts <- Filter(function(c) c$id != cId, cmts)
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   observeEvent(input$postReply, {
@@ -293,6 +298,7 @@
 
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   # Cancel reply posting
@@ -337,6 +343,7 @@
     })
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   # 5. Render Stream
@@ -360,6 +367,7 @@
 
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   # --- Reply Editing Handlers ---
@@ -382,6 +390,7 @@
 
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   # Save Edited Reply - UPDATED to handle nested replies
@@ -403,6 +412,7 @@
 
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   # Cancel reply editing
@@ -423,6 +433,7 @@
 
     saveComments(activeProjectId(), currentFile(), cmts)
     commentUpdate(commentUpdate() + 1)
+    commentStructureUpdate(commentStructureUpdate() + 1)
   })
 
   # Reply to a Reply (Focuses the reply box for that specific reply)
@@ -463,7 +474,10 @@
 
   # --- RENDER STREAM (Updated) ---
   output$commentStream <- renderUI({
-    trigger <- commentUpdate()
+    # --- PERFORMANCE OPTIMIZATION ---
+    # Only react to structural changes (add/delete/resolve/edit).
+    # Typing offsets should NOT trigger a full HTML sidebar re-render.
+    trigger <- commentStructureUpdate()
     filterState <- reviewFilter()
 
     projId <- activeProjectId()
@@ -493,10 +507,10 @@
       empty_msg <- "No resolved comments."
     }
 
-    # Sort by row position
+    # Sort by offset position
     if (length(display_cmts) > 0) {
       display_cmts <- display_cmts[order(sapply(display_cmts, function(x) {
-        x$startRow
+        if (!is.null(x$from)) x$from else 0L
       }))]
     }
 
@@ -886,136 +900,57 @@
   # Ensure comments/highlights render even if pane is initially closed
   outputOptions(output, "commentStream", suspendWhenHidden = FALSE)
 
-  # --- 6. COORDINATE SYNC (PERSISTENCE FIX) ---
-  observeEvent(
-    input$updateCommentCoordinates,
-    {
-      # 1. STATE CHECK (The Fix)
-      # If the editor is not effectively active, IGNORE this update completely.
-      # We do NOT reset this flag here. It stays FALSE until a project is loaded.
-      if (isFALSE(rv$editor_active)) {
-        return()
-      }
+  # --- SAVE UPDATED OFFSETS FROM COMMENTSTORE ---
+  # JS-side CommentStore sends updated offsets when user saves or periodically.
+  # This replaces the old complex coordinate sync system.
+  observeEvent(input$saveCommentOffsets, {
+    req(input$saveCommentOffsets)
+    
+    # payload is a JSON string: { updates: [], path: "", projectId: "" }
+    payload <- tryCatch(
+      jsonlite::fromJSON(input$saveCommentOffsets, simplifyVector = FALSE),
+      error = function(e) NULL
+    )
+    
+    if (is.null(payload) || is.null(payload$updates)) return()
+    
+    updates <- payload$updates
+    # Use provided path/id or fall back to current ones if missing
+    filePath <- payload$path
+    if (is.null(filePath) || !nzchar(filePath)) filePath <- isolate(currentFile())
+    
+    projId <- payload$projectId
+    if (is.null(projId) || !nzchar(projId)) projId <- isolate(activeProjectId())
+    
+    if (is.null(projId) || is.null(filePath) || filePath == "") return()
+    if (length(updates) == 0) return()
 
-      # 2. LEGACY FLAG CHECK (Optional, keep if you use it elsewhere)
-      if (isTRUE(rv$block_comment_update)) {
-        rv$block_comment_update <- FALSE
-        return()
-      }
+    cmts <- loadComments(projId, filePath)
+    data_changed <- FALSE
 
-      raw_input <- input$updateCommentCoordinates
-
-      # 3. GARBAGE DATA CHECK (Double safety)
-      # When editor hides, Ace often sends "[]" or empty strings.
-      if (
-        !is.null(raw_input) && is.character(raw_input) && length(raw_input) == 1
-      ) {
-        if (raw_input == "[]" || raw_input == "") return()
-      }
-
-      cat(
-        "DEBUG: raw_input type =",
-        class(raw_input),
-        "| length =",
-        length(raw_input),
-        "\n"
-      )
-      if (length(raw_input) > 0) {
-        cat("DEBUG: first element preview:", substr(raw_input[1], 1, 80), "\n")
-      }
-
-      # ONLY accept if it's a single JSON string
-      if (!is.character(raw_input) || length(raw_input) != 1) {
-        return()
-      }
-
-      json_str <- trimws(raw_input[1])
-      if (nchar(json_str) == 0 || json_str == "[]") {
-        return()
-      }
-
-      # Parse JSON
-      updates <- tryCatch(
-        {
-          jsonlite::fromJSON(json_str, simplifyVector = FALSE)
-        },
-        error = function(e) {
-          return(NULL)
-        }
-      )
-
-      if (is.null(updates) || length(updates) == 0) {
-        return()
-      }
-
-      # Ensure it's a list (even if single obj)
-      if (!is.list(updates)) {
-        updates <- list(updates)
-      }
-
-      projId <- activeProjectId()
-      filePath <- currentFile()
-      if (is.null(projId) || is.null(filePath)) {
-        return()
-      }
-
-      cmts <- loadComments(projId, filePath)
-      data_changed <- FALSE
-
-      for (u in updates) {
-        # Safety: only process if u is list/df and has 'id'
-        if (!is.list(u) || is.null(u$id)) {
-          next
-        }
-
-        for (i in seq_along(cmts)) {
-          if (
-            is.list(cmts[[i]]) && !is.null(cmts[[i]]$id) && cmts[[i]]$id == u$id
-          ) {
-            # Explicit integer coercion
-            cmts[[i]]$startRow <- as.integer(u$startRow)
-            cmts[[i]]$startCol <- as.integer(u$startCol)
-            cmts[[i]]$endRow <- as.integer(u$endRow)
-            cmts[[i]]$endCol <- as.integer(u$endCol)
-            data_changed <- TRUE
-            cat(
-              "💾 Updated comment",
-              u$id,
-              "→ R[",
-              u$startRow,
-              ",",
-              u$startCol,
-              "]-[",
-              u$endRow,
-              ",",
-              u$endCol,
-              "]\n"
-            )
-            break
-          }
+    for (u in updates) {
+      if (!is.list(u) || is.null(u$id)) next
+      for (i in seq_along(cmts)) {
+        if (is.list(cmts[[i]]) && !is.null(cmts[[i]]$id) && cmts[[i]]$id == u$id) {
+          cmts[[i]]$from <- as.integer(u$from)
+          cmts[[i]]$to <- as.integer(u$to)
+          data_changed <- TRUE
+          break
         }
       }
+    }
 
-      if (data_changed) {
-        saveComments(projId, filePath, cmts)
-        cat(
-          "✅ Synced",
-          length(updates),
-          "comment(s) to disk for",
-          filePath,
-          "\n"
-        )
-      } else {
-        cat("ℹ️  No coordinate changes needed\n")
-      }
-    },
-    ignoreInit = TRUE
-  )
+    if (data_changed) {
+      saveComments(projId, filePath, cmts)
+      # Trigger UI refresh (e.g. for sidebar line counts/content)
+      commentUpdate(commentUpdate() + 1)
+    }
+  }, ignoreInit = TRUE)
 
   # --- CRITICAL: Render Markers on File Load or Editor Ready ---
   observeEvent(
     {
-      list(currentFile(), input$aceEditorReady, input$toggleReviewPane)
+      list(currentFile(), input$aceEditorReady, input$toggleReviewPane, commentUpdate())
     },
     {
       req(activeProjectId(), currentFile())
@@ -1023,17 +958,15 @@
       # Load data
       cmts <- loadComments(activeProjectId(), currentFile())
 
-      # Send to JS with Force=TRUE to ensure anchors are reset to disk state on file load
+      # Send to JS CommentStore
       session$sendCustomMessage(
         "renderCommentMarkers",
         list(
           comments = cmts,
+          path = currentFile(), # --- NEW: Path validation to prevent bleeding ---
           force = TRUE
         )
       )
-
-      # Trigger sidebar refresh without full reload
-      commentUpdate(commentUpdate() + 1)
     }
   )
 

@@ -59,10 +59,15 @@ window.updateToggleState = function(filename) {
 window.setEditorMode = function(mode) {
     if (!isEditorActive()) return;
 
-    const isTex = activeFileNameOriginal.toLowerCase().endsWith('.tex');
+    let filename = activeFileNameOriginal;
+    if (!filename || filename.trim() === '') {
+        filename = window.currentFilePath || (document.getElementById("activeFileName") ? document.getElementById("activeFileName").innerText.trim() : "");
+    }
+    const isTex = filename.toLowerCase().endsWith('.tex');
     if (mode === 'visual' && !isTex) return;
 
     window.currentMode = mode;
+    localStorage.setItem('mudskipper.activeEditorMode', mode);
 
     const aceWrapper = document.getElementById("sourceEditor");
     const visualWrapper = document.getElementById("visualEditorContainer");
@@ -122,7 +127,10 @@ window.setEditorMode = function(mode) {
                 if (window.triggerSpellCheck) window.triggerSpellCheck();
             } else if (window.cm6View) {
                 const theme = window.getVisualTheme();
+                // Freeze to prevent CM6 change events from corrupting comment offsets
+                if (window.commentStore) window.commentStore.freeze();
                 window.MudskipperVisualEditor.setEditorContent(window.cm6View, content);
+                if (window.commentStore) window.commentStore.unfreeze();
                 window.MudskipperVisualEditor.setCursorPosition(window.cm6View, aceCursor.row, aceCursor.column);
                 
                 // Update theme if it changed
@@ -140,6 +148,14 @@ window.setEditorMode = function(mode) {
             window.aceSpellCheckEnabled = false;
             
             if (window.updateWordCountWithWorker) window.updateWordCountWithWorker();
+
+            // --- SYNC COMMENT MARKERS TO CM6 ---
+            if (window.commentStore && window.cm6View && window.MudskipperVisualEditor) {
+                setTimeout(() => {
+                    const all = window.commentStore.getAllComments();
+                    window.MudskipperVisualEditor.updateCommentDecorations(window.cm6View, all);
+                }, 100);
+            }
         } else {
             visualWrapper.style.display = "none";
             aceWrapper.style.display = "block";
@@ -151,7 +167,12 @@ window.setEditorMode = function(mode) {
                 // PERFORMANCE: Only update Ace if content actually changed (normalizing line endings)
                 const currentAce = aceEd._originalGetValue();
                 if (currentAce.replace(/\r\n/g, '\n') !== content.replace(/\r\n/g, '\n')) {
+                    // CRITICAL: Freeze CommentStore to prevent setValue's change events
+                    // from corrupting all comment offsets. setValue fires a 'remove all' + 
+                    // 'insert all' pair of change events that would map every offset to 0.
+                    if (window.commentStore) window.commentStore.freeze();
                     aceEd.session.setValue(content);
+                    if (window.commentStore) window.commentStore.unfreeze();
                 }
                 
                 aceEd.resize(true);
@@ -176,6 +197,13 @@ window.setEditorMode = function(mode) {
             window.aceSpellCheckEnabled = true;
             if (window.triggerSpellCheck) window.triggerSpellCheck();
             if (window.updateWordCountWithWorker) window.updateWordCountWithWorker();
+
+            // --- SYNC COMMENT MARKERS TO ACE ---
+            if (window.commentStore) {
+                setTimeout(() => {
+                    if (typeof renderAceMarkers === 'function') renderAceMarkers();
+                }, 50);
+            }
         }
     }
     
@@ -246,6 +274,9 @@ Shiny.addCustomMessageHandler('updateProjectState', function(data) {
     }
     if (data && data.url) {
         window.activeProjectPath = data.url;
+    }
+    if (data && data.projectId) {
+        window.activeProjectId = data.projectId;
     }
 });
 
@@ -369,5 +400,32 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(aceLintTimer);
             aceLintTimer = setTimeout(window.triggerAceLinting, 1500);
         });
+    }
+});
+
+// Restore saved editor mode on load
+document.addEventListener("DOMContentLoaded", function() {
+    const savedMode = localStorage.getItem('mudskipper.activeEditorMode');
+    if (savedMode === 'visual') {
+        let retries = 0;
+        const checkReady = setInterval(function() {
+            if (window.ace && document.getElementById("sourceEditor") && window.MudskipperVisualEditor) {
+                try {
+                    // Make sure Ace is fully initialized
+                    ace.edit("sourceEditor");
+                    clearInterval(checkReady);
+                    
+                    // We also need to wait for a file to be loaded, otherwise setEditorMode returns early
+                    const checkFile = setInterval(function() {
+                        const activeFileStr = document.getElementById("activeFileName") ? document.getElementById("activeFileName").innerText.trim() : "";
+                        if (isEditorActive() && activeFileStr && activeFileStr !== "No file selected") {
+                            clearInterval(checkFile);
+                            window.setEditorMode('visual');
+                        }
+                    }, 200);
+                } catch (e) {}
+            }
+            if (++retries > 50) clearInterval(checkReady); // Give up after 5s
+        }, 100);
     }
 });

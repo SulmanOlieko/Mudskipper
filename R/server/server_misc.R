@@ -450,12 +450,16 @@
 
   # ----------------------------- FILE SEARCH SERVER LOGIC -----------------------------
 
-  observeEvent(input$fileSearchQuery, {
-    query <- input$fileSearchQuery
+  searchQuery <- reactiveVal(NULL)
 
-    # UI Element for Results
-    output$fileSearchResults <- renderUI({
-      if (is.null(query) || nchar(trimws(query)) < 2) {
+  observeEvent(input$fileSearchQuery, {
+    searchQuery(input$fileSearchQuery)
+  })
+
+  # Defined at top-level so the output exists immediately, regardless of editor mode
+  output$fileSearchResults <- renderUI({
+    query <- searchQuery()
+    if (is.null(query) || nchar(trimws(query)) < 2) {
         return(div(
           style = "text-align:center; color:var(--bs-secondary-color); padding-top:20px;",
           div(
@@ -646,7 +650,6 @@
       }
 
       tagList(results_html)
-    })
   })
   # -------------------- MAKE A COPY LOGIC --------------------
   observeEvent(input$copyProjectSubmit, {

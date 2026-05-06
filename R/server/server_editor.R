@@ -400,8 +400,7 @@
         return()
       }
 
-      # 1. Clear Old Markers & UI
-      session$sendCustomMessage("clearLocalAnchors", list())
+      # 1. Clear Old Preview
       session$sendCustomMessage("hideFilePreview", list(path = filePath))
 
       # 2. Safe Read
@@ -430,7 +429,8 @@
         "cmdSafeLoadFile",
         list(
           content = content,
-          mode = aceMode
+          mode = aceMode,
+          path = filePath
         )
       )
 
@@ -591,6 +591,23 @@
         }
       "
       )
+    }
+  })
+
+  # --- IMMEDIATE SYNCHRONOUS SAVE (Prevents marker drift on rapid file switch) ---
+  observeEvent(input$forceSaveEditor, {
+    req(input$forceSaveEditor$content, input$forceSaveEditor$path, activeProjectId())
+    projDir <- getActiveProjectDir()
+    filePath <- file.path(projDir, input$forceSaveEditor$path)
+    
+    if (file.exists(filePath)) {
+      tryCatch({
+        writeLines(input$forceSaveEditor$content, filePath)
+        # We DO NOT update history here to keep the switch fast.
+        # History is adequately captured by the 1-second autoSaveSource.
+      }, error = function(e) {
+        warning("Failed to force save editor text: ", e$message)
+      })
     }
   })
 
@@ -1604,7 +1621,8 @@
                       "cmdSafeLoadFile",
                       list(
                         content = content,
-                        mode = aceMode
+                        mode = aceMode,
+                        path = lastF
                       )
                     )
 
@@ -1720,8 +1738,7 @@
               if (
                 !is.null(mainFile) && file.exists(file.path(projDir, mainFile))
               ) {
-                # --- STEP 1: PREVENT BLEEDING (Client Side) ---
-                session$sendCustomMessage("clearLocalAnchors", list())
+                # --- STEP 1: PREPARE FOR NEW FILE ---
 
                 # --- STEP 2: LOAD CONTENT ---
                 content <- paste(
@@ -1735,7 +1752,8 @@
                   "cmdSafeLoadFile",
                   list(
                     content = content,
-                    mode = aceMode
+                    mode = aceMode,
+                    path = mainFile
                   )
                 )
                 currentFile(mainFile)
@@ -2029,16 +2047,16 @@
         return(NULL)
       }
 
-      # Sort: Folders first, then files, both alphabetical
+      # 1. Pre-calculate directory states in one vectorized call (Fast)
+      # This is much faster than checking dir.exists inside the loop
       is_dir <- dir.exists(file.path(full_path, items))
 
+      # 2. Build data frame and sort (Folders first)
       df <- data.frame(
         name = items,
         is_dir = is_dir,
         stringsAsFactors = FALSE
       )
-
-      # Order: Directories (TRUE > FALSE) descending, Names ascending
       df <- df[order(-df$is_dir, df$name), ]
 
       # Generate UI elements

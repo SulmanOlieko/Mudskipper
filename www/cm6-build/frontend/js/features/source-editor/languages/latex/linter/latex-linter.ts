@@ -13,7 +13,6 @@ let currentRequestId = 0
 
 const getWorker = () => {
   if (!lintWorker) {
-    console.log('[LatexLinter] Initializing worker from: ', '/latex-linter.worker.js')
     lintWorker = new Worker('/latex-linter.worker.js')
     
     lintWorker.addEventListener('message', event => {

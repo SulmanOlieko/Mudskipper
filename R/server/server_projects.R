@@ -67,16 +67,40 @@
       # Send full file list and project path to client for Visual Editor rendering
       session$sendCustomMessage("updateProjectState", list(
         files = files,
+        projectId = projId,
         url = paste0("project/", uid, "/projects/", projId, "/")
       ))
     }
   })
 
-  # Helper to filter out internal system folders
+  # Helper to filter out internal system folders efficiently
   getVisibleFiles <- function(projDir) {
-    files <- list.files(projDir, recursive = TRUE, include.dirs = TRUE)
-    # Exclude chat_files and compiled_cache and their contents
-    files[!grepl("^(chat_files|compiled_cache|history)", files)]
+    if (!dir.exists(projDir)) return(character(0))
+    
+    # 1. Get top-level items
+    top_items <- list.files(projDir, full.names = FALSE)
+    
+    # 2. Filter out system folders at the root level (Fast)
+    visible_top <- top_items[!top_items %in% c("chat_files", "compiled_cache", "history")]
+    
+    # 3. Recursively list only the visible folders/files
+    all_visible <- lapply(visible_top, function(item) {
+      item_path <- file.path(projDir, item)
+      if (dir.exists(item_path)) {
+        sub_files <- list.files(item_path, recursive = TRUE, include.dirs = TRUE)
+        if (length(sub_files) > 0) {
+          return(c(item, file.path(item, sub_files)))
+        } else {
+          return(item)
+        }
+      } else {
+        return(item)
+      }
+    })
+    
+    res <- unlist(all_visible)
+    if (is.null(res)) return(character(0))
+    return(res)
   }
 
   # --- CACHE MANAGEMENT HELPERS ---
@@ -268,48 +292,35 @@
   }
 
   updateProjectFileCount <- function(projectId) {
-    uid <- isolate(user_session$user_info$user_id)
-    if (is.null(uid)) {
-      return()
-    }
-    pDir <- getUserProjectDir(uid)
+    # --- PERFORMANCE: Defer counting to avoid blocking the main thread ---
+    later::later(function() {
+      uid <- isolate(user_session$user_info$user_id)
+      if (is.null(uid)) return()
+      pDir <- getUserProjectDir(uid)
+      projDir <- file.path(pDir, projectId)
+      if (!dir.exists(projDir)) return()
 
-    projDir <- file.path(pDir, projectId)
-    if (!dir.exists(projDir)) {
-      return()
-    }
+      projects <- loadProjects()
+      if (length(projects) > 0) {
+        for (i in seq_along(projects)) {
+          if (projects[[i]]$id == projectId) {
+            # --- PERFORMANCE: Use optimized scanner instead of raw recursive list.files ---
+            filteredFiles <- getVisibleFiles(projDir)
 
-    projects <- loadProjects()
-    if (length(projects) > 0) {
-      for (i in seq_along(projects)) {
-        if (projects[[i]]$id == projectId) {
-          # Get all files recursively
-          projectFiles <- list.files(
-            projDir,
-            recursive = TRUE,
-            all.files = FALSE,
-            no.. = TRUE
-          )
+            projects[[i]]$fileCount <- length(filteredFiles)
+            projects[[i]]$lastEdited <- as.character(Sys.time())
+            break
+          }
+        }
+        saveProjects(projects)
 
-          # Filter out files in excluded subdirectories
-          filteredFiles <- projectFiles[
-            !grepl("^compiled_cache|history|chat_files", projectFiles)
-          ]
-
-          projects[[i]]$fileCount <- length(filteredFiles)
-          projects[[i]]$lastEdited <- as.character(Sys.time())
-          break
+        if (shiny::isRunning()) {
+          isolate({
+            projectChangeTrigger(projectChangeTrigger() + 1)
+          })
         }
       }
-      saveProjects(projects)
-
-      # SAFE: Only update reactive trigger if we're in a reactive context
-      if (shiny::isRunning()) {
-        isolate({
-          projectChangeTrigger(projectChangeTrigger() + 1)
-        })
-      }
-    }
+    }, delay = 1.0)
   }
 
   # Fixed createNewProject function
@@ -508,6 +519,10 @@
   }
 
   loadProjectToWorkspace <- function(projectId) {
+    # --- CRITICAL: Flush any unsaved comment offsets for the CURRENT project ---
+    # before we switch active IDs.
+    session$sendCustomMessage("flushCommentOffsets", NULL)
+    
     session$sendCustomMessage("togglePdfSpinner", TRUE)
     session$sendCustomMessage("toggleEditorSpinner", TRUE)
     shinyjs::runjs("setDashboardLoaderText('Syncing workspace...');")
@@ -596,10 +611,13 @@
     # Update file list to show current project files
     rv_files(getVisibleFiles(projDir))
 
-    # Update project timestamp
-    later::later(function() updateProjectTimestamp(projectId), delay = 2)
-    session$sendCustomMessage("togglePdfSpinner", FALSE)
-    session$sendCustomMessage("toggleEditorSpinner", FALSE)
+    # --- PERFORMANCE: Yield thread to let UI render before background updates ---
+    later::later(function() {
+      updateProjectTimestamp(projectId)
+      updateProjectFileCount(projectId)
+      session$sendCustomMessage("togglePdfSpinner", FALSE)
+      session$sendCustomMessage("toggleEditorSpinner", FALSE)
+    }, delay = 0.5)
 
     return(TRUE)
   }

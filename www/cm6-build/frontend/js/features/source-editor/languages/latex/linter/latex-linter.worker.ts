@@ -2301,7 +2301,6 @@ let latestLintResult: { text: string; workerResult: ParseResult } | null = null
 if (typeof onmessage !== 'undefined') {
   onmessage = function (event) {
     if (event.data && event.data.text !== undefined) {
-      console.log('[LatexWorker] Received text to parse, length:', event.data.text.length);
       let workerResult: Record<never, never> | ParseResult = {}
       const text = event.data.text
       const requestId = event.data.requestId
@@ -2310,10 +2309,8 @@ if (typeof onmessage !== 'undefined') {
       } else {
         try {
           workerResult = Parse(event.data.text)
-          console.log('[LatexWorker] Parse complete, found', (workerResult as ParseResult).errors.length, 'errors');
           latestLintResult = { text, workerResult: workerResult as ParseResult }
         } catch (err) {
-          console.error('[LatexWorker] Parse error:', err)
           workerResult = { errors: [], contexts: [] }
         }
       }

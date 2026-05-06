@@ -17,6 +17,7 @@
   compileAnnotations <- reactiveVal(list())
   historyActiveFile <- reactiveVal("")
   commentUpdate <- reactiveVal(0)
+  commentStructureUpdate <- reactiveVal(0) # Separate trigger for UI re-renders
 
   # User Session State
   user_session <- reactiveValues(

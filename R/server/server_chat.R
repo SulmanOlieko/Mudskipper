@@ -1,4 +1,7 @@
   # ----------------------------- CHAT HELPERS -----------------------------
+  
+  # PERFORMANCE CACHE: Avoid reading last snapshot from disk every save (1s)
+  lastSavedHistoryCache <- list()
 
   # Securely load chat data for a project
   loadProjectChat <- function(projId) {
@@ -638,6 +641,7 @@
 
   # =================== HISTORY HELPERS (FINAL & FIXED) ===================
   library(digest) # Ensure this is loaded
+  historyUpdateCounter <- reactiveVal(0)
 
   # 1. Get History Directory for a specific file
   getHistoryDir <- function(projId, filePath) {
@@ -690,15 +694,26 @@
       list()
     }
 
-    # OPTIMIZATION: Check against the latest snapshot
+    # --- PERFORMANCE: Check against the IN-MEMORY CACHE first (Super Fast) ---
+    cacheKey <- paste0(projId, "::", filePath)
+    if (!is.null(lastSavedHistoryCache[[cacheKey]])) {
+      if (lastSavedHistoryCache[[cacheKey]] == content) {
+        return() # No change since last memory save
+      }
+    }
+
+    # --- FALLBACK: Check against the latest snapshot on disk ---
     if (length(manifest) > 0) {
       lastEntry <- manifest[[1]]
       lastSnapFile <- file.path(histDir, paste0(lastEntry$id, ".txt"))
       if (file.exists(lastSnapFile)) {
-        lastContent <- paste(
-          readLines(lastSnapFile, warn = FALSE),
-          collapse = "\n"
-        )
+        lastContent <- tryCatch({
+          paste(readLines(lastSnapFile, warn = FALSE), collapse = "\n")
+        }, error = function(e) "")
+        
+        # Update cache for next time
+        lastSavedHistoryCache[[cacheKey]] <<- lastContent 
+        
         if (lastContent == content) return() # No change
       }
     }
@@ -726,6 +741,9 @@
 
     # Save content file
     writeLines(content, file.path(histDir, paste0(snapId, ".txt")))
+    
+    # Update cache for next time
+    lastSavedHistoryCache[[cacheKey]] <<- content
 
     # Update manifest (Prepend new entry)
     manifest <- c(list(newEntry), manifest)
@@ -743,6 +761,9 @@
       auto_unbox = TRUE,
       pretty = TRUE
     )
+    
+    # Force UI Refresh
+    historyUpdateCounter(historyUpdateCounter() + 1)
   }
 
   # 3. Load History Manifest
@@ -796,58 +817,24 @@
     }
   }
 
-  # =================== AUTOSAVE & HISTORY TRACKER ===================
-  editor_content_debounced <- reactive({
-    req(activeProjectId(), currentFile())
-    input$sourceEditor
-  }) %>%
-    debounce(1000)
-
-  observeEvent(editor_content_debounced(), {
-    # Skip if no content or just loaded
-    if (
-      is.null(editor_content_debounced()) ||
-        trimws(editor_content_debounced()) == ""
-    ) {
-      return()
-    }
-
-    if (isTRUE(rv$fileJustLoaded)) {
-      return()
-    }
-
-    # 7. Safety: Ensure we haven't switched targets mid-debouncing
-    current_target <- isolate(currentFile())
-    if (is.null(current_target) || current_target == "") return()
-
-    # ADD CONTENT VALIDATION: Compare with disk content
-    projDir <- getActiveProjectDir()
-    fullPath <- file.path(projDir, current_target)
-
-    if (file.exists(fullPath)) {
-      disk_content <- tryCatch(paste(readLines(fullPath, warn = FALSE), collapse = "\n"), error = function(e) "")
-      # Skip if identical to disk (prevents initial load snapshots or redundant saves)
-      if (identical(editor_content_debounced(), disk_content)) {
-        return()
-      }
-    }
-
-    saveHistorySnapshot(
-      activeProjectId(),
-      current_target,
-      editor_content_debounced()
-    )
-  })
-
   # =================== HISTORY UI HANDLERS ===================
+  
+  # Sync historyActiveFile whenever currentFile changes to ensure the History pane
+  # is always ready with the correct context.
+  observeEvent(currentFile(), {
+    req(currentFile())
+    # If the user switches files in the main editor, update the history target
+    # unless they already have a specific history file selected.
+    # Actually, we should probably follow the editor's active file by default.
+    historyActiveFile(currentFile())
+  })
 
   # 1. Render History Sidebar
   observeEvent(input$openHistoryBtn, {
     req(activeProjectId(), currentFile())
     projId <- activeProjectId()
+    # Set history active file — ALWAYS sync with currentFile to avoid empty state
     filePath <- currentFile()
-
-    # Set history active file to current editor file
     historyActiveFile(filePath)
 
     # Auto-init if needed (only for editable files)
@@ -874,11 +861,25 @@
 
   # 1.a Render History Sidebar (Versions)
   output$historySidebarContent <- renderUI({
+    # Bind to our counter for instant reactivity
+    historyUpdateCounter()
+    # Bind to currentFile to refresh instantly when switching files in the editor
+    currentFile() 
+    
     # Start Spinner
     session$sendCustomMessage("toggleHistoryVersionsSpinner", TRUE)
 
-    req(activeProjectId(), historyActiveFile())
-    manifest <- loadHistoryManifest(activeProjectId(), historyActiveFile())
+    req(activeProjectId())
+    
+    # Fallback: ensure historyActiveFile is populated
+    activePath <- historyActiveFile()
+    if (is.null(activePath) || activePath == "") {
+      activePath <- currentFile()
+      if (!is.null(activePath) && nzchar(activePath)) historyActiveFile(activePath)
+    }
+    req(activePath)
+    
+    manifest <- loadHistoryManifest(activeProjectId(), activePath)
 
     if (length(manifest) == 0) {
       # Stop Spinner
@@ -1022,13 +1023,24 @@
 
   # 1.b Render History File List
   output$historyFileList <- renderUI({
+    # Bind to currentFile to highlight the active file correctly in the tree
+    currentFile()
+
     # Start Spinner
     session$sendCustomMessage("toggleHistoryFilesSpinner", TRUE)
 
     req(activeProjectId())
+    
+    # Fallback: ensure historyActiveFile is populated
+    activePath <- historyActiveFile()
+    if (is.null(activePath) || activePath == "") {
+      activePath <- currentFile()
+      if (!is.null(activePath) && nzchar(activePath)) historyActiveFile(activePath)
+    }
+    
     res <- renderFileTreeUI(
       projDir = getActiveProjectDir(),
-      activePath = historyActiveFile(),
+      activePath = activePath,
       clickInputId = "historyFileClick",
       projId = activeProjectId(),
       readOnly = TRUE

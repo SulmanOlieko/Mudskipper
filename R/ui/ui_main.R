@@ -1,6 +1,7 @@
 app_ui <- fluidPage(
   tags$head(
     tags$script(src = "cm6-bundle.js"),
+    tags$script(src = "comment-store.js"),
     tags$script(src = "visual-bridge.js"),
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200")
   ),
@@ -3816,6 +3817,27 @@ body {
   border-bottom-color: rgba(255, 215, 0, 0.8) !important;
 }
 
+/* CM6 Comment Highlight (matches Ace styling) */
+.cm-comment-highlight {
+  background-color: rgba(255, 229, 100, 0.25);
+  border-bottom: 2px dotted rgba(241, 196, 15, 0.7);
+}
+
+[data-bs-theme='dark'] .cm-comment-highlight {
+  background-color: rgba(255, 215, 0, 0.2);
+  border-bottom-color: rgba(255, 215, 0, 0.6);
+}
+
+.cm-active-comment-highlight {
+  background-color: rgba(255, 229, 100, 0.6) !important;
+  border-bottom: 2px dotted #f1c40f !important;
+}
+
+[data-bs-theme='dark'] .cm-active-comment-highlight {
+  background-color: rgba(255, 215, 0, 0.35) !important;
+  border-bottom-color: rgba(255, 215, 0, 0.8) !important;
+}
+
 /* Header & Avatar */
 .comment-header {
   display: flex;
@@ -4383,9 +4405,8 @@ body {
   height: 200px;
   background: var(--tblr-border-color);
   border-top: 4px solid var(--tblr-border-color);
-  z-index: 10;
+  z-index: 1000;
   flex-direction: column;
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
 }
 
 #symbolPalette.show {
@@ -4448,8 +4469,6 @@ body {
   background: var(--tblr-border-color);
   border-radius: 0 !important;
 }
-
-
 
 /* ================= FIGURE OVERLAY (Exact Match to Settings) ================= */
 #figureOverlay {
@@ -7418,7 +7437,7 @@ div(
                       aceEditor(
                         "sourceEditor",
                         value = "",
-                        height = "95%",
+                        height = "92%",
                         wordWrap = TRUE,
                         showPrintMargin = FALSE,
                         autoComplete = "live",
@@ -7429,7 +7448,7 @@ div(
                       ),
                       div(
                         id = "visualEditorContainer",
-                        style = "display:none; height: 95%; overflow: auto;"
+                        style = "display:none; height: 92%; overflow: hidden;"
                       ),
                       HTML(
                         '
@@ -8503,14 +8522,29 @@ div(
       }, false);
 
 //====File loading====//
+  window.flushEditorText = function() {
+      var aceEd = window.ace && window.ace.edit ? window.ace.edit(\"sourceEditor\") : null;
+      if (aceEd && window.Shiny && window.currentFilePath) {
+          Shiny.setInputValue(\"forceSaveEditor\", {
+              content: aceEd.getValue(),
+              path: window.currentFilePath
+          }, {priority: 'event'});
+      }
+  };
+
 
   Shiny.addCustomMessageHandler('cmdSafeLoadFile', function(data) {
     var editor = ace.edit('sourceEditor');
     if (!editor) return;
 
+    // Store path so flushCommentOffsets knows where to save
+    window.currentFilePath = data.path;
+
     // 1. Update Content and Mode
     // The -1 parameter ensures the cursor moves to start and doesn't select all
+    if (window.commentStore) window.commentStore.freeze();
     editor.setValue(data.content, -1);
+    if (window.commentStore) window.commentStore.unfreeze();
     editor.getSession().setMode('ace/mode/' + data.mode);
 
     // 2. NUCLEAR FIX: Wipe the Undo History
@@ -8829,7 +8863,7 @@ window.currentSidebarTab = 'files'; // Shared state
   }
 
   // --- 3. Unified Rail & Pane Handler ---
-  window.handleRailClick = function(mode) {
+  window.handleRailClick = function(mode, forceOpen) {
 
     // Search Lock Check
     if (window.currentSidebarTab === 'search' && mode === 'files' && searchLock) {
@@ -8854,8 +8888,8 @@ window.currentSidebarTab = 'files'; // Shared state
     var btnEl = document.getElementById(target.btn);
     var isAlreadyActive = btnEl && btnEl.classList.contains('active');
 
-    // Close if clicking active button (ONLY if not locked by search)
-    if (isAlreadyActive && sidebarWidth > 2 && !searchLock) {
+    // Close if clicking active button (ONLY if not locked by search and not forced open)
+    if (isAlreadyActive && sidebarWidth > 2 && !searchLock && !forceOpen) {
         window.closeSidebar();
         return;
     }
@@ -13074,41 +13108,64 @@ window.pdfDownload = function() {
   });
 })();
 
-/* =================== REVIEW & COMMENT SYSTEM =================== */
+/* =================== REVIEW & COMMENT SYSTEM (v2 — CommentStore) =================== */
 
 window.closeReviewPane = function() {
   Shiny.setInputValue('toggleReviewPane', false, {priority:'event'});
 };
 
-// 2. Selection Listener for 'Add Comment' Popup
+// Handle R server telling us to open/close the review pane
+Shiny.addCustomMessageHandler('toggleReviewPane', function(show) {
+  if (show) {
+    if (window.handleRailClick) window.handleRailClick('review', true);
+  } else {
+    if (window.closeSidebar) window.closeSidebar();
+  }
+});
+
+// --- Selection Listener for 'Add Comment' Popup (Both Editors) ---
 (function() {
+  var tooltip = null;
+  
+  function updateTooltipVisual() {
+    if (!tooltip) tooltip = document.getElementById('ace-comment-tooltip');
+    if (!tooltip || window.currentMode !== 'visual' || !window.cm6View) return;
+    
+    var sel = window.cm6View.state.selection.main;
+    if (!sel || sel.empty) {
+      tooltip.style.display = 'none';
+      return;
+    }
+    
+    var coords = window.cm6View.coordsAtPos(sel.to);
+    if (coords) {
+      tooltip.style.position = 'fixed';
+      var top = coords.bottom;
+      var left = coords.left;
+      if (top + 35 > window.innerHeight) { top = coords.top - 35; }
+      tooltip.style.top = top + 'px';
+      tooltip.style.left = left + 'px';
+      tooltip.style.display = 'block';
+    } else {
+      tooltip.style.display = 'none';
+    }
+  }
+
   function initCommentTooltip() {
+    tooltip = document.getElementById('ace-comment-tooltip');
     var editor = ace.edit('sourceEditor');
-    var tooltip = document.getElementById('ace-comment-tooltip');
     if(!editor || !tooltip) return;
 
     editor.selection.on('changeSelection', function() {
+      if (window.currentMode !== 'source') { tooltip.style.display = 'none'; return; }
       if (!editor.selection.isEmpty()) {
         var range = editor.selection.getRange();
-
-        // 1. Get screen coordinates of the END of the selection
         var screenPos = editor.renderer.textToScreenCoordinates(range.end.row, range.end.column);
         var lineHeight = editor.renderer.lineHeight || 20;
-
-        // 2. Default: Place immediately at the bottom of the line
-        // Use 'fixed' to align perfectly with screen coordinates regardless of parents
         tooltip.style.position = 'fixed';
         var top = screenPos.pageY + lineHeight;
         var left = screenPos.pageX;
-
-        // 3. Boundary Check: Highlighting near bottom of screen?
-        // Assume tooltip height is approx 35px. If it goes off-screen, flip to top.
-        if (top + 35 > window.innerHeight) {
-           // Position ABOVE the line (Top of line - Tooltip Height)
-           top = screenPos.pageY - 35;
-        }
-
-        // Apply
+        if (top + 35 > window.innerHeight) { top = screenPos.pageY - 35; }
         tooltip.style.top = top + 'px';
         tooltip.style.left = left + 'px';
         tooltip.style.display = 'block';
@@ -13116,69 +13173,132 @@ window.closeReviewPane = function() {
         tooltip.style.display = 'none';
       }
     });
-
-    // Hide tooltip on scroll/type
     editor.session.on('change', function() { tooltip.style.display = 'none'; });
     editor.session.on('changeScrollTop', function() { tooltip.style.display = 'none'; });
+    
+    // Bind CM6 events to visual wrapper
+    var visualWrapper = document.getElementById('visualEditorContainer');
+    if (visualWrapper) {
+      visualWrapper.addEventListener('mouseup', function() { setTimeout(updateTooltipVisual, 50); });
+      visualWrapper.addEventListener('keyup', function(e) { 
+        if (e.shiftKey && (e.key.startsWith('Arrow') || e.key === 'Shift')) setTimeout(updateTooltipVisual, 50);
+        else tooltip.style.display = 'none';
+      });
+      visualWrapper.addEventListener('wheel', function() { tooltip.style.display = 'none'; });
+    }
   }
 
-  // Wait for Ace
   var checkAce = setInterval(function() {
-    if (window.ace && ace.edit('sourceEditor')) {
-      clearInterval(checkAce);
-      initCommentTooltip();
-    }
+    if (window.ace && ace.edit('sourceEditor')) { clearInterval(checkAce); initCommentTooltip(); }
   }, 500);
 })();
 
-// 3. Trigger Add Comment (Sends Data to R)
+// --- UNIFIED: Trigger Add Comment (works from both editors) ---
 window.triggerAddComment = function() {
-  var editor = ace.edit('sourceEditor');
-  var range = editor.getSelectionRange();
-  var text = editor.session.getTextRange(range);
+  var from, to, text;
 
-  if (!text.trim()) return;
+  if (window.currentMode === 'visual' && window.cm6View && window.MudskipperVisualEditor) {
+    // CM6: get selection as absolute offsets directly
+    var sel = window.MudskipperVisualEditor.getSelectionForComment(window.cm6View);
+    if (!sel) return;
+    from = sel.from;
+    to = sel.to;
+    text = sel.text;
+  } else {
+    // Ace: convert row/col selection to absolute offsets
+    var editor = ace.edit('sourceEditor');
+    var range = editor.getSelectionRange();
+    text = editor.session.getTextRange(range);
+    if (!text || !text.trim()) return;
+    var doc = editor.session.getDocument();
+    from = doc.positionToIndex(range.start, 0);
+    to = doc.positionToIndex(range.end, 0);
+  }
 
-  // Send to Shiny
+  if (!text || !text.trim()) return;
+
+  // Ensure the Review Pane is open and active
+  if (typeof window.handleRailClick === 'function') {
+    // ALWAYS call handleRailClick to ensure we switch to the review tab
+    // and force it to open if collapsed.
+    window.handleRailClick('review', true);
+  }
+
+  // Force the Review pane to show the 'Active' tab so the new comment is visible
+  var tabResolved = document.getElementById('tabResolvedComments');
+  var tabActive = document.getElementById('tabActiveComments');
+  if (tabResolved) tabResolved.classList.remove('active');
+  if (tabActive) tabActive.classList.add('active');
+  Shiny.setInputValue('reviewFilter', 'active', {priority:'event'});
+
   Shiny.setInputValue('addCommentTrigger', {
     text: text,
-    startRow: range.start.row,
-    startCol: range.start.column,
-    endRow: range.end.row,
-    endCol: range.end.column,
+    from: from,
+    to: to,
     nonce: Math.random()
   }, {priority: 'event'});
 
-  // Hide tooltip
-  document.getElementById('ace-comment-tooltip').style.display = 'none';
+  var tooltip = document.getElementById('ace-comment-tooltip');
+  if (tooltip) tooltip.style.display = 'none';
 };
 
-// 4. Manage Highlights (Markers) & Persistence Fix
+// --- ACE MARKER MANAGEMENT (reads from CommentStore) ---
 window.commentMarkers = [];
 
-Shiny.addCustomMessageHandler('renderCommentMarkers', function(comments) {
-  var editor = ace.edit('sourceEditor');
-  if(!editor) return;
+function renderAceMarkers() {
+  if (window.currentMode === 'visual') return;
+  var editor;
+  try { editor = ace.edit('sourceEditor'); } catch(e) { return; }
+  if (!editor || !editor.getSession()) return;
   var session = editor.getSession();
   var Range = ace.require('ace/range').Range;
+  var doc = session.getDocument();
 
-  // Clear old markers first (Fix for persistence issue)
+  // Clear old markers
   if (window.commentMarkers && window.commentMarkers.length > 0) {
-    window.commentMarkers.forEach(function(id) {
-      session.removeMarker(id);
-    });
+    window.commentMarkers.forEach(function(id) { session.removeMarker(id); });
   }
   window.commentMarkers = [];
 
-  if (!comments || comments.length === 0) return;
-
-  comments.forEach(function(c) {
-    if (!c.resolved) {
-      var range = new Range(c.startRow, c.startCol, c.endRow, c.endCol);
+  if (!window.commentStore) return;
+  var active = window.commentStore.getActiveComments();
+  active.forEach(function(c) {
+    if (c.from >= 0 && c.to > c.from) {
+      var start = CommentStore.offsetToRowCol(doc, c.from);
+      var end = CommentStore.offsetToRowCol(doc, c.to);
+      var range = new Range(start.row, start.column, end.row, end.column);
       var markerId = session.addMarker(range, 'ace_comment_highlight', 'text');
       window.commentMarkers.push(markerId);
     }
   });
+}
+
+function renderCM6Markers() {
+  if (window.currentMode !== 'visual' || !window.cm6View || !window.MudskipperVisualEditor) return;
+  if (!window.commentStore) return;
+  var all = window.commentStore.getAllComments();
+  window.MudskipperVisualEditor.updateCommentDecorations(window.cm6View, all);
+}
+
+function renderAllMarkers() {
+  renderAceMarkers();
+  renderCM6Markers();
+}
+
+// --- MASTER HANDLER: R sends comments → CommentStore → render markers ---
+Shiny.addCustomMessageHandler('renderCommentMarkers', function(payload) {
+  // --- HARDENED: Prevent bleeding between documents ---
+  if (payload.path && window.currentFilePath && payload.path !== window.currentFilePath) {
+    console.warn('[Review] Discarding stale markers for path:', payload.path);
+    return;
+  }
+
+  var comments = payload.comments || [];
+  if (window.commentStore) {
+    window.commentStore.loadFromServer(comments);
+  }
+  renderAllMarkers();
+  if (window.highlightActiveComment) window.highlightActiveComment();
 });
 
 // Helper to show reply box
@@ -13187,373 +13307,188 @@ window.toggleReplyBox = function(id) {
   if(box) box.classList.toggle('show');
 };
 
-/* =================== PREMIUM REVIEW SYSTEM LOGIC (PRODUCTION READY) =================== */
+/* =================== COMMENTSTORE-BASED REVIEW LOGIC =================== */
 (function() {
-  // Registry: { id: { startAnchor, endAnchor, markerId, resolved, originalCoords... } }
-  window.activeCommentAnchors = {};
-  var syncQueue = {}; // Queue for changes waiting to be sent to R
-  var syncTimer = null;
-  var isRendering = false; // Semaphore to prevent loops
-
-  // Ace Modules
-  var Anchor = ace.require('ace/anchor').Anchor;
   var Range = ace.require('ace/range').Range;
+  var saveTimer = null;
 
-  // --- 1. CORE: RENDER & SYNC MARKERS (R -> JS) ---
-  Shiny.addCustomMessageHandler('renderCommentMarkers', function(payload) {
-    // payload structure: { comments: [...], force: bool }
-    var comments = payload.comments || [];
-    var forceRefresh = payload.force || false;
-
-    var editor = ace.edit('sourceEditor');
-    if(!editor || !editor.getSession()) return;
-
-    var session = editor.getSession();
-    var doc = session.getDocument();
-    isRendering = true; // Block sync while rendering from R
-
-    // A. Cleanup deleted comments
-    var newIds = comments.map(function(c){ return c.id; });
-    Object.keys(window.activeCommentAnchors).forEach(function(id) {
-      if (!newIds.includes(id) || forceRefresh) {
-        var obj = window.activeCommentAnchors[id];
-        session.removeMarker(obj.markerId);
-        if(obj.startAnchor) obj.startAnchor.detach();
-        if(obj.endAnchor) obj.endAnchor.detach();
-        delete window.activeCommentAnchors[id];
-      }
-    });
-
-    // B. Create/Update Anchors
-    comments.forEach(function(c) {
-      if (c.resolved) return; // Do not render resolved highlights
-
-      if (window.activeCommentAnchors[c.id]) {
-        // --- EXISTING: Validate Position ---
-        // If R sends different coordinates than our live anchors,
-        // it means we reloaded the file. We must trust R's saved state on file load.
-        if (forceRefresh) {
-           updateLocalAnchorFromData(c, doc, session);
-        } else {
-           // Ensure visual marker exists (Ace sometimes wipes markers on redraws)
-           ensureMarkerExists(c.id, session);
-        }
-      } else {
-        // --- NEW: Create Anchors ---
-        createLocalAnchor(c, doc, session);
-      }
-    });
-
-    isRendering = false;
-    highlightActiveComment(); // Re-eval active highlight
-  });
-
-function createLocalAnchor(c, doc, session) {
-  var startAnchor = new Anchor(doc, c.startRow, c.startCol);
-  var endAnchor = new Anchor(doc, c.endRow, c.endCol);
-
-  // ✅ Store listener so we can reattach later
-  var onChange = function() {
-    if(isRendering) return;
-    refreshMarkerPosition(c.id, session);
-    queueSync(c.id);
-  };
-  startAnchor.on('change', onChange);
-  endAnchor.on('change', onChange);
-
-  var range = new Range(c.startRow, c.startCol, c.endRow, c.endCol);
-  var markerId = session.addMarker(range, 'ace_comment_highlight', 'text');
-
-  window.activeCommentAnchors[c.id] = {
-    startAnchor: startAnchor,
-    endAnchor: endAnchor,
-    markerId: markerId,
-    onChange: onChange  // ✅ STORED
-  };
-}
-
-function updateLocalAnchorFromData(c, doc, session) {
-  var obj = window.activeCommentAnchors[c.id];
-  // Detach old
-  obj.startAnchor.detach();
-  obj.endAnchor.detach();
-  session.removeMarker(obj.markerId);
-
-  // Recreate anchors
-  var startAnchor = new Anchor(doc, c.startRow, c.startCol);
-  var endAnchor = new Anchor(doc, c.endRow, c.endCol);
-
-  // ✅ RE-ATTACH listener (reuse stored, or create new)
-  var onChange = obj.onChange || function() {
-    if(isRendering) return;
-    refreshMarkerPosition(c.id, session);
-    queueSync(c.id);
-  };
-  startAnchor.on('change', onChange);
-  endAnchor.on('change', onChange);
-
-  var range = new Range(c.startRow, c.startCol, c.endRow, c.endCol);
-  var markerId = session.addMarker(range, 'ace_comment_highlight', 'text');
-
-  window.activeCommentAnchors[c.id] = {
-    startAnchor: startAnchor,
-    endAnchor: endAnchor,
-    markerId: markerId,
-    onChange: onChange
-  };
-}
-
-  function ensureMarkerExists(id, session) {
-    var obj = window.activeCommentAnchors[id];
-    var markers = session.getMarkers();
-    if (!markers[obj.markerId]) {
-       var range = new Range(
-         obj.startAnchor.row, obj.startAnchor.column,
-         obj.endAnchor.row, obj.endAnchor.column
-       );
-       obj.markerId = session.addMarker(range, 'ace_comment_highlight', 'text');
-    }
-  }
-
-  // --- 2. LOCAL UPDATE LOGIC (Handling Typing) ---
-  function refreshMarkerPosition(id, session) {
-    var obj = window.activeCommentAnchors[id];
-    if(!obj) return;
-
-    // Remove old visual marker
-    session.removeMarker(obj.markerId);
-
-    // Validate Range (Start must be before End)
-    var sRow = obj.startAnchor.row;
-    var sCol = obj.startAnchor.column;
-    var eRow = obj.endAnchor.row;
-    var eCol = obj.endAnchor.column;
-
-    // Sanity check: if end is before start, collapse or swap (simple collapse here)
-    if (sRow > eRow || (sRow === eRow && sCol > eCol)) {
-        eRow = sRow; eCol = sCol;
-    }
-
-    var range = new Range(sRow, sCol, eRow, eCol);
-    obj.markerId = session.addMarker(range, 'ace_comment_highlight', 'text');
-  }
-
-  // --- 3. DISK SYNC LOGIC (The Fix for Persistence) ---
-  function queueSync(id) {
-    // Add current live coordinates to queue
-    var obj = window.activeCommentAnchors[id];
-    if(!obj) return;
-
-    syncQueue[id] = {
-      id: id,
-      startRow: obj.startAnchor.row,
-      startCol: obj.startAnchor.column,
-      endRow: obj.endAnchor.row,
-      endCol: obj.endAnchor.column
-    };
-
-    // Debounce the send
-    clearTimeout(syncTimer);
-    syncTimer = setTimeout(flushSyncQueue, 2000); // 2 seconds silence before save
-  }
-
-function flushSyncQueue() {
-
-  // --- ADDITION: Block sync if switching files ---
-  if (window.isSwitchingFile) return;
-
-  // --- NEW FIX: SAFETY GUARD FOR EMPTY EDITOR ---
-  // If the editor is empty, it means we are in the middle of a load/reload.
-  // Do NOT sync coordinates now, or all anchors will collapse to (0,0).
-  var editor = ace.edit('sourceEditor');
-  if (!editor || editor.getSession().getValue().length < 1) {
-      // Clear queue to prevent delayed bad syncs
-      syncQueue = {};
-      return;
-  }
-  // ---------------------------------------------
-
-  if (Object.keys(syncQueue).length === 0) return;
-
-  // SyncQueue values are {id, startRow...}
-  var updates = Object.values(syncQueue);
-
-  if (window.Shiny) {
-    // Send as JSON string
-    Shiny.setInputValue('updateCommentCoordinates', JSON.stringify(updates), {priority: 'event'});
-  }
-
-  syncQueue = {};
-}
-
-  // Flush on save (Ctrl+S) or Window Blur to be safe
-  document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') flushSyncQueue();
-  });
-  window.addEventListener('blur', flushSyncQueue);
-
-
-  // --- 4. NAVIGATION & UX HELPERS ---
-
-  // Highlight active comment based on cursor
-  function highlightActiveComment() {
-    var editor = ace.edit('sourceEditor');
+  // --- ACE CHANGE TRACKING → CommentStore offset mapping ---
+  var initCheckTimer = setInterval(function() {
+    var editor;
+    try { editor = ace.edit('sourceEditor'); } catch(e) { return; }
     if (!editor) return;
-    var cursor = editor.getCursorPosition();
+    clearInterval(initCheckTimer);
 
-    var foundId = null;
-    var minLen = Infinity; // For nested comments, pick smallest range
-
-    Object.keys(window.activeCommentAnchors).forEach(function(id) {
-      var obj = window.activeCommentAnchors[id];
-      var sRow = obj.startAnchor.row, sCol = obj.startAnchor.column;
-      var eRow = obj.endAnchor.row, eCol = obj.endAnchor.column;
-
-      // Logic: Cursor is inclusive of start, exclusive of end (standard UI feel)
-      var afterStart = (cursor.row > sRow) || (cursor.row === sRow && cursor.column >= sCol);
-      var beforeEnd  = (cursor.row < eRow) || (cursor.row === eRow && cursor.column <= eCol);
-
-      if (afterStart && beforeEnd) {
-        // Calculate size to find most specific comment
-        var len = (eRow - sRow) * 10000 + (eCol - sCol);
-        if (len < minLen) {
-          minLen = len;
-          foundId = id;
-        }
-      }
+    // Map comment offsets through every Ace change
+    editor.session.on('change', function(delta) {
+      if (window.currentMode !== 'source') return;
+      if (!window.commentStore) return;
+      var doc = editor.session.getDocument();
+      window.commentStore.mapAceDelta(delta, doc);
+      // Defer rendering to prevent Ace internal update loop errors (r.update is not a function)
+      clearTimeout(window._renderAceTimer);
+      window._renderAceTimer = setTimeout(function() {
+        if (typeof renderAceMarkers === 'function') renderAceMarkers();
+      }, 10);
+      scheduleSaveOffsets();
     });
 
-    // Update Sidebar UI
-    document.querySelectorAll('.comment-card').forEach(el => el.classList.remove('active-comment'));
+    // Highlight active comment on cursor move
+    editor.selection.on('changeCursor', function() {
+      clearTimeout(window._highlightTimer);
+      window._highlightTimer = setTimeout(function() {
+        if (window.highlightActiveComment) window.highlightActiveComment();
+      }, 200);
+    });
+
+    // Signal editor ready
+    if (window.Shiny && window.Shiny.setInputValue) {
+      Shiny.setInputValue('aceEditorReady', Math.random(), {priority: 'event'});
+    }
+  }, 200);
+
+  // --- HIGHLIGHT ACTIVE COMMENT (works for both editors) ---
+  window.highlightActiveComment = function() {
+    if (!window.commentStore) return;
+    var offset;
+
+    if (window.currentMode === 'visual' && window.cm6View) {
+      offset = window.cm6View.state.selection.main.head;
+    } else {
+      try {
+        var editor = ace.edit('sourceEditor');
+        var cursor = editor.getCursorPosition();
+        var doc = editor.session.getDocument();
+        offset = doc.positionToIndex(cursor, 0);
+      } catch(e) { return; }
+    }
+
+    var found = window.commentStore.getCommentAtOffset(offset);
+    var foundId = found ? found.id : null;
+
+    document.querySelectorAll('.comment-card').forEach(function(el) {
+      el.classList.remove('active-comment');
+    });
     if (foundId) {
       var card = document.getElementById('card-' + foundId);
       if (card) {
         card.classList.add('active-comment');
-        // Only scroll if we aren't actively using the sidebar
         if (!document.querySelector('#reviewPane:hover')) {
-           card.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+          card.scrollIntoView({behavior: 'smooth', block: 'nearest'});
         }
       }
     }
-  }
-
-  // Hook cursor change
-  var cursorTimeout;
-  var initCheckTimer = setInterval(function(){
-      var editor = ace.edit('sourceEditor');
-      if(editor) {
-          clearInterval(initCheckTimer);
-          editor.selection.on('changeCursor', function() {
-            clearTimeout(cursorTimeout);
-            cursorTimeout = setTimeout(highlightActiveComment, 200);
-          });
-          // Also trigger request for markers on load
-          if(window.Shiny && window.Shiny.setInputValue) Shiny.setInputValue('aceEditorReady', Math.random(), {priority: 'event'});
-      }
-  }, 200);
-
-  // Jump To Code (Fixed Scroll Logic)
-  window.jumpToCode = function(commentId) {
-    var obj = window.activeCommentAnchors[commentId];
-    if (!obj) return;
-
-    var editor = ace.edit('sourceEditor');
-
-    // 1. Force resize to handle split pane visibility changes
-    editor.resize(true);
-
-    // 2. Center the target line
-    var sRow = obj.startAnchor.row;
-
-    // Center selection vertically
-    editor.scrollToLine(sRow, true, true, function() {});
-
-    // 3. Set Selection
-    editor.selection.setRange({
-      start: {row: sRow, column: obj.startAnchor.column},
-      end:   {row: obj.endAnchor.row,   column: obj.endAnchor.column}
-    });
-
-    editor.focus();
-    highlightActiveComment();
   };
 
+  // --- JUMP TO CODE (works for both editors) ---
+  window.jumpToCode = function(commentId) {
+    if (!window.commentStore) return;
+    var c = window.commentStore.getComment(commentId);
+    if (!c) return;
+
+    if (window.currentMode === 'visual' && window.cm6View) {
+      var view = window.cm6View;
+      var docLen = view.state.doc.length;
+      var pos = Math.min(c.from, docLen);
+      var endPos = Math.min(c.to, docLen);
+      view.dispatch({
+        selection: {anchor: pos, head: endPos},
+        scrollIntoView: true
+      });
+      view.focus();
+    } else {
+      try {
+        var editor = ace.edit('sourceEditor');
+        var doc = editor.session.getDocument();
+        var start = CommentStore.offsetToRowCol(doc, c.from);
+        var end = CommentStore.offsetToRowCol(doc, c.to);
+        editor.resize(true);
+        editor.scrollToLine(start.row, true, true, function() {});
+        editor.selection.setRange({
+          start: {row: start.row, column: start.column},
+          end: {row: end.row, column: end.column}
+        });
+        editor.focus();
+      } catch(e) {}
+    }
+    if (window.highlightActiveComment) window.highlightActiveComment();
+  };
+
+  // --- SAVE OFFSETS TO R (debounced) ---
+  window.flushCommentOffsets = function() {
+    if (!window.commentStore || !window.Shiny) return;
+    var all = window.commentStore.getAllComments();
+    if (all.length === 0) return;
+    var updates = all.map(function(c) {
+      return { id: c.id, from: c.from, to: c.to };
+    });
+    
+    var payload = {
+      updates: updates,
+      path: window.currentFilePath || '',
+      projectId: window.activeProjectId || ''
+    };
+    
+    Shiny.setInputValue('saveCommentOffsets', JSON.stringify(payload), {priority: 'event'});
+  };
+
+  Shiny.addCustomMessageHandler('flushCommentOffsets', function(m) {
+    if (typeof window.flushCommentOffsets === 'function') {
+      window.flushCommentOffsets();
+    }
+  });
+
+  // --- HARDENED PERSISTENCE: Flush on ANY navigation or state change ---
+  document.addEventListener('mousedown', function(e) {
+    // If the user clicks a project, a file, or a tab, flush offsets immediately!
+    var target = e.target;
+    var isNav = target.closest('.filetree-item-row') || 
+                target.closest('.project-card') || 
+                target.closest('.nav-link') || 
+                target.closest('.tab-item') ||
+                target.closest('.btn-back-dashboard');
+    
+    if (isNav) {
+      if (typeof window.flushCommentOffsets === 'function') {
+        window.flushCommentOffsets();
+      }
+      if (typeof window.flushEditorText === 'function') {
+        window.flushEditorText();
+      }
+    }
+  }, true); // Use capture phase to ensure it runs before Shiny handlers
+
+  function scheduleSaveOffsets() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(window.flushCommentOffsets, 1000);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') window.flushCommentOffsets();
+  });
+  window.addEventListener('blur', window.flushCommentOffsets);
+  window.addEventListener('beforeunload', function() {
+    if (typeof window.flushEditorText === 'function') window.flushEditorText();
+    if (typeof window.flushCommentOffsets === 'function') window.flushCommentOffsets();
+  });
+
+  // Listen for CommentStore changes to re-render
+  if (window.commentStore) {
+    window.commentStore.on(function() {
+      renderAllMarkers();
+      if (typeof scheduleSaveOffsets === 'function') scheduleSaveOffsets();
+    });
+  }
 })();
 
 // =================== AUTO-GROW TEXTAREAS ===================
 document.addEventListener('input', function(e) {
   if (e.target.classList.contains('reply-textarea')) {
-    // 1. Reset height to 'auto' to allow shrinking when text is deleted
     e.target.style.height = 'auto';
-
-    // 2. Set height to scrollHeight (content height)
-    // We compare with min-height (38px) to ensure it doesn't collapse too far
     var newHeight = Math.max(38, e.target.scrollHeight);
     e.target.style.height = newHeight + 'px';
   }
 });
-
-
-// Request *current live* comment positions from frontend
-Shiny.addCustomMessageHandler('requestLiveCommentCoordinates', function(_) {
-  if (!window.activeCommentAnchors) return;
-  var updates = [];
-  Object.keys(window.activeCommentAnchors).forEach(function(id) {
-    var obj = window.activeCommentAnchors[id];
-    if (obj && obj.startAnchor && obj.endAnchor) {
-      updates.push({
-        id: id,
-        startRow: obj.startAnchor.row,
-        startCol: obj.startAnchor.column,
-        endRow: obj.endAnchor.row,
-        endCol: obj.endAnchor.column
-      });
-    }
-  });
-  if (updates.length > 0 && Shiny.setInputValue) {
-    Shiny.setInputValue('updateCommentCoordinates', updates, {priority: 'event'});
-  }
-});
-
-
-// --- CRITICAL: Aggressive Marker Cleanup to Prevent Bleeding ---
-
-Shiny.addCustomMessageHandler('clearLocalAnchors', function(msg) {
-  var editor = ace.edit('sourceEditor');
-  if (!editor || !editor.getSession()) return;
-
-  var session = editor.getSession();
-
-  // 1. Destroy our managed anchor registry
-  if (window.activeCommentAnchors) {
-    Object.keys(window.activeCommentAnchors).forEach(function(id) {
-      var obj = window.activeCommentAnchors[id];
-      if (obj.startAnchor) obj.startAnchor.detach();
-      if (obj.endAnchor) obj.endAnchor.detach();
-      // Remove specific marker if we tracked ID
-      if (obj.markerId) session.removeMarker(obj.markerId);
-    });
-  }
-  window.activeCommentAnchors = {};
-
-  // 2. NUCLEAR OPTION: Iterate all markers and remove any that look like comments
-  // This catches any 'ghost' markers that might have slipped through
-  var markers = session.getMarkers();
-  if (markers) {
-    Object.keys(markers).forEach(function(key) {
-      var m = markers[key];
-      if (m.clazz === 'ace_comment_highlight' || m.clazz === 'ace_active_comment_highlight') {
-        session.removeMarker(m.id);
-      }
-    });
-  }
-
-  // 3. Block sync temporarily to prevent saving empty/bad states during switch
-  window.isSwitchingFile = true;
-  setTimeout(function() { window.isSwitchingFile = false; }, 800);
-});
-
-
 
 
 // =================== EDITOR -> PDF SYNC (Forward Search) ===================

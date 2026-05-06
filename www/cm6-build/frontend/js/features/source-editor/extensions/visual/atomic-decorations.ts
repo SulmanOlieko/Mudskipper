@@ -360,7 +360,8 @@ export const atomicDecorations = (options: Options) => {
                 parsedTableData = generateTable(tabularNode, state)
                 validTable = validateParsedTable(parsedTableData)
               } catch (e) {
-                debugConsole.error(e)
+                // Table specification is incomplete or invalid (e.g., missing brace for 'p' column).
+                // Ignore the error to avoid console spam; it will render TableRenderingErrorWidget.
               }
 
               if (parsedTableData && validTable) {

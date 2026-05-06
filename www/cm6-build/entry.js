@@ -1,4 +1,4 @@
-// Mudskipper Visual Editor Bundle Loaded (v5 - SyncTeX Fixed)
+// Mudskipper Visual Editor Bundle Loaded (v6 - Review System)
 import {
   EditorView,
   keymap,
@@ -40,7 +40,7 @@ import { geometryChangeEvent } from "@/features/source-editor/extensions/geometr
 import { keymaps } from "@/features/source-editor/extensions/keymaps.ts";
 
 const darkThemeConf = new Compartment();
-export const BUNDLE_VERSION = 'v5';
+export const BUNDLE_VERSION = 'v6';
 
 // --- SPELLCHECK DECORATIONS ---
 const addSpellcheckEffect = StateEffect.define();
@@ -58,6 +58,42 @@ const spellcheckField = StateField.define({
         const ranges = effect.value.map(t => deco.range(t.from, t.to));
         decorations = decorations.update({ add: ranges, sort: true });
       } else if (effect.is(clearSpellcheckEffect)) {
+        decorations = Decoration.none;
+      }
+    }
+    return decorations;
+  },
+  provide: f => EditorView.decorations.from(f)
+});
+
+// --- COMMENT DECORATIONS (Overleaf-inspired StateField) ---
+const setCommentsEffect = StateEffect.define();    // Load/replace all comment decorations
+const clearCommentsEffect = StateEffect.define();   // Clear all comment decorations
+
+const commentMark = Decoration.mark({ class: 'cm-comment-highlight' });
+const activeCommentMark = Decoration.mark({ class: 'cm-comment-highlight cm-active-comment-highlight' });
+
+/**
+ * CM6 StateField for comment highlight decorations.
+ * Key feature: `decorations.map(tr.changes)` automatically maps
+ * all comment ranges through document changes — no manual anchor tracking needed.
+ */
+const commentField = StateField.define({
+  create() {
+    return Decoration.none;
+  },
+  update(decorations, tr) {
+    // Critical: auto-map through document changes
+    decorations = decorations.map(tr.changes);
+    for (const effect of tr.effects) {
+      if (effect.is(setCommentsEffect)) {
+        // Rebuild from comment store data
+        const docLen = tr.state.doc.length;
+        const ranges = effect.value
+          .filter(c => !c.resolved && c.from >= 0 && c.to > c.from && c.to <= docLen)
+          .map(c => commentMark.range(c.from, c.to));
+        decorations = Decoration.set(ranges, true);
+      } else if (effect.is(clearCommentsEffect)) {
         decorations = Decoration.none;
       }
     }
@@ -225,10 +261,19 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
       // Spellcheck field
       spellcheckField,
 
+      // Comment decoration field (Overleaf-inspired auto-mapping)
+      commentField,
+
       // Document change listener
       EditorView.updateListener.of((update) => {
         if (update.docChanged && onChange) {
           onChange(update.state.doc.toString());
+        }
+
+        // --- COMMENT OFFSET TRACKING ---
+        // Map CommentStore offsets through CM6 changes (the core improvement)
+        if (update.docChanged && window.commentStore && window.commentStore.mapCM6Changes) {
+          window.commentStore.mapCM6Changes(update.changes);
         }
         
         // --- CURSOR TRACKING FOR OUTLINE ---
@@ -240,6 +285,11 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
             column: pos - line.from
           }, {priority: 'event'});
         }
+
+        // --- CURSOR TRACKING FOR COMMENT HIGHLIGHT ---
+        if (update.selectionSet && window.highlightActiveComment) {
+          window.highlightActiveComment();
+        }
       }),
 
       // Phrases for non-React widgets (Preamble, etc.)
@@ -247,7 +297,7 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
         "show_document_preamble": "Show document preamble",
         "hide_document_preamble": "Hide document preamble",
         "expand": "Expand",
-        "learn_more": "Learn more",
+        "learn_more": "Learn more"
       }),
     ],
   });
@@ -428,3 +478,45 @@ export async function runStandaloneLinter(text, fileType) {
 }
 
 import { setOptionsTheme as setBaseOptionsTheme } from "@/features/source-editor/extensions/theme.ts";
+
+// --- COMMENT DECORATION EXPORTS ---
+
+/**
+ * Update comment highlight decorations from CommentStore data.
+ * @param {EditorView} view - CM6 editor view
+ * @param {Array} comments - Array of comment objects with {from, to, resolved}
+ */
+export function updateCommentDecorations(view, comments) {
+  if (!view) return;
+  view.dispatch({
+    effects: setCommentsEffect.of(comments || [])
+  });
+}
+
+/**
+ * Clear all comment highlight decorations.
+ * @param {EditorView} view - CM6 editor view
+ */
+export function clearCommentDecorations(view) {
+  if (!view) return;
+  view.dispatch({
+    effects: clearCommentsEffect.of()
+  });
+}
+
+/**
+ * Get the current selection range for creating a new comment.
+ * Returns null if no text is selected.
+ * @param {EditorView} view - CM6 editor view
+ * @returns {{ from: number, to: number, text: string } | null}
+ */
+export function getSelectionForComment(view) {
+  if (!view) return null;
+  const sel = view.state.selection.main;
+  if (sel.empty) return null;
+  return {
+    from: sel.from,
+    to: sel.to,
+    text: view.state.sliceDoc(sel.from, sel.to)
+  };
+}
