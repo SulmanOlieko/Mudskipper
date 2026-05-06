@@ -1062,7 +1062,7 @@
           # Record activity
           recordDailyActivity(activityType = "fileCreate", details = list(
             projectId = activeProjectId(),
-            projectName = activeProject()$name,
+            projectName = getActiveProjectName(),
             file = input$fig_upload_name
           ))
 
@@ -1096,7 +1096,7 @@
           # Record activity
           recordDailyActivity(activityType = "fileCreate", details = list(
             projectId = activeProjectId(),
-            projectName = activeProject()$name,
+            projectName = getActiveProjectName(),
             file = input$fig_upload_name
           ))
         },
@@ -1203,7 +1203,7 @@
           # Record activity
           recordDailyActivity(activityType = "fileCreate", details = list(
             projectId = activeProjectId(),
-            projectName = activeProject()$name,
+            projectName = getActiveProjectName(),
             file = input$fig_other_name
           ))
         },
@@ -1295,7 +1295,7 @@
           # Record activity
           recordDailyActivity(activityType = "fileCreate", details = list(
             projectId = activeProjectId(),
-            projectName = activeProject()$name,
+            projectName = getActiveProjectName(),
             file = input$fig_url_name
           ))
         } else {
@@ -1388,7 +1388,7 @@
       # Record activity if new file created
       recordDailyActivity(activityType = "fileCreate", details = list(
         projectId = activeProjectId(),
-        projectName = activeProject()$name,
+        projectName = getActiveProjectName(),
         file = target_file
       ))
     }
@@ -1443,21 +1443,13 @@
       pushBibCitations(texContent, projDir)
     })
 
-    # --- 6. TRIGGER STANDARD FILE CLICK ---
-    # Now load the file into the editor using the standard flow.
+    # --- 6. TRIGGER STANDARD FILE CLICK (Synchronous) ---
+    # Now load the file into the editor using the unified helper.
     last_line <- length(readLines(bibFile, warn = FALSE))
-
-    shinyjs::runjs(sprintf(
-      "
-      Shiny.setInputValue('fileClick', {
-        path: '%s',
-        isEditable: true,
-        gotoLine: %d,
-        nonce: Math.random()
-      }, {priority: 'event'});
-    ",
-      target_file,
-      last_line
-    ))
+    handleFileOpening(
+      filePath = target_file,
+      isEditable = TRUE,
+      gotoLine = last_line
+    )
   })
 

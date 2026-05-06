@@ -296,6 +296,7 @@ export function initVisualEditor(parentElement, initialDoc, onChange, settings =
       EditorState.phrases.of({
         "show_document_preamble": "Show document preamble",
         "hide_document_preamble": "Hide document preamble",
+        "end_of_document": "End of document",
         "expand": "Expand",
         "learn_more": "Learn more"
       }),

@@ -192,407 +192,175 @@
   })
 
   # Handle file single-clicks (Robust Binary Detection & Enhanced Preview)
-  observeEvent(input$fileClick, {
-    req(input$fileClick$path)
-
-    projectId <- activeProjectId()
+  # ---------------- HELPER: UNIFIED FILE OPENING ----------------
+  # This function handles the entire flow of reading a file,
+  # updating the editor, and restoring metadata like comments.
+  handleFileOpening <- function(filePath, isEditable = TRUE, gotoLine = NULL, gotoColumn = NULL, selectText = NULL, context = NULL) {
+    req(filePath)
+    
+    projectId <- isolate(activeProjectId())
     req(projectId)
-    projDir <- getActiveProjectDir()
-    filePath <- input$fileClick$path
+    
+    projDir <- isolate(getActiveProjectDir())
     fullPath <- file.path(projDir, filePath)
-
-    if (!file.exists(fullPath)) {
-      return()
-    }
-
-    # SYNC TO HISTORY: ensure history overlay is focused on this file
-    historyActiveFile(filePath)
-
-    # --- 1. SAFETY CHECKS ---
+    
+    if (!file.exists(fullPath)) return(FALSE)
+    
+    # 1. Update History Focus
+    isolate({ historyActiveFile(filePath) })
+    
+    # 2. Binary Detection
     finfo <- file.info(fullPath)
-    if (is.na(finfo$size)) {
-      return()
-    }
-
-    # Guard: Prevent opening files > 5MB in the text editor
+    if (is.na(finfo$size)) return(FALSE)
+    
     is_too_large <- finfo$size > (5 * 1024 * 1024)
-
     ext <- tolower(tools::file_ext(filePath))
-    isEditable <- isTRUE(input$fileClick$isEditable)
-
-    # Comprehensive Binary Extensions List
-    binary_exts <- c(
-      # Documents & Office
-      "pdf",
-      "doc",
-      "docx",
-      "xls",
-      "xlsx",
-      "xlsm",
-      "ppt",
-      "pptx",
-      "odt",
-      "ods",
-      "odp",
-      "rtf",
-      "epub",
-      "pages",
-      "key",
-      "numbers",
-      "vsd",
-      "vsdx",
-      # Images & Design
-      "png",
-      "jpg",
-      "jpeg",
-      "gif",
-      "bmp",
-      "tiff",
-      "tif",
-      "ico",
-      "webp",
-      "heic",
-      "psd",
-      "ai",
-      "raw",
-      "eps",
-      "ps",
-      "xcf",
-      "indd",
-      "cdr",
-      "sketch",
-      "fig",
-      # Audio
-      "mp3",
-      "wav",
-      "ogg",
-      "m4a",
-      "flac",
-      "aac",
-      "wma",
-      "aiff",
-      "mid",
-      "midi",
-      "opus",
-      "pcm",
-      # Video
-      "mp4",
-      "mov",
-      "avi",
-      "webm",
-      "mkv",
-      "flv",
-      "wmv",
-      "m4v",
-      "3gp",
-      "mpeg",
-      "mpg",
-      "m2ts",
-      "mts",
-      "vob",
-      # Archives
-      "zip",
-      "tar",
-      "gz",
-      "tgz",
-      "7z",
-      "rar",
-      "bz2",
-      "xz",
-      "iso",
-      "dmg",
-      "pkg",
-      "z",
-      "cab",
-      "rpm",
-      "deb",
-      "img",
-      "vhd",
-      "vdi",
-      "vmdk",
-      # Fonts
-      "woff",
-      "woff2",
-      "ttf",
-      "eot",
-      "otf",
-      "pfb",
-      "pfm",
-      # Data & Science
-      "parquet",
-      "rds",
-      "rdata",
-      "rda",
-      "feather",
-      "fst",
-      "avro",
-      "h5",
-      "hdf5",
-      "nc",
-      "fits",
-      # Database
-      "db",
-      "sqlite",
-      "sqlite3",
-      "mdb",
-      "accdb",
-      "sqlitedb",
-      "mdf",
-      "ldf",
-      # Executables
-      "exe",
-      "dll",
-      "so",
-      "dylib",
-      "bin",
-      "o",
-      "obj",
-      "pyc",
-      "class",
-      "jar",
-      "war",
-      "ear",
-      "dat",
-      "msi",
-      "com",
-      "apk",
-      "ds_store",
-      "thumbs.db",
-      "lnk",
-      # 3D
-      "glb",
-      "fbx",
-      "blend",
-      "3ds",
-      "max",
-      "c4d",
-      "stl",
-      "ply"
-    )
-
-    # --- CRITICAL FIX: TRUE BINARY DETECTION ---
-    # Read the first 1024 bytes to check for NUL characters.
-    # This prevents 'readLines' from crashing on files that look like text but aren't.
-    is_binary_content <- tryCatch(
-      {
-        con <- file(fullPath, "rb")
-        on.exit(close(con))
-        bytes <- readBin(con, "raw", n = 1024)
-        any(bytes == 00)
-      },
-      error = function(e) TRUE
-    ) # Assume binary on error
-
-    # Determine if we should open in Ace Editor
-    # Must be: Editable flag + Not in binary list + No NUL bytes detected
-    should_open_editor <- isEditable &&
-      !(ext %in% binary_exts) &&
-      !is_binary_content
-
+    
+    is_binary_content <- tryCatch({
+      con <- file(fullPath, "rb")
+      on.exit(close(con))
+      bytes <- readBin(con, "raw", n = 1024)
+      any(bytes == 00)
+    }, error = function(e) TRUE)
+    
+    # Standard text extensions for Ace
+    text_exts <- c("tex", "bib", "txt", "md", "css", "js", "json", "r", "py", "sh", "yml", "yaml", "toml", "sty", "cls", "clo", "cfg")
+    
+    should_open_editor <- isEditable && (ext %in% text_exts || !is_binary_content) && !is_too_large
+    
     if (should_open_editor) {
-      # ================= EDITABLE TEXT FILE =================
-
-      if (is_too_large) {
-        showTablerAlert(
-          "warning",
-          "File too large",
-          "This file is too large to edit directly (> 5MB).", 5000)
-        return()
-      }
-
-      # 1. Clear Old Preview
+      # ================= TEXT FILE LOADING =================
       session$sendCustomMessage("hideFilePreview", list(path = filePath))
-
-      # 2. Safe Read
-      content <- tryCatch(
-        {
-          paste(readLines(fullPath, warn = FALSE), collapse = "\n")
-        },
-        error = function(e) {
-          showTablerAlert(
-            "danger",
-            "Read error",
-            paste("Could not read file:", e$message)
-          )
-          return(NULL)
-        }
-      )
-
-      if (is.null(content)) {
-        return()
-      }
-
-      aceMode <- getAceModeFromExtension(filePath)
-
-      # 3. SAFE LOAD
-      session$sendCustomMessage(
-        "cmdSafeLoadFile",
-        list(
-          content = content,
-          mode = aceMode,
-          path = filePath
-        )
-      )
-
-      # 4. Update State
-      currentFile(filePath)
-      updateStatus(filePath)
-      rv$fileJustLoaded <- TRUE # IMMEDIATE LOCK to prevent history race
+      
+      content <- tryCatch({
+        paste(readLines(fullPath, warn = FALSE), collapse = "\n")
+      }, error = function(e) {
+        showTablerAlert("danger", "Read error", paste("Could not read file:", e$message))
+        return(NULL)
+      })
+      
+      if (is.null(content)) return(FALSE)
+      
+      # SAFE LOAD
+      session$sendCustomMessage("cmdSafeLoadFile", list(
+        content = content,
+        mode = getAceModeFromExtension(filePath),
+        path = filePath
+      ))
+      
+      # Update Reactive State
+      isolate({
+        currentFile(filePath)
+        updateStatus(filePath)
+        rv$fileJustLoaded <- TRUE # LOCK
+      })
+      
+      # Reset lock after delay
       later::later(function() {
-        rv$fileJustLoaded <- FALSE
+        shiny::withReactiveDomain(session, {
+          rv$fileJustLoaded <- FALSE
+        })
       }, 0.5)
-
-      if (ext == "tex") {
-        if (
-          is.null(input$fileClick$context) ||
-            input$fileClick$context != "synctex"
-        ) {
-          updateSelectInput(session, "compileMainFile", selected = filePath)
-        }
-      }
-
-      # 5. Restore Comments & Cursor
-      later::later(
-        function() {
+      
+      # Metadata Restoration (Delayed for UI readiness)
+      later::later(function() {
+        shiny::withReactiveDomain(session, {
           isolate({
+            # Comments
             specificComments <- loadComments(projectId, filePath)
-            session$sendCustomMessage(
-              "renderCommentMarkers",
-              list(
-                comments = specificComments,
-                force = TRUE
-              )
-            )
-            rv$fileJustLoaded <- TRUE 
-
-            # FINAL RESET: after all loading is likely done, clear the lock
-            later::later(function() { 
-              rv$fileJustLoaded <- FALSE 
-            }, 0.5)
-
+            session$sendCustomMessage("renderCommentMarkers", list(
+              comments = specificComments,
+              force = TRUE
+            ))
+            
+            # Cursor/Selection
             savedRow <- 0
             savedCol <- 0
-            projects <- loadProjects()
-            for (p in projects) {
+            projs <- loadProjects()
+            for (p in projs) {
               if (p$id == projectId) {
-                if (!is.null(p$cursorRow)) {
-                  savedRow <- p$cursorRow
-                }
-                if (!is.null(p$cursorCol)) {
-                  savedCol <- p$cursorCol
-                }
+                savedRow <- p$cursorRow %||% 0
+                savedCol <- p$cursorCol %||% 0
                 break
               }
             }
-
-            if (!is.null(input$fileClick$gotoLine)) {
-              session$sendCustomMessage(
-                'aceGoTo',
-                list(
-                  line = as.numeric(input$fileClick$gotoLine),
-                  column = as.numeric(input$fileClick$gotoColumn),
-                  selectText = input$fileClick$selectText
-                )
-              )
-            } else {
-              session$sendCustomMessage(
-                'cursorRestore',
-                list(file = filePath, row = savedRow, column = savedCol)
-              )
-            }
-
-            commentUpdate(commentUpdate() + 1)
+            
+            session$sendCustomMessage("cursorRestore", list(
+              file = filePath,
+              row = if (!is.null(gotoLine)) gotoLine else savedRow,
+              column = if (!is.null(gotoColumn)) gotoColumn else savedCol,
+              text = selectText
+            ))
           })
-        },
-        delay = 0.25
-      )
+        })
+      }, 0.25)
+      
+      # Update Compile Target
+      if (ext == "tex" && (is.null(context) || context != "synctex")) {
+        updateSelectInput(session, "compileMainFile", selected = filePath)
+      }
+      
+      return(TRUE)
     } else {
-      # ================= PREVIEW / BINARY =================
-
+      # ================= BINARY PREVIEW =================
+      updateAceEditor(session, "sourceEditor", value = "")
+      isolate({ currentFile("") })
+      
       uid <- isolate(user_session$user_info$user_id)
       pUrl <- file.path("project", uid, "projects", projectId, filePath)
-
+      
       if (ext %in% c("png", "jpg", "jpeg", "gif", "svg", "webp", "bmp")) {
-        session$sendCustomMessage(
-          "showFilePreview",
-          list(
-            filename = basename(filePath),
-            type = "image",
-            url = pUrl,
-            relPath = filePath
-          )
-        )
+        session$sendCustomMessage("showFilePreview", list(
+          filename = basename(filePath),
+          type = "image",
+          url = pUrl,
+          relPath = filePath
+        ))
       } else if (ext == "pdf") {
         pUrl <- paste0(pUrl, "?t=", as.numeric(Sys.time()))
-        session$sendCustomMessage(
-          "showFilePreview",
-          list(
-            filename = basename(filePath),
-            type = "pdf",
-            url = pUrl,
-            relPath = filePath
-          )
-        )
-      } else if (ext %in% c("mp4", "webm", "ogg", "mov")) {
-        session$sendCustomMessage(
-          "showFilePreview",
-          list(
-            filename = basename(filePath),
-            type = "video",
-            url = pUrl,
-            relPath = filePath
-          )
-        )
-      } else if (ext %in% c("mp3", "wav")) {
-        session$sendCustomMessage(
-          "showFilePreview",
-          list(
-            filename = basename(filePath),
-            type = "audio",
-            url = pUrl,
-            relPath = filePath
-          )
-        )
+        session$sendCustomMessage("showFilePreview", list(
+          filename = basename(filePath),
+          type = "pdf",
+          url = pUrl,
+          relPath = filePath
+        ))
       } else {
-        # FALLBACK: Unknown type or explicit binary
-        # Only try to read as text if we CONFIRMED it is NOT binary and is small
-        if (!is_binary_content && finfo$size < 500 * 1024) {
-          content <- tryCatch(
-            {
-              paste(readLines(fullPath, warn = FALSE), collapse = "\n")
-            },
-            error = function(e) "File cannot be previewed."
-          )
-
-          session$sendCustomMessage(
-            "showFilePreview",
-            list(
-              filename = basename(filePath),
-              type = "text",
-              content = content
-            )
-          )
-        } else {
-          session$sendCustomMessage(
-            "showFilePreview",
-            list(
-              filename = basename(filePath),
-              type = "text",
-              content = "File cannot be previewed as text."
-            )
-          )
-        }
+        # Fallback text preview for other binary/unknown files
+        previewContent <- tryCatch({
+          raw_data <- readBin(fullPath, "raw", n = 5000)
+          paste(iconv(list(raw_data), to = "UTF-8", sub = "."), collapse = "")
+        }, error = function(e) "Binary content cannot be previewed.")
+        
+        session$sendCustomMessage("showFilePreview", list(
+          filename = basename(filePath),
+          type = "text",
+          content = previewContent
+        ))
       }
-
-      shinyjs::runjs(
-        "
-        if (document.getElementById('historyOverlay') && document.getElementById('historyOverlay').classList.contains('show')) {
-          Shiny.setInputValue('openHistoryBtn', Math.random(), {priority: 'event'});
-        }
-      "
-      )
+      return(TRUE)
     }
+  }
+
+  # Handle file single-clicks
+  observeEvent(input$fileClick, {
+    req(input$fileClick$path)
+    handleFileOpening(
+      filePath = input$fileClick$path,
+      isEditable = isTRUE(input$fileClick$isEditable),
+      gotoLine = input$fileClick$gotoLine,
+      gotoColumn = input$fileClick$gotoColumn,
+      selectText = input$fileClick$selectText,
+      context = input$fileClick$context
+    )
+    
+    # If history overlay was open, refresh it (Sync with sidebar)
+    shinyjs::runjs("
+      if (document.getElementById('historyOverlay') && document.getElementById('historyOverlay').classList.contains('show')) {
+        Shiny.setInputValue('openHistoryBtn', Math.random(), {priority: 'event'});
+      }
+    ")
   })
+
 
   # --- IMMEDIATE SYNCHRONOUS SAVE (Prevents marker drift on rapid file switch) ---
   observeEvent(input$forceSaveEditor, {
@@ -928,12 +696,14 @@
       # Trigger bib check after a delay to let file load
       later::later(
         function() {
-          session$sendCustomMessage(
-            "type",
-            list(
-              js = "if (window.Shiny) Shiny.setInputValue('checkBibFiles', Math.random(), {priority: 'event'});"
+          shiny::withReactiveDomain(session, {
+            session$sendCustomMessage(
+              "type",
+              list(
+                js = "if (window.Shiny) Shiny.setInputValue('checkBibFiles', Math.random(), {priority: 'event'});"
+              )
             )
-          )
+          })
         },
         0.5
       )
@@ -993,12 +763,14 @@
       # Trigger label check after a delay to let file load
       later::later(
         function() {
-          session$sendCustomMessage(
-            "type",
-            list(
-              js = "if (window.Shiny) Shiny.setInputValue('checkLabelKeys', Math.random(), {priority: 'event'});"
+          shiny::withReactiveDomain(session, {
+            session$sendCustomMessage(
+              "type",
+              list(
+                js = "if (window.Shiny) Shiny.setInputValue('checkLabelKeys', Math.random(), {priority: 'event'});"
+              )
             )
-          )
+          })
         },
         0.5
       )
@@ -1607,56 +1379,61 @@
 
               # 3. Check if exists AND is NOT a directory (Fixes the crash)
               if (file.exists(fullPath) && !dir.exists(fullPath)) {
-                # CRITICAL: Use 'later' to delay this until AFTER the UI swap is done.
+                  # CRITICAL: Use 'later' to delay this until AFTER the UI swap is done.
                 later::later(
                   function() {
-                    # 1. Read and Load Content
-                    content <- paste(
-                      readLines(fullPath, warn = FALSE),
-                      collapse = "\n"
-                    )
-                    aceMode <- getAceModeFromExtension(lastF)
-
-                    session$sendCustomMessage(
-                      "cmdSafeLoadFile",
-                      list(
-                        content = content,
-                        mode = aceMode,
-                        path = lastF
+                    shiny::withReactiveDomain(session, {
+                      # 1. Read and Load Content
+                      content <- paste(
+                        readLines(fullPath, warn = FALSE),
+                        collapse = "\n"
                       )
-                    )
+                      aceMode <- getAceModeFromExtension(lastF)
 
-                    # 2. Update Reactive Values (Triggers UI updates)
-                    currentFile(lastF)
-                    updateStatus(lastF)
-
-                    # 3. Explicitly Render Comments & Cursor
-                    later::later(
-                      function() {
-                        # Restore Cursor
-                        session$sendCustomMessage(
-                          'cursorRestore',
-                          list(file = lastF)
+                      session$sendCustomMessage(
+                        "cmdSafeLoadFile",
+                        list(
+                          content = content,
+                          mode = aceMode,
+                          path = lastF
                         )
+                      )
 
-                        # Restore Comments (Force Render)
-                        cmts <- loadComments(lastProj, lastF)
-                        session$sendCustomMessage(
-                          "renderCommentMarkers",
-                          list(
-                            comments = cmts,
-                            force = TRUE
-                          )
-                        )
+                      # 2. Update Reactive Values (Triggers UI updates)
+                      isolate({
+                        currentFile(lastF)
+                        updateStatus(lastF)
+                      })
 
-                        # Ensure the "Gate" is open
-                        rv$editor_active <- TRUE
-                      },
-                      0.2
-                    )
+                      # 3. Explicitly Render Comments & Cursor
+                      later::later(
+                        function() {
+                          shiny::withReactiveDomain(session, {
+                            # Restore Cursor
+                            session$sendCustomMessage(
+                              'cursorRestore',
+                              list(file = lastF)
+                            )
+
+                            # Restore Comments (Force Render)
+                            isolate({
+                              cmts <- loadComments(lastProj, lastF)
+                              session$sendCustomMessage(
+                                "renderCommentMarkers",
+                                list(
+                                  comments = cmts,
+                                  force = TRUE
+                                )
+                              )
+                            })
+                          })
+                        },
+                        0.25
+                      )
+                    })
                   },
-                  0.8
-                ) # Delay execution by 0.8 seconds
+                  0.1
+                )
               }
             }
           }

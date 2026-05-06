@@ -39,6 +39,17 @@
     file.path(getUserProjectDir(uid), projId)
   }
 
+  getActiveProjectName <- function() {
+    projId <- isolate(activeProjectId())
+    if (is.null(projId)) return("Unknown Project")
+    
+    projects <- loadProjects()
+    for (proj in projects) {
+      if (proj$id == projId) return(proj$name)
+    }
+    return("Unknown Project")
+  }
+
   # Persist active project to disk
   observeEvent(activeProjectId(), {
     projectId <- activeProjectId()
@@ -292,35 +303,39 @@
   }
 
   updateProjectFileCount <- function(projectId) {
-    # --- PERFORMANCE: Defer counting to avoid blocking the main thread ---
-    later::later(function() {
-      uid <- isolate(user_session$user_info$user_id)
-      if (is.null(uid)) return()
-      pDir <- getUserProjectDir(uid)
-      projDir <- file.path(pDir, projectId)
-      if (!dir.exists(projDir)) return()
+    uid <- isolate(user_session$user_info$user_id)
+    if (is.null(uid)) return()
+    
+    pDir <- getUserProjectDir(uid)
+    projDir <- file.path(pDir, projectId)
+    if (!dir.exists(projDir)) return()
 
-      projects <- loadProjects()
-      if (length(projects) > 0) {
-        for (i in seq_along(projects)) {
-          if (projects[[i]]$id == projectId) {
-            # --- PERFORMANCE: Use optimized scanner instead of raw recursive list.files ---
-            filteredFiles <- getVisibleFiles(projDir)
-
-            projects[[i]]$fileCount <- length(filteredFiles)
-            projects[[i]]$lastEdited <- as.character(Sys.time())
-            break
-          }
+    projects <- loadProjects()
+    if (length(projects) > 0) {
+      updated <- FALSE
+      for (i in seq_along(projects)) {
+        if (projects[[i]]$id == projectId) {
+          # Use optimized scanner
+          filteredFiles <- getVisibleFiles(projDir)
+          projects[[i]]$fileCount <- length(filteredFiles)
+          projects[[i]]$lastEdited <- as.character(Sys.time())
+          updated <- TRUE
+          break
         }
+      }
+      
+      if (updated) {
         saveProjects(projects)
-
         if (shiny::isRunning()) {
           isolate({
-            projectChangeTrigger(projectChangeTrigger() + 1)
+            # Only trigger if not in editor to avoid UI jitter
+            if (!isTRUE(rv$editor_active)) {
+              projectChangeTrigger(projectChangeTrigger() + 1)
+            }
           })
         }
       }
-    }, delay = 1.0)
+    }
   }
 
   # Fixed createNewProject function
@@ -611,13 +626,12 @@
     # Update file list to show current project files
     rv_files(getVisibleFiles(projDir))
 
-    # --- PERFORMANCE: Yield thread to let UI render before background updates ---
-    later::later(function() {
-      updateProjectTimestamp(projectId)
-      updateProjectFileCount(projectId)
-      session$sendCustomMessage("togglePdfSpinner", FALSE)
-      session$sendCustomMessage("toggleEditorSpinner", FALSE)
-    }, delay = 0.5)
+    # --- SYNC UPDATES ---
+    updateProjectTimestamp(projectId)
+    updateProjectFileCount(projectId)
+    
+    session$sendCustomMessage("togglePdfSpinner", FALSE)
+    session$sendCustomMessage("toggleEditorSpinner", FALSE)
 
     return(TRUE)
   }

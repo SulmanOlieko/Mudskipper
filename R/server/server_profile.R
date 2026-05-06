@@ -1447,7 +1447,7 @@
                     # Record activity
                     recordDailyActivity(activityType = "fileDelete", details = list(
                       projectId = activeProjectId(),
-                      projectName = activeProject()$name,
+                      projectName = getActiveProjectName(),
                       file = basename(item)
                     ))
 

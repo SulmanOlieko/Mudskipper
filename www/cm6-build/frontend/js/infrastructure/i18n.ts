@@ -52,6 +52,7 @@ const resources = {
       "format_align_justify": "Justify",
       "expand_more": "More",
       "show_document_preamble": "Show Preamble",
+      "end_of_document": "End of document",
       "column_width_is_custom_click_to_resize": "Column width is custom, click to resize",
       "column_width_is_x_click_to_resize": "Column width is {{width}}, click to resize",
     }

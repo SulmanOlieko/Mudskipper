@@ -4399,14 +4399,15 @@ body {
 #symbolPalette {
   display: none;
   position: absolute !important;
-  bottom: 0;
+  bottom: 0 !important;
   left: 0;
   width: 100%;
   height: 200px;
-  background: var(--tblr-border-color);
-  border-top: 4px solid var(--tblr-border-color);
-  z-index: 1000;
+  background: var(--tblr-bg-surface);
+  border-top: 1px solid var(--tblr-border-color);
+  z-index: 3000 !important;
   flex-direction: column;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
 
 #symbolPalette.show {
@@ -7428,7 +7429,7 @@ div(
                     ),
                     div(
                       id = "editorSplit",
-                      style = "height: 100%; position: relative;",
+                      style = "flex: 1 1 auto; position: relative; overflow: hidden;",
                       HTML(
                         '<span id="editorSpinner" style="display:none; margin-left:8px;">
                                           <i class="spinner-border spinner-border-sm" style="width:40px; height:40px; border-width: 1px; color:var(--tblr-primary); z-index: 2000;"></i>
@@ -7437,7 +7438,7 @@ div(
                       aceEditor(
                         "sourceEditor",
                         value = "",
-                        height = "92%",
+                        height = "100%",
                         wordWrap = TRUE,
                         showPrintMargin = FALSE,
                         autoComplete = "live",
@@ -7448,7 +7449,7 @@ div(
                       ),
                       div(
                         id = "visualEditorContainer",
-                        style = "display:none; height: 92%; overflow: hidden;"
+                        style = "display:none; height: 100%; overflow: hidden;"
                       ),
                       HTML(
                         '
@@ -14817,23 +14818,29 @@ function openCopyProjectOverlay() {
       if (text) {
         if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
             window.insertContentToActiveEditor(text);
+            return; // Avoid falling back to Ace
         } else if (editor.insertSnippet) {
             editor.insertSnippet(text);
         } else {
             editor.insert(text);
         }
+        editor.focus();
       }
-      editor.focus();
     }
 
 
     // helper to receive commands from R
     if (window.Shiny) {
         Shiny.addCustomMessageHandler(\"cmdInsertText\", function(data) {
+          if (window.currentMode === 'visual') {
+              window.insertContentToActiveEditor(data.text);
+              return;
+          }
           var editor = getAceEditor();
           if(editor) {
               if (window.currentMode === 'visual' && window.insertContentToActiveEditor) {
                   window.insertContentToActiveEditor(data.text);
+                  return;
               } else if (data.text.includes(\"${1\")) {
                   editor.insertSnippet(data.text);
               } else {
